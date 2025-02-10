@@ -45,7 +45,8 @@ namespace DatabaseRestore
                 Console.WriteLine("Only specify --serverip OR --servername, not both. If neither is specified, localhost is assumed.");
                 Console.WriteLine("If no --serverport is specified, 1433 is assume.");
                 Console.WriteLine("If no --username and --password are specified, then integrated (SSPI) authentication will be used.");
-                Console.WriteLine();
+                Console.WriteLine("If no --temp is specified, then will attempt to restore from --source directly.");
+                Console.WriteLine("In that case, User account for SQL server process must have access to the source file.");
 
                 return;
             }
