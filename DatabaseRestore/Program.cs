@@ -61,7 +61,12 @@ namespace DatabaseRestore
             public string UserRightsString { get; set; }
             // parsed from --rights
             public List<UserRightItem> UserRights { get; set; }
+            // --moveallfiles
+            public bool MoveAllFiles { get; set; }
+            public string MoveAllPath { get; set; }
+            // --movefile
             public List<MoveItem> MoveItems { get; set; }
+            public bool ReplaceDatabase { get; set; }
         }
 
         static void Main(string[] args)
@@ -122,6 +127,8 @@ namespace DatabaseRestore
             Console.WriteLine("  --password -p <password>        : password to connect to SQL server (INSECURE)");
             Console.WriteLine("  --rights -r <userlist>          : list of users/groups and permission to grant to each.");
             Console.WriteLine("  --movefile -m <name> <filepath> : Tells SQL server to move the database file to the specified filepath when restoring.");
+            Console.WriteLine("  --moveallfiles <filepath>       : Tells SQL server to move all database files to the specified path when restoring, preserving file names.");
+            Console.WriteLine("  --replacedatabase               : Tells SQL server to replace the existing database with this backup.");
             Console.WriteLine();
             Console.WriteLine("Autosource mode specifies which file to choose in the specified directory.");
             Console.WriteLine(" lastcreated : selects the newest file by creation date");
@@ -138,6 +145,7 @@ namespace DatabaseRestore
             Console.WriteLine("If no --username and --password are specified, then integrated (SSPI) authentication will be used.");
             Console.WriteLine("If no --temp is specified, then will attempt to restore from --source directly.");
             Console.WriteLine("In that case, User account for SQL server process must have access to the source file.");
+            Console.WriteLine();
             return;
         }
 
@@ -146,6 +154,8 @@ namespace DatabaseRestore
             options = new OptionsClass();
             options.UserRights = new List<UserRightItem>();
             options.MoveItems = new List<MoveItem>();
+            options.MoveAllFiles = false;
+            options.ReplaceDatabase = false;
             int pos = 0;
             while (pos < args.Length)
             {
@@ -343,6 +353,23 @@ namespace DatabaseRestore
                         LogicalName = logical,
                         PhysicalName = physical,
                     });
+                }
+                else if (args[pos].ToLower() == "--moveallfiles")
+                {
+                    pos++;
+                    options.MoveAllFiles = true;
+                    if (pos >= args.Length)
+                    {
+                        Console.WriteLine("No path specified for --moveallfiles <filepath> parameter.");
+                        return false;
+                    }
+                    options.MoveAllPath = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--replacedatabase")
+                {
+                    pos++;
+                    options.ReplaceDatabase = true;
                 }
                 else
                 {
@@ -554,6 +581,41 @@ namespace DatabaseRestore
             {
                 Console.WriteLine("No user rights specified to create.");
             }
+            if (options.ReplaceDatabase)
+            {
+                Console.WriteLine(string.Format("Database [{0}] will be restore WITH REPLACE option, overwritting any existing database.", options.DatabaseName));
+            }
+            if (options.MoveAllFiles)
+            {
+                if (options.MoveItems.Count == 0)
+                {
+                    Console.WriteLine(string.Format("Backup set will be queried and all database files will be moved to \"{0}\"", options.MoveAllPath));
+                }
+                else
+                {
+                    Console.WriteLine(string.Format("Backup set will be queried and any database files not listed below will be moved to \"{0}\"", options.MoveAllPath));
+                    Console.WriteLine("These files (if they exist) will be moved to:");
+                    foreach (var item in options.MoveItems)
+                    {
+                        Console.WriteLine(string.Format(" '{0}' -> \"{1}\"", item.LogicalName, item.PhysicalName));
+                    }
+                }
+            }
+            else
+            {
+                if (options.MoveItems.Count > 0)
+                { 
+                    Console.WriteLine("Backup set will be queried and the following database files will be moved (if they exist):");
+                    foreach (var item in options.MoveItems)
+                    {
+                        Console.WriteLine(string.Format(" '{0}' -> \"{1}\"", item.LogicalName, item.PhysicalName));
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Database files will be restored to their original location. If this fails, try the --movefile or --moveallfiles options.");
+                }
+            }
 
             return true;
         }
@@ -613,12 +675,95 @@ namespace DatabaseRestore
             {
                 SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
             }
+
+            List<MoveItem> moveItems = new List<MoveItem>();
+            if (options.MoveAllFiles || options.MoveItems.Count > 0)
+            {
+                // first, query the database with RESTORE FILELISTONLY to get a list of files to process.
+                Console.WriteLine("Preparing to query SQL server for backup set file list.");
+                using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+                {
+                    string query = "RESTORE FILELISTONLY FROM DISK=\'" + options.SourceFile + "\'";
+                    try
+                    {
+                        Console.Write("Opening connection to SQL server... ");
+                        connection.Open();
+                        Console.WriteLine("Successful");
+                        using (SqlCommand cmd = new SqlCommand(query, connection))
+                        {
+                            Console.Write("Getting file list... ");
+                            SqlDataReader reader = cmd.ExecuteReader();
+                            Console.WriteLine("Successful");
+                            while (reader.Read())
+                            {
+                                string logicalName = reader.GetString(0);
+                                string physicalName = reader.GetString(1);
+                                bool found = false;
+                                foreach (var optItem in options.MoveItems)
+                                {
+                                    if (string.Compare(optItem.LogicalName, logicalName, StringComparison.InvariantCultureIgnoreCase) == 0)
+                                    {
+                                        found = true;
+                                        moveItems.Add(new MoveItem()
+                                        {
+                                            LogicalName = logicalName,
+                                            PhysicalName = optItem.PhysicalName
+                                        });
+                                        break;
+                                    }
+                                }
+                                if (!found && options.MoveAllFiles)
+                                {
+                                    string oldFileName = System.IO.Path.GetFileName(physicalName);
+                                    string newFileName = Path.Combine(options.MoveAllPath, oldFileName);
+                                    moveItems.Add(new MoveItem()
+                                    {
+                                        LogicalName = logicalName,
+                                        PhysicalName = newFileName
+                                    });
+                                    found = true;
+                                }
+                                if (found)
+                                {
+                                    Console.WriteLine("Database file {0} will be moved to {1}");
+                                }
+                            }
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("An exception occurred querying the backup files.");
+                        Console.WriteLine(ex.ToString());
+                        return false;
+                    }
+                }
+            }
+
             Console.WriteLine("Preparing to restore SQL Database.");
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
-                string query = @"RESTORE DATABASE [" + options.DatabaseName + "] \r\n" +
-                    "  FROM DISK = \'" + options.SourceFile + "\'\r\n" +
-                    "  WITH REPLACE;";
+                bool WithAdded = false;
+                string query = "RESTORE DATABASE [" + options.DatabaseName + "] \r\n" +
+                    "  FROM DISK = \'" + options.SourceFile + "\'\r\n";
+                if (options.ReplaceDatabase)
+                {
+                    WithAdded = true;
+                    query += "  WITH REPLACE";
+                }
+                foreach (var mi in moveItems)
+                {
+                    if (WithAdded)
+                    {
+                        query += string.Format(",\r\n  MOVE \'{0}\' TO \'{1}\'", mi.LogicalName, mi.PhysicalName);
+                    }
+                    else
+                    {
+                        query += string.Format("  WITH MOVE \'{0}\' TO \'{1}\'", mi.LogicalName, mi.PhysicalName);
+                        WithAdded = true;
+                    }
+                }
+                query += ";";
                 try
                 {
                     Console.Write("Opening connection to SQL server... ");
