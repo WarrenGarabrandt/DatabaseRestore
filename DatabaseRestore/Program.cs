@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
 
 namespace DatabaseRestore
 {
@@ -40,8 +42,6 @@ namespace DatabaseRestore
             // --servername
             public string SQLServerName { get; set; }
             // --serverport
-            public string ServerPortString { get; set; }
-            // parsed from --serverport
             public int ServerPort = 1433;
             // --database
             public string DatabaseName { get; set; }
@@ -88,7 +88,7 @@ namespace DatabaseRestore
                 // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
                 options.SourceFile = options.TempFile;
             }
-            if (!RestoreDatabase(TempPath, DatabaseName, UserRightsToAssign))
+            if (!RestoreDatabase(options))
             {
                 Console.WriteLine("Failed restoring the database.");
                 return;
@@ -238,6 +238,79 @@ namespace DatabaseRestore
                     }
                     pos++;
                 }
+                else if (args[pos].ToLower() == "--serverip" || args[pos].ToLower() == "-i")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        Console.WriteLine("Missing Server IP Address.");
+                        return false;
+                    }
+                    IPAddress testIP = null;
+                    if (IPAddress.TryParse(args[pos], out testIP))
+                    {
+                        options.SQLServerIP = args[pos];
+                    }
+                    else
+                    {
+                        Console.WriteLine(string.Format("Invalid IP address specified. To override, you can use --servername instead. {0}", args[pos]));
+                        return false;
+                    }
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--servername" || args[pos].ToLower() == "-n")
+                {
+                    pos++;
+                    if (pos >= args[pos].Length)
+                    {
+                        Console.WriteLine("Missing Server Name.");
+                        return false;
+                    }
+                    options.SQLServerName = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--serverport" || args[pos].ToLower() == "-p")
+                {
+                    pos++;
+                    if (pos >= args[pos].Length)
+                    {
+                        Console.WriteLine("Missing Server Port.");
+                        return false;
+                    }
+                    int testInt = 0;
+                    if (int.TryParse(args[pos],out testInt))
+                    {
+                        if (testInt <= 0 || testInt > 65535)
+                        {
+                            Console.WriteLine(string.Format("Invalid port specified: {0}", args[pos]));
+                            return false;
+                        }
+                        options.ServerPort = testInt;
+                    }
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--username" || args[pos].ToLower() == "-u")
+                {
+                    pos++;
+                    if (pos >= args[pos].Length)
+                    {
+                        Console.WriteLine("No username specified.");
+                        return false;
+                    }
+                    options.SQLUsername = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--password" || args[pos].ToLower() == "-p")
+                {
+                    pos++;
+                    if (pos >= args[pos].Length)
+                    {
+                        Console.WriteLine("No password specified.");
+                        return false;
+                    }
+                    options.SQLPassword = args[pos];
+                    pos++;
+                }
                 else
                 {
                     Console.WriteLine(string.Format("Unrecognized command line option {0}", args[pos]));
@@ -255,7 +328,6 @@ namespace DatabaseRestore
                 Console.WriteLine("--autosource and --source were both specified, but only one is needed.");
                 return false;
             }
-
             if (!string.IsNullOrEmpty(options.SourcePath) && !System.IO.Directory.Exists(options.SourcePath))
             {
                 Console.WriteLine(string.Format("Source path does not exist or access denied: {0}", options.SourcePath));
@@ -349,9 +421,16 @@ namespace DatabaseRestore
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("Temp Directory does not exist: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
-
-                    return false;
+                    try
+                    {
+                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(options.TempFile));
+                        Console.WriteLine(string.Format("Created temp directory specified: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+                    }
+                    catch
+                    {
+                        Console.WriteLine(string.Format("Temp Directory does not exist: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+                        return false;
+                    }
                 }
             }
             else
@@ -371,12 +450,17 @@ namespace DatabaseRestore
             else if (!string.IsNullOrEmpty(options.SQLServerIP))
             {
                 Console.WriteLine(string.Format("SQL Server IP: {0}", options.SQLServerIP));
+                // ip address validation was already done, so we can just copy the value to ServerName to simplify building the connection string.
+                options.SQLServerName = options.SQLServerIP;
             }
             else if (!string.IsNullOrEmpty(options.SQLServerName))
             {
                 Console.WriteLine(string.Format("SQL Server Name: {0}", options.SQLServerName));
             }
-
+            if (options.ServerPort != 1433)
+            {
+                Console.WriteLine(string.Format("SQL server port: {0}", options.ServerPort));
+            }
             if (string.IsNullOrEmpty(options.DatabaseName))
             {
                 Console.WriteLine("No Database name was specified.");
@@ -386,12 +470,29 @@ namespace DatabaseRestore
             {
                 Console.WriteLine(string.Format("Restoring (with replace) database: [{0}]", options.DatabaseName));
             }
-            
+            if (string.IsNullOrEmpty(options.SQLUsername) && string.IsNullOrEmpty(options.SQLPassword))
+            {
+                options.SSPI = true;
+            }
+            else
+            {
+                options.SSPI = false;
+                if (string.IsNullOrEmpty(options.SQLUsername))
+                {
+                    Console.WriteLine("Missing SQL username. If specifying credentials, specify both --username and --password.");
+                    return false;
+                }
+                if (string.IsNullOrEmpty(options.SQLPassword))
+                {
+                    Console.WriteLine("Missing SQL password. If specifying credentials, specify both --username and --password.");
+                    return false;
+                }
+            }
 
-            if (UserRightsToAssign.Count > 0)
+            if (options.UserRights.Count > 0)
             {
                 Console.WriteLine("Restoring access rights for users:");
-                foreach (var userRight in UserRightsToAssign)
+                foreach (var userRight in options.UserRights)
                 {
                     Console.Write("   ");
                     Console.Write(userRight.Name);
@@ -414,7 +515,7 @@ namespace DatabaseRestore
             else
             {
                 Console.WriteLine("No user rights specified to restore.");
-                return;
+                return false;
             }
 
             return true;
@@ -452,12 +553,53 @@ namespace DatabaseRestore
             return true;
         }
         
-        private static bool RestoreDatabase(string tempFile, string databaseName, List<UserRightItem> rights)
+        private static bool RestoreDatabase(OptionsClass options)
         {
-            string SQLCommand = @"RESTORE DATABASE [" + databaseName + "] \r\n" +
-                "  FROM DISK = \'" + tempFile + "\'\r\n" +
-                "  WITH REPLACE;";
+            string SQLConnectionString = null;
+            if (options.ServerPort == 1433)
+            {
+                SQLConnectionString = string.Format("Data Source={0};", options.SQLServerName);
+            }
+            else
+            {
+                SQLConnectionString = string.Format("Data Source={0},{1};", options.SQLServerName, options.ServerPort);
+            }
+            SQLConnectionString += "InitialCatalog=master";
+            if (options.SSPI)
+            {
+                SQLConnectionString += "Trusted_Connection=Yes;";
+            }
+            else
+            {
+                SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
+            }
 
+
+            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            {
+                string query = @"RESTORE DATABASE [" + options.DatabaseName + "] \r\n" +
+                    "  FROM DISK = \'" + options.SourceFile + "\'\r\n" +
+                    "  WITH REPLACE;";
+                try
+                {
+                    connection.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                    query = ""; // query to assign all the permissions.
+                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Write("An exception occurred: ");
+                    Console.WriteLine(ex.ToString());
+                    return false;
+                }
+            }            
             return true;
         }
     }
