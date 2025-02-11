@@ -514,8 +514,7 @@ namespace DatabaseRestore
             }
             else
             {
-                Console.WriteLine("No user rights specified to restore.");
-                return false;
+                Console.WriteLine("No user rights specified to create.");
             }
 
             return true;
@@ -543,7 +542,9 @@ namespace DatabaseRestore
             {
                 try
                 {
+                    Console.WriteLine(string.Format("Copying file \"{0}\" to \"{1}\"", sourceFile, tempFile));
                     System.IO.File.Copy(sourceFile, tempFile);
+                    Console.WriteLine("Copy successful.");
                 }
                 catch
                 {
@@ -574,7 +575,7 @@ namespace DatabaseRestore
             {
                 SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
             }
-
+            Console.WriteLine("Preparing to restore SQL Database.");
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
                 string query = @"RESTORE DATABASE [" + options.DatabaseName + "] \r\n" +
@@ -582,15 +583,19 @@ namespace DatabaseRestore
                     "  WITH REPLACE;";
                 try
                 {
+                    Console.Write("Opening connection to SQL server... ");
                     connection.Open();
+                    Console.WriteLine("Successful");
                     using (SqlCommand cmd = new SqlCommand(query, connection))
                     {
+                        Console.Write("Restoring database... ");
                         cmd.ExecuteNonQuery();
+                        Console.WriteLine("Successful");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.Write("An exception occurred restoring the database: ");
+                    Console.WriteLine("An exception occurred restoring the database");
                     Console.WriteLine(ex.ToString());
                     return false;
                 }
@@ -615,49 +620,57 @@ namespace DatabaseRestore
             {
                 SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
             }
-            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            if (options.UserRights.Count > 0)
             {
-                try
+                Console.WriteLine("Preparing to restore user rights.");
+                using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
-                    string query = "";
-                    connection.Open();
-                    foreach (var user in options.UserRights)
+                    try
                     {
-                        if (user.Read)
+                        string query = "";
+                        Console.Write("Opening connection to SQL server... ");
+                        connection.Open();
+                        Console.WriteLine("Successful");
+                        foreach (var user in options.UserRights)
                         {
-                            query = string.Format("ALTER ROLE db_datareader ADD MEMBER '{0}'", user.Name);
-                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            if (user.Read)
                             {
-                                cmd.ExecuteNonQuery();
+                                query = string.Format("ALTER ROLE db_datareader ADD MEMBER '{0}'", user.Name);
+                                using (SqlCommand cmd = new SqlCommand(query, connection))
+                                {
+                                    Console.Write(string.Format("Granting db_datareader to '{0}'... ", user.Name));
+                                    cmd.ExecuteNonQuery();
+                                    Console.WriteLine("Successful");
+                                }
                             }
-                        }
-                        if (user.Write)
-                        {
-                            query = string.Format("ALTER ROLE db_datawriter ADD MEMBER '{0}'", user.Name);
-                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            if (user.Write)
                             {
-                                cmd.ExecuteNonQuery();
+                                query = string.Format("ALTER ROLE db_datawriter ADD MEMBER '{0}'", user.Name);
+                                using (SqlCommand cmd = new SqlCommand(query, connection))
+                                {
+                                    Console.Write(string.Format("Granting db_datawriter to '{0}'... ", user.Name));
+                                    cmd.ExecuteNonQuery();
+                                    Console.WriteLine("Successful");
+                                }
                             }
-                        }
-                        if (user.Owner)
-                        {
-                            query = string.Format("ALTER ROLE db_owner ADD MEMBER '{0}'", user.Name);
-                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            if (user.Owner)
                             {
-                                cmd.ExecuteNonQuery();
+                                query = string.Format("ALTER ROLE db_owner ADD MEMBER '{0}'", user.Name);
+                                using (SqlCommand cmd = new SqlCommand(query, connection))
+                                {
+                                    Console.Write(string.Format("Granting db_owner to '{0}'... ", user.Name));
+                                    cmd.ExecuteNonQuery();
+                                    Console.WriteLine("Successful");
+                                }
                             }
                         }
                     }
-                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    catch (Exception ex)
                     {
-                        cmd.ExecuteNonQuery();
+                        Console.WriteLine("An exception occurred assigning roles.");
+                        Console.WriteLine(ex.ToString());
+                        return false;
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.Write("An exception occurred assigning roles: ");
-                    Console.WriteLine(ex.ToString());
-                    return false;
                 }
             }
             return true;
