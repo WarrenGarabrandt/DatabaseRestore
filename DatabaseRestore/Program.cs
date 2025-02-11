@@ -555,6 +555,7 @@ namespace DatabaseRestore
         
         private static bool RestoreDatabase(OptionsClass options)
         {
+            // connect with master as default database, as we're going to overwrite the database.
             string SQLConnectionString = null;
             if (options.ServerPort == 1433)
             {
@@ -564,7 +565,7 @@ namespace DatabaseRestore
             {
                 SQLConnectionString = string.Format("Data Source={0},{1};", options.SQLServerName, options.ServerPort);
             }
-            SQLConnectionString += "InitialCatalog=master";
+            SQLConnectionString += "Initial Catalog=master;";
             if (options.SSPI)
             {
                 SQLConnectionString += "Trusted_Connection=Yes;";
@@ -573,7 +574,6 @@ namespace DatabaseRestore
             {
                 SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
             }
-
 
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
@@ -587,7 +587,67 @@ namespace DatabaseRestore
                     {
                         cmd.ExecuteNonQuery();
                     }
-                    query = ""; // query to assign all the permissions.
+                }
+                catch (Exception ex)
+                {
+                    Console.Write("An exception occurred restoring the database: ");
+                    Console.WriteLine(ex.ToString());
+                    return false;
+                }
+            }
+
+            //rebuild connection string with the proper database now
+            SQLConnectionString = null;
+            if (options.ServerPort == 1433)
+            {
+                SQLConnectionString = string.Format("Data Source={0};", options.SQLServerName);
+            }
+            else
+            {
+                SQLConnectionString = string.Format("Data Source={0},{1};", options.SQLServerName, options.ServerPort);
+            }
+            SQLConnectionString += string.Format("Initial Catalog={0};", options.DatabaseName);
+            if (options.SSPI)
+            {
+                SQLConnectionString += "Trusted_Connection=Yes;";
+            }
+            else
+            {
+                SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
+            }
+            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            {
+                try
+                {
+                    string query = "";
+                    connection.Open();
+                    foreach (var user in options.UserRights)
+                    {
+                        if (user.Read)
+                        {
+                            query = string.Format("ALTER ROLE db_datareader ADD MEMBER '{0}'", user.Name);
+                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        if (user.Write)
+                        {
+                            query = string.Format("ALTER ROLE db_datawriter ADD MEMBER '{0}'", user.Name);
+                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                        if (user.Owner)
+                        {
+                            query = string.Format("ALTER ROLE db_owner ADD MEMBER '{0}'", user.Name);
+                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            {
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+                    }
                     using (SqlCommand cmd = new SqlCommand(query, connection))
                     {
                         cmd.ExecuteNonQuery();
@@ -595,11 +655,11 @@ namespace DatabaseRestore
                 }
                 catch (Exception ex)
                 {
-                    Console.Write("An exception occurred: ");
+                    Console.Write("An exception occurred assigning roles: ");
                     Console.WriteLine(ex.ToString());
                     return false;
                 }
-            }            
+            }
             return true;
         }
     }
