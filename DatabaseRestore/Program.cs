@@ -587,6 +587,10 @@ namespace DatabaseRestore
             }
             if (options.MoveAllFiles)
             {
+                if (options.MoveAllPath.EndsWith("\""))
+                {
+                    options.MoveAllPath = options.MoveAllPath.Substring(0, options.MoveAllPath.Length - 1);
+                }
                 if (options.MoveItems.Count == 0)
                 {
                     Console.WriteLine(string.Format("Backup set will be queried and all database files will be moved to \"{0}\"", options.MoveAllPath));
@@ -715,17 +719,17 @@ namespace DatabaseRestore
                                 if (!found && options.MoveAllFiles)
                                 {
                                     string oldFileName = System.IO.Path.GetFileName(physicalName);
-                                    string newFileName = Path.Combine(options.MoveAllPath, oldFileName);
+                                    physicalName = Path.Combine(options.MoveAllPath, oldFileName);
                                     moveItems.Add(new MoveItem()
                                     {
                                         LogicalName = logicalName,
-                                        PhysicalName = newFileName
+                                        PhysicalName = physicalName
                                     });
                                     found = true;
                                 }
                                 if (found)
                                 {
-                                    Console.WriteLine("Database file {0} will be moved to {1}");
+                                    Console.WriteLine(string.Format("Database file {0} will be moved to {1}", logicalName, physicalName));
                                 }
                             }
                         }
@@ -814,34 +818,43 @@ namespace DatabaseRestore
                         Console.Write("Opening connection to SQL server... ");
                         connection.Open();
                         Console.WriteLine("Successful");
+                        
                         foreach (var user in options.UserRights)
                         {
+                            // create the user
+                            query = string.Format("CREATE USER [{0}] FOR LOGIN [{0}]", user.Name);
+                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            {
+                                Console.Write(string.Format("Creating login for user [{0}]... ", user.Name));
+                                cmd.ExecuteNonQuery();
+                                Console.WriteLine("Successful");
+                            }
                             if (user.Read)
                             {
-                                query = string.Format("ALTER ROLE db_datareader ADD MEMBER '{0}'", user.Name);
+                                query = string.Format("ALTER ROLE [db_datareader] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
                                 {
-                                    Console.Write(string.Format("Granting db_datareader to '{0}'... ", user.Name));
+                                    Console.Write(string.Format("Granting db_datareader to [{0}]... ", user.Name));
                                     cmd.ExecuteNonQuery();
                                     Console.WriteLine("Successful");
                                 }
                             }
                             if (user.Write)
                             {
-                                query = string.Format("ALTER ROLE db_datawriter ADD MEMBER '{0}'", user.Name);
+                                query = string.Format("ALTER ROLE [db_datawriter] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
                                 {
-                                    Console.Write(string.Format("Granting db_datawriter to '{0}'... ", user.Name));
+                                    Console.Write(string.Format("Granting db_datawriter to [{0}]... ", user.Name));
                                     cmd.ExecuteNonQuery();
                                     Console.WriteLine("Successful");
                                 }
                             }
                             if (user.Owner)
                             {
-                                query = string.Format("ALTER ROLE db_owner ADD MEMBER '{0}'", user.Name);
+                                query = string.Format("ALTER ROLE [db_owner] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
                                 {
-                                    Console.Write(string.Format("Granting db_owner to '{0}'... ", user.Name));
+                                    Console.Write(string.Format("Granting db_owner to [{0}]... ", user.Name));
                                     cmd.ExecuteNonQuery();
                                     Console.WriteLine("Successful");
                                 }
