@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
+using System.Collections;
 
 namespace DatabaseRestore
 {
@@ -67,35 +68,36 @@ namespace DatabaseRestore
             // --movefile
             public List<MoveItem> MoveItems { get; set; }
             public bool ReplaceDatabase { get; set; }
+            public bool DbccCheckDB { get; set; }
         }
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             if (args.Length == 0)
             {
                 ShowUsage();
-                return;
+                return 0;
             }
             OptionsClass options = null;
             if (!ParseOptions(args, out options))
             {
-                return;
+                return 1;
             }
             if (!CheckOptions(options))
             {
-                return;
+                return 2;
             }
             if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
             {
                 Console.WriteLine("Failed deleting previous temp file.");
-                return;
+                return 3;
             }
             if (!string.IsNullOrEmpty(options.TempFile))
             {
                 if (!CopyFile(options.SourceFile, options.TempFile))
                 {
                     Console.WriteLine("Failed copying source backup file to temp path.");
-                    return;
+                    return 4;
                 }
                 // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
                 options.SourceFile = options.TempFile;
@@ -103,14 +105,15 @@ namespace DatabaseRestore
             if (!RestoreDatabase(options))
             {
                 Console.WriteLine("Failed restoring the database.");
-                return;
+                return 5;
             }
             if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
             {
                 Console.WriteLine("Failed deleting temp file.");
-                return;
+                return 6;
             }
             Console.WriteLine("Operation Completed.");
+            return 0;
         }
 
         private static void ShowUsage()
@@ -129,6 +132,7 @@ namespace DatabaseRestore
             Console.WriteLine("  --movefile -m <name> <filepath> : Tells SQL server to move the database file to the specified filepath when restoring.");
             Console.WriteLine("  --moveallfiles <filepath>       : Tells SQL server to move all database files to the specified path when restoring, preserving file names.");
             Console.WriteLine("  --replacedatabase               : Tells SQL server to replace the existing database with this backup.");
+            Console.WriteLine("  --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.");
             Console.WriteLine();
             Console.WriteLine("Autosource mode specifies which file to choose in the specified directory.");
             Console.WriteLine(" lastcreated : selects the newest file by creation date");
@@ -156,6 +160,7 @@ namespace DatabaseRestore
             options.MoveItems = new List<MoveItem>();
             options.MoveAllFiles = false;
             options.ReplaceDatabase = false;
+            options.DbccCheckDB = false;
             int pos = 0;
             while (pos < args.Length)
             {
@@ -370,6 +375,11 @@ namespace DatabaseRestore
                 {
                     pos++;
                     options.ReplaceDatabase = true;
+                }
+                else if(args[pos].ToLower() == "--dbcccheckdb")
+                {
+                    pos++;
+                    options.DbccCheckDB = true;
                 }
                 else
                 {
@@ -620,7 +630,10 @@ namespace DatabaseRestore
                     Console.WriteLine("Database files will be restored to their original location. If this fails, try the --movefile or --moveallfiles options.");
                 }
             }
-
+            if (options.DbccCheckDB)
+            {
+                Console.WriteLine("After restoring, run DBCC CHECKDB to verify no corruption is present.");
+            }
             return true;
         }
 
@@ -866,6 +879,25 @@ namespace DatabaseRestore
                         Console.WriteLine("An exception occurred assigning roles.");
                         Console.WriteLine(ex.ToString());
                         return false;
+                    }
+                    if (options.DbccCheckDB)
+                    {
+                        try
+                        {
+                            string query = "DBCC CHECKDB";
+                            using (SqlCommand cmd = new SqlCommand(query, connection))
+                            {
+                                Console.Write("Running DBCC CHECKEDB... ");
+                                cmd.ExecuteNonQuery();
+                                Console.WriteLine("Successful");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error:");
+                            Console.WriteLine(ex.ToString());
+                            return false;
+                        }
                     }
                 }
             }
