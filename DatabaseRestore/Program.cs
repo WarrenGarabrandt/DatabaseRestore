@@ -333,32 +333,61 @@ namespace DatabaseRestore
                 return false;
             }
 
-            if (TempPath.Length > 0 && System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(TempPath)))
+            if (!string.IsNullOrEmpty(options.TempFile))
             {
-                Console.WriteLine(string.Format("Temp Directory: {0}", System.IO.Path.GetDirectoryName(TempPath)));
-                if (System.IO.File.Exists(TempPath))
+                if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(options.TempFile)))
                 {
-                    Console.WriteLine(string.Format("Temp File exists, will replace: {0}", System.IO.Path.GetFileName(TempPath)));
+                    Console.WriteLine(string.Format("Temp Directory: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+                    if (System.IO.File.Exists(options.TempFile))
+                    {
+                        Console.WriteLine(string.Format("Temp File exists, will replace: {0}", System.IO.Path.GetFileName(options.TempFile)));
+                    }
+                    else
+                    {
+                        Console.WriteLine(string.Format("Temp File: {0}", System.IO.Path.GetFileName(options.TempFile)));
+                    }
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("Temp File: {0}", System.IO.Path.GetFileName(TempPath)));
+                    Console.WriteLine(string.Format("Temp Directory does not exist: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+
+                    return false;
                 }
             }
             else
             {
-                Console.WriteLine(string.Format("Temp Directory does not exist: {0}", System.IO.Path.GetDirectoryName(TempPath)));
-                return;
+                Console.WriteLine("No temp file specified. Will attempt to restore directly from source file.");
             }
-            if (DatabaseName.Length > 0)
+            if (string.IsNullOrEmpty(options.SQLServerIP) && string.IsNullOrEmpty(options.SQLServerName))
             {
-                Console.WriteLine(string.Format("Database name: {0}", DatabaseName));
+                Console.WriteLine("No SQL Server specified. Assuming localhost.");
+                options.SQLServerName = "localhost";
+            }
+            else if (!string.IsNullOrEmpty(options.SQLServerIP) && !string.IsNullOrEmpty(options.SQLServerName))
+            {
+                Console.WriteLine("Don't specify both --servername and --serverip. Use one or the other.");
+                return false;
+            }
+            else if (!string.IsNullOrEmpty(options.SQLServerIP))
+            {
+                Console.WriteLine(string.Format("SQL Server IP: {0}", options.SQLServerIP));
+            }
+            else if (!string.IsNullOrEmpty(options.SQLServerName))
+            {
+                Console.WriteLine(string.Format("SQL Server Name: {0}", options.SQLServerName));
+            }
+
+            if (string.IsNullOrEmpty(options.DatabaseName))
+            {
+                Console.WriteLine("No Database name was specified.");
+                return false;
             }
             else
             {
-                Console.WriteLine("Missing Destination Database Name.");
-                return;
+                Console.WriteLine(string.Format("Restoring (with replace) database: [{0}]", options.DatabaseName));
             }
+            
+
             if (UserRightsToAssign.Count > 0)
             {
                 Console.WriteLine("Restoring access rights for users:");
