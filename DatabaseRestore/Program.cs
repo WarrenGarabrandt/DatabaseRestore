@@ -20,6 +20,12 @@ namespace DatabaseRestore
             public bool Owner { get; set; }
         }
 
+        private class MoveItem
+        {
+            public string LogicalName { get; set; }
+            public string PhysicalName { get; set; }
+        }
+
         public enum AutoSourceMode
         {
             None = 0,
@@ -55,6 +61,7 @@ namespace DatabaseRestore
             public string UserRightsString { get; set; }
             // parsed from --rights
             public List<UserRightItem> UserRights { get; set; }
+            public List<MoveItem> MoveItems { get; set; }
         }
 
         static void Main(string[] args)
@@ -104,16 +111,17 @@ namespace DatabaseRestore
         private static void ShowUsage()
         {
             Console.WriteLine("Usage:");
-            Console.WriteLine("  --autosource -a <mode> <path> : select a source file from specified path based on specified mode.");
-            Console.WriteLine("  --source -s <filepath>        : source database backup file.");
-            Console.WriteLine("  --temp -t <filepath>          : temporary directory and file name to copy the source to before restoring.");
-            Console.WriteLine("  --serverip -i <ip>            : IP address of the server to connect to.");
-            Console.WriteLine("  --servername -n <name>        : name of the server to connect to.");
-            Console.WriteLine("  --serverport -p <port>        : port of the server to connect to.");
-            Console.WriteLine("  --database -d <name>          : name of the database to overwrite with this backup.");
-            Console.WriteLine("  --username -u <username>      : username to connect to SQL server as.");
-            Console.WriteLine("  --password -p <password>      : password to connect to SQL server (INSECURE)");
-            Console.WriteLine("  --rights -r <userlist>        : list of users/groups and permission to grant to each.");
+            Console.WriteLine("  --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.");
+            Console.WriteLine("  --source -s <filepath>          : source database backup file.");
+            Console.WriteLine("  --temp -t <filepath>            : temporary directory and file name to copy the source to before restoring.");
+            Console.WriteLine("  --serverip -i <ip>              : IP address of the server to connect to.");
+            Console.WriteLine("  --servername -n <name>          : name of the server to connect to.");
+            Console.WriteLine("  --serverport -p <port>          : port of the server to connect to.");
+            Console.WriteLine("  --database -d <name>            : name of the database to overwrite with this backup.");
+            Console.WriteLine("  --username -u <username>        : username to connect to SQL server as.");
+            Console.WriteLine("  --password -p <password>        : password to connect to SQL server (INSECURE)");
+            Console.WriteLine("  --rights -r <userlist>          : list of users/groups and permission to grant to each.");
+            Console.WriteLine("  --movefile -m <name> <filepath> : Tells SQL server to move the database file to the specified filepath when restoring.");
             Console.WriteLine();
             Console.WriteLine("Autosource mode specifies which file to choose in the specified directory.");
             Console.WriteLine(" lastcreated : selects the newest file by creation date");
@@ -136,13 +144,15 @@ namespace DatabaseRestore
         private static bool ParseOptions(string[] args, out OptionsClass options)
         {
             options = new OptionsClass();
+            options.UserRights = new List<UserRightItem>();
+            options.MoveItems = new List<MoveItem>();
             int pos = 0;
             while (pos < args.Length)
             {
                 if (args[pos].ToLower() == "--autosource" || args[pos].ToLower() == "-a")
                 {
                     pos++;
-                    if (pos >=  args.Length)
+                    if (pos >= args.Length)
                     {
                         Console.WriteLine("--autosource mode not specified.");
                         return false;
@@ -261,7 +271,7 @@ namespace DatabaseRestore
                 else if (args[pos].ToLower() == "--servername" || args[pos].ToLower() == "-n")
                 {
                     pos++;
-                    if (pos >= args[pos].Length)
+                    if (pos >= args.Length)
                     {
                         Console.WriteLine("Missing Server Name.");
                         return false;
@@ -272,13 +282,13 @@ namespace DatabaseRestore
                 else if (args[pos].ToLower() == "--serverport" || args[pos].ToLower() == "-p")
                 {
                     pos++;
-                    if (pos >= args[pos].Length)
+                    if (pos >= args.Length)
                     {
                         Console.WriteLine("Missing Server Port.");
                         return false;
                     }
                     int testInt = 0;
-                    if (int.TryParse(args[pos],out testInt))
+                    if (int.TryParse(args[pos], out testInt))
                     {
                         if (testInt <= 0 || testInt > 65535)
                         {
@@ -292,7 +302,7 @@ namespace DatabaseRestore
                 else if (args[pos].ToLower() == "--username" || args[pos].ToLower() == "-u")
                 {
                     pos++;
-                    if (pos >= args[pos].Length)
+                    if (pos >= args.Length)
                     {
                         Console.WriteLine("No username specified.");
                         return false;
@@ -303,13 +313,36 @@ namespace DatabaseRestore
                 else if (args[pos].ToLower() == "--password" || args[pos].ToLower() == "-p")
                 {
                     pos++;
-                    if (pos >= args[pos].Length)
+                    if (pos >= args.Length)
                     {
                         Console.WriteLine("No password specified.");
                         return false;
                     }
                     options.SQLPassword = args[pos];
                     pos++;
+                }
+                else if (args[pos].ToLower() == "--movefile" || args[pos].ToLower() == "-m")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        Console.WriteLine("No Logical file specified for --movefile <name> parameter.");
+                        return false;
+                    }
+                    string logical = args[pos];
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        Console.WriteLine("No Physical file specified for --movefile <filepath> parameter.");
+                        return false;
+                    }
+                    string physical = args[pos];
+                    pos++;
+                    options.MoveItems.Add(new MoveItem()
+                    {
+                        LogicalName = logical,
+                        PhysicalName = physical,
+                    });
                 }
                 else
                 {
@@ -407,7 +440,12 @@ namespace DatabaseRestore
 
             if (!string.IsNullOrEmpty(options.TempFile))
             {
-                if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(options.TempFile)))
+                if (options.TempFile.StartsWith("\\\\"))
+                {
+                    // this is a UNC path. 
+                    Console.WriteLine("Detected temp folder is a UNC path. Skipping checks.");
+                }
+                else if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(options.TempFile)))
                 {
                     Console.WriteLine(string.Format("Temp Directory: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
                     if (System.IO.File.Exists(options.TempFile))
