@@ -14,7 +14,7 @@ All steps of the process are outputted to the standard output stream, so you can
 
 
 ## Usage
-Starting the tool with no arguments will display the usage instructions. Most parameters have a long --option and a shorter -o option format, so you can write the full version for readability or the short version for compactness. I'll be using the full version in the example for clarity. Options which require parameters are shown as <parameter> but don't require you to actually enter the <> brackets. 
+Starting the tool with no arguments will display the usage instructions. Most parameters have a long --option and a shorter -o option format, so you can write the full version for readability or the short version for compactness. I'll be using the full version in the example for clarity. Options which require parameters are shown as <parameter> but don't require you to actually enter the <> brackets. The argument flags are case insensitive. Actually, they are cast to lowercase when parsed, so if that causes a problem for some character sets, regions, culture settings, etc. then try to prefer the lowercase as that will prevent weirdness when changing case programmatically. 
 
   --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.
   
@@ -44,15 +44,16 @@ Starting the tool with no arguments will display the usage instructions. Most pa
   
   --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.
 
+### Autosource
 Autosource mode specifies which file to choose in the specified directory.
 
  lastcreated : selects the newest file by creation date
  
  lastmodified : selects the newest file by modified date
  
-Example: --autosource lastcreated c:\backups\database_20241231.bak
+Example: --autosource lastcreated c:\backups
 
-
+### Userlist
 
 Users List accepts a list of users and group separated by semi-colon (;).
 
@@ -64,6 +65,7 @@ Example: domain\UserName:O;domain\group:R;SQLUser:RW
 
 This will add the login domain\UserName to the db_owners role, the login domain\group to the db_datareader role, and the user SQLUser to the db_datareader and db_datawriter roles.
 
+### ServerName vs ServerIP
 
 Only specify --serverip OR --servername, not both. If neither is specified, localhost is assumed.
 
@@ -75,6 +77,7 @@ If no --username and --password are specified, then integrated (SSPI) authentica
 
 If no --temp is specified, then will attempt to restore from --source or the automatically selected --autosource file directly. In that case, User account for SQL server process must have access to the source file.
 
+### Path Considerations
 
 Argumnents such as paths which contain spaces should be enclosed in double quotes, like this:
 
@@ -90,15 +93,13 @@ c:\Program Files\Test"
 
 Which will essentially break parsing of the arguments and likely result in unexpected behavior. Combining paths will definitely break, as the illegal character " will be used as part of the path.
 
-
+### Replace and Move options
 
 The database will fail to restore if it already exists and the --replacedatabase is not specified.
 
 The database will fail to restore if it is in use, has any active connections to it, or the user account provided doesn't have rights to restore.
 
 The database will fail to restore if the database file path on the source server (where the backup as created) does not match that of target server (where the backup will be restored), unless either --movefile argument specifies all database files to be placed in valid locations, or --moveallfiles specifies a path to move everything. If a file is specified for --movefile that doens't actually exist in the backup, it will be ignored. If any files aren't specified by --movefile, then --moveallfiles can also be used to move everything else that --movefile didn't specify. Kind of a "move to of last resort" situation.
-
-
 
 ## Example Use
 --autosource lastcreated "C:\Temp\SQL Backups" --temp "\\testsql\$backup\adventureworks.bak" --servername testsql --database AdventureWorks --rights "domain\usera:RWO;domain\userb:rw;sqluser:r" --replacedatabase --moveallfiles "C:\Program Files\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\DATA" --dbcccheckdb
@@ -118,8 +119,6 @@ User "domain\userb" will be added to db_datareader, and db_datawriter roles.
 User "sqluser" will be added to db_datareader role.
 
 Finally, dbcc checkdb will be run on the database to verify that there is no database corruption.
-
-
 
 ## Known Issues
 I've tested the program only on a test SQL server 2019 Express server so far, using integrated authentication only. I'm sure there's plenty of ways that passing passwords through the command line can expose all sorts of security issues that I haven't investigated yet, and probably special characters will break commandline argument parsing too.
