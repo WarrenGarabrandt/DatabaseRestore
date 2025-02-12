@@ -115,6 +115,8 @@ Because of the way the SQL queries are constructed, it is absolutely possible to
 
 As with all programs downloaded from the Internet, you need to be careful and test things before deploying them on a production environment. You must set up a test server and test your use-case of the tool to make sure it does what you need without any unacceptable side-effects before deploying it to production. If you break something using this tool, please do let me know via a bug report, but ultimately I can't be responsible for other people's use scenarios. So BE CAREFUL!
 
+Putting the character ] into a username field in the --rights parameter will break it. This is because the stored procedure used to run that query doesn't accept parameterized SQL. I tried it, and it doens't work. So, don't do that.
+
 ### Path Considerations
 
 Argumnents such as paths which contain spaces should be enclosed in double quotes, like this:
