@@ -96,36 +96,51 @@ namespace DatabaseRestore
             OptionsClass options = null;
             if (!ParseOptions(args, out options))
             {
-                return 1;
+                return -1;
             }
             if (!CheckOptions(options))
             {
-                return 2;
+                return -2;
             }
             if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
             {
                 Console.WriteLine("Failed deleting previous temp file.");
-                return 3;
+                return -3;
             }
             if (!string.IsNullOrEmpty(options.TempFile))
             {
                 if (!CopyFile(options.SourceFile, options.TempFile))
                 {
                     Console.WriteLine("Failed copying source backup file to temp path.");
-                    return 4;
+                    return -4;
                 }
                 // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
                 options.SourceFile = options.TempFile;
             }
+            if (!PrepareDatabaseFiles(options))
+            {
+                Console.WriteLine("Failed preparing database files.");
+                return -5;
+            }
             if (!RestoreDatabase(options))
             {
                 Console.WriteLine("Failed restoring the database.");
-                return 5;
+                return -6;
+            }
+            if (!SetDatabasePermissions(options))
+            {
+                Console.WriteLine("Failed setting permissions for the database.");
+                return -7;
+            }
+            if (!RunDBCC(options))
+            {
+                Console.WriteLine("Failed running DBCC CHECKDB.");
+                return -8;
             }
             if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
             {
                 Console.WriteLine("Failed deleting temp file.");
-                return 6;
+                return -9;
             }
             Console.WriteLine("Operation Completed.");
             return 0;
@@ -391,7 +406,7 @@ namespace DatabaseRestore
                     pos++;
                     options.ReplaceDatabase = true;
                 }
-                else if(args[pos].ToLower() == "--dbcccheckdb")
+                else if (args[pos].ToLower() == "--dbcccheckdb")
                 {
                     pos++;
                     options.DbccCheckDB = true;
@@ -476,7 +491,7 @@ namespace DatabaseRestore
                         options.SourceFile = lastModified.FullName;
                         Console.WriteLine(string.Format("Autoselected most recently modified source file: {0}", options.SourceFile));
                     }
-                } 
+                }
                 else
                 {
                     Console.WriteLine(string.Format("Didn't understand the --autosource mode: {0}", options.AutoSourceMode.ToString()));
@@ -633,7 +648,7 @@ namespace DatabaseRestore
             else
             {
                 if (options.MoveItems.Count > 0)
-                { 
+                {
                     Console.WriteLine("Backup set will be queried and the following database files will be moved (if they exist):");
                     foreach (var item in options.MoveItems)
                     {
@@ -685,8 +700,8 @@ namespace DatabaseRestore
             }
             return true;
         }
-        
-        private static bool RestoreDatabase(OptionsClass options)
+
+        private static string BuildConnectionString(OptionsClass options, bool useMasterDB = false)
         {
             // connect with master as default database, as we're going to overwrite the database.
             string SQLConnectionString = null;
@@ -698,7 +713,7 @@ namespace DatabaseRestore
             {
                 SQLConnectionString = string.Format("Data Source={0},{1};", options.SQLServerName, options.ServerPort);
             }
-            SQLConnectionString += "Initial Catalog=master;";
+            SQLConnectionString += string.Format("Initial Catalog={0};", useMasterDB ? "master" : options.DatabaseName);
             if (options.SSPI)
             {
                 SQLConnectionString += "Trusted_Connection=Yes;";
@@ -707,11 +722,21 @@ namespace DatabaseRestore
             {
                 SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
             }
+            return SQLConnectionString;
+        }
 
-            List<MoveItem> moveItems = new List<MoveItem>();
+        /// <summary>
+        /// If --moveallfiles or -movefile is specified, query the database with RESTORE FILELISTONLY to 
+        /// prepare a list of WITH MOVE items for later.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        private static bool PrepareDatabaseFiles(OptionsClass options)
+        {
             if (options.MoveAllFiles || options.MoveItems.Count > 0)
             {
-                // first, query the database with RESTORE FILELISTONLY to get a list of files to process.
+                string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
+                List<MoveItem> moveItems = new List<MoveItem>();
                 Console.WriteLine("Preparing to query SQL server for backup set file list.");
                 using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
@@ -761,7 +786,7 @@ namespace DatabaseRestore
                                 }
                             }
                         }
-
+                        options.MoveItems = moveItems;
                     }
                     catch (Exception ex)
                     {
@@ -771,7 +796,11 @@ namespace DatabaseRestore
                     }
                 }
             }
-
+            return true;
+        }
+        private static bool RestoreDatabase(OptionsClass options)
+        {
+            string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
             Console.WriteLine("Preparing to restore SQL Database.");
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
@@ -783,7 +812,7 @@ namespace DatabaseRestore
                     WithAdded = true;
                     query += "  WITH REPLACE";
                 }
-                foreach (var mi in moveItems)
+                foreach (var mi in options.MoveItems)
                 {
                     if (WithAdded)
                     {
@@ -815,28 +844,14 @@ namespace DatabaseRestore
                     return false;
                 }
             }
+            return true;
+        }
 
-            //rebuild connection string with the proper database now
-            SQLConnectionString = null;
-            if (options.ServerPort == 1433)
-            {
-                SQLConnectionString = string.Format("Data Source={0};", options.SQLServerName);
-            }
-            else
-            {
-                SQLConnectionString = string.Format("Data Source={0},{1};", options.SQLServerName, options.ServerPort);
-            }
-            SQLConnectionString += string.Format("Initial Catalog={0};", options.DatabaseName);
-            if (options.SSPI)
-            {
-                SQLConnectionString += "Trusted_Connection=Yes;";
-            }
-            else
-            {
-                SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
-            }
+        private static bool SetDatabasePermissions(OptionsClass options)
+        {
             if (options.UserRights.Count > 0)
             {
+                string SQLConnectionString = BuildConnectionString(options);
                 Console.WriteLine("Preparing to restore user rights.");
                 using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
@@ -846,7 +861,7 @@ namespace DatabaseRestore
                         Console.Write("Opening connection to SQL server... ");
                         connection.Open();
                         Console.WriteLine("Successful");
-                        
+
                         foreach (var user in options.UserRights)
                         {
                             // create the user
@@ -895,28 +910,51 @@ namespace DatabaseRestore
                         Console.WriteLine(ex.ToString());
                         return false;
                     }
-                    if (options.DbccCheckDB)
-                    {
-                        try
-                        {
-                            string query = "DBCC CHECKDB";
-                            using (SqlCommand cmd = new SqlCommand(query, connection))
-                            {
-                                Console.Write("Running DBCC CHECKEDB... ");
-                                cmd.ExecuteNonQuery();
-                                Console.WriteLine("Successful");
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error:");
-                            Console.WriteLine(ex.ToString());
-                            return false;
-                        }
-                    }
                 }
             }
             return true;
+        }
+    
+        private static bool RunDBCC(OptionsClass options)
+        {
+            if (options.DbccCheckDB)
+            {
+                string SQLConnectionString = BuildConnectionString(options);
+                using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+                {
+                    connection.InfoMessage += Connection_InfoMessage;
+                    try
+                    {
+                        string query = "DBCC CHECKDB";
+                        Console.Write("Opening connection to SQL server... ");
+                        connection.Open();
+                        Console.WriteLine("Successful");
+                        using (SqlCommand cmd = new SqlCommand(query, connection))
+                        {
+                            Console.Write("Running DBCC CHECKEDB... ");
+                            cmd.ExecuteNonQuery();
+                            Console.WriteLine("Successful. See Info messages below for any DBCC errors reported.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Error:");
+                        Console.WriteLine(ex.ToString());
+                        return false;
+                    }
+                    connection.InfoMessage -= Connection_InfoMessage;
+                    Console.WriteLine("Information Messages from SQL Server:");
+                    Console.WriteLine(InfoMessageSB.ToString());
+                    InfoMessageSB.Clear();
+                } 
+            }
+            return true;
+        }
+
+        private static StringBuilder InfoMessageSB = new StringBuilder();
+        private static void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
+        {
+            InfoMessageSB.AppendLine(e.Message);
         }
     }
 }
