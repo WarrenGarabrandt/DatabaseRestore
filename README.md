@@ -14,7 +14,7 @@ All steps of the process are outputted to the standard output stream, so you can
 
 
 ## Usage
-Starting the tool with no arguments will display the usage instructions. 
+Starting the tool with no arguments will display the usage instructions. Most parameters have a long --option and a shorter -o option format, so you can write the full version for readability or the short version for compactness. I'll be using the full version in the example for clarity. Options which require parameters are shown as <parameter> but don't require you to actually enter the <> brackets. 
 
   --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.
   
@@ -62,16 +62,18 @@ R grants DataReader, W grants DataWriter, O grants Owner.
 
 Example: domain\UserName:O;domain\group:R;SQLUser:RW
 
+This will add the login domain\UserName to the db_owners role, the login domain\group to the db_datareader role, and the user SQLUser to the db_datareader and db_datawriter roles.
+
 
 Only specify --serverip OR --servername, not both. If neither is specified, localhost is assumed.
+
+--serverip option will attempt to verify that what you enter is a valid IP address. That doesn't always work. You can use --servername to bypass that check. Both get passed into ado.net connection string verbatim either way, it's just an optional check if you specify --serverip to help prevent mistakes in some cases.
 
 If no --serverport is specified, 1433 is assume.
 
 If no --username and --password are specified, then integrated (SSPI) authentication will be used.
 
-If no --temp is specified, then will attempt to restore from --source directly.
-
-In that case, User account for SQL server process must have access to the source file.
+If no --temp is specified, then will attempt to restore from --source or the automatically selected --autosource file directly. In that case, User account for SQL server process must have access to the source file.
 
 
 Argumnents such as paths which contain spaces should be enclosed in double quotes, like this:
