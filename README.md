@@ -125,7 +125,7 @@ A backslash will escape a single character, so \\\\ will become \\, \\" will bec
 
 Don't put a trailing \ on the end of a folder path, as that will result in escaping the ".
 
-"c:\Program Files\Test\"
+"c:\Program Files\Test\\"
 
 Will break parsing and become
 
