@@ -80,7 +80,9 @@ namespace DatabaseRestore
             public string MoveAllPath { get; set; }
             // --movefile
             public List<MoveItem> MoveItems { get; set; }
+            // --replacedatabase
             public bool ReplaceDatabase { get; set; }
+            // --dbcccheckdb
             public bool DbccCheckDB { get; set; }
         }
 
