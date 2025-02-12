@@ -24,11 +24,14 @@ using System.Collections;
 using Microsoft.SqlServer.Server;
 using System.Diagnostics;
 using System.Security.Policy;
+using System.Reflection;
 
 namespace DatabaseRestore
 {
     internal class Program
     {
+        private const string BUILDRELEASE = "alpha1";
+
         private class UserRightItem
         {
             public string Name { get; set; }
@@ -96,6 +99,7 @@ namespace DatabaseRestore
         static int Main(string[] args)
         {
             StartTime = DateTime.Now;
+            LogString(ProgramNameVersionString);
             if (args.Length == 0)
             {
                 ShowUsage();
@@ -179,6 +183,15 @@ namespace DatabaseRestore
             {
                 LogOutput.Append("\r\n");
                 Console.WriteLine();
+            }
+        }
+        private static string ProgramNameVersionString
+        {
+            get
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                var name = assembly.GetName();
+                return string.Format("{0} v{1}.{2}-{3}", name.Name, name.Version.Major, name.Version.Minor, BUILDRELEASE);
             }
         }
 
