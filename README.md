@@ -88,7 +88,7 @@ The database will fail to restore if the database file path on the source server
 ## Example Use
 --autosource lastcreated "C:\Temp\SQL Backups" --temp "\\\\testsql\\$backup\adventureworks.bak" --servername testsql --database AdventureWorks --rights "domain\usera:RWO;domain\userb:rw;sqluser:r" --replacedatabase --moveallfiles "C:\Program Files\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\DATA" --dbcccheckdb
 
-This will look in the directory "C:\Temp\SQL Backups" and locate the youngest file there by creation date. It will copy it to the location "\\testsql\$backup\adventureworks.bak".
+This will look in the directory "C:\Temp\SQL Backups" and locate the youngest file there by creation date. It will copy it to the location "\\\\testsql\\$backup\adventureworks.bak".
 
 Then a connection will be made to the SQL server testsql using the initial catalog master. The bak file will be restored over top of the database "AdventureWorks" if it exists, or a new database will be created. 
 
