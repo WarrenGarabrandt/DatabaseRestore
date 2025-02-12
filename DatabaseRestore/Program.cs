@@ -23,6 +23,7 @@ using System.Data.SqlClient;
 using System.Collections;
 using Microsoft.SqlServer.Server;
 using System.Diagnostics;
+using System.Security.Policy;
 
 namespace DatabaseRestore
 {
@@ -86,10 +87,15 @@ namespace DatabaseRestore
             public bool ReplaceDatabase { get; set; }
             // --dbcccheckdb
             public bool DbccCheckDB { get; set; }
+            // --logfile
+            public string LogFile { get; set; }
+            // --logappend
+            public string LogAppend { get; set; }
         }
 
         static int Main(string[] args)
         {
+            StartTime = DateTime.Now;
             if (args.Length == 0)
             {
                 ShowUsage();
@@ -100,52 +106,128 @@ namespace DatabaseRestore
             {
                 return -1;
             }
-            if (!CheckOptions(options))
+            try
             {
-                return -2;
-            }
-            if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
-            {
-                Console.WriteLine("Failed deleting previous temp file.");
-                return -3;
-            }
-            if (!string.IsNullOrEmpty(options.TempFile))
-            {
-                if (!CopyFile(options.SourceFile, options.TempFile))
+                if (!CheckOptions(options))
                 {
-                    Console.WriteLine("Failed copying source backup file to temp path.");
-                    return -4;
+                    return -2;
                 }
-                // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
-                options.SourceFile = options.TempFile;
+                if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
+                {
+                    LogString("Failed deleting previous temp file.");
+                    return -3;
+                }
+                if (!string.IsNullOrEmpty(options.TempFile))
+                {
+                    if (!CopyFile(options.SourceFile, options.TempFile))
+                    {
+                        LogString("Failed copying source backup file to temp path.");
+                        return -4;
+                    }
+                    // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
+                    options.SourceFile = options.TempFile;
+                }
+                if (!PrepareDatabaseFiles(options))
+                {
+                    LogString("Failed preparing database files.");
+                    return -5;
+                }
+                if (!RestoreDatabase(options))
+                {
+                    LogString("Failed restoring the database.");
+                    return -6;
+                }
+                if (!SetDatabasePermissions(options))
+                {
+                    LogString("Failed setting permissions for the database.");
+                    return -7;
+                }
+                if (!RunDBCC(options))
+                {
+                    LogString("Failed running DBCC CHECKDB.");
+                    return -8;
+                }
+                if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
+                {
+                    LogString("Failed deleting temp file.");
+                    return -9;
+                }
+                LogString("Operation Completed.");
             }
-            if (!PrepareDatabaseFiles(options))
+            catch (Exception ex)
             {
-                Console.WriteLine("Failed preparing database files.");
-                return -5;
+                LogString(string.Format("An excption occurred: {0}", ex.Message));
             }
-            if (!RestoreDatabase(options))
+            finally
             {
-                Console.WriteLine("Failed restoring the database.");
-                return -6;
+                EndTime = DateTime.Now;
+                WriteLogs(options);
             }
-            if (!SetDatabasePermissions(options))
-            {
-                Console.WriteLine("Failed setting permissions for the database.");
-                return -7;
-            }
-            if (!RunDBCC(options))
-            {
-                Console.WriteLine("Failed running DBCC CHECKDB.");
-                return -8;
-            }
-            if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
-            {
-                Console.WriteLine("Failed deleting temp file.");
-                return -9;
-            }
-            Console.WriteLine("Operation Completed.");
             return 0;
+        }
+
+        private static StringBuilder LogOutput = new StringBuilder();
+
+        private static DateTime StartTime;
+        private static DateTime EndTime;
+
+        private static void LogString(string entry, bool NewLine = true)
+        {
+            LogOutput.Append(entry);
+            Console.Write(entry);
+            if (NewLine)
+            {
+                LogOutput.Append("\r\n");
+                Console.WriteLine();
+            }
+        }
+
+        private static void WriteLogs(OptionsClass options)
+        {
+            if (options == null)
+            {
+                return;
+            }
+            if (!string.IsNullOrEmpty(options.LogFile))
+            {
+                try
+                {
+                    using (TextWriter writer = File.CreateText(options.LogFile))
+                    {
+                        writer.WriteLine("############################################################################################");
+                        writer.WriteLine(string.Format("Starting process at {0:F}", StartTime));
+                        writer.Write(LogOutput.ToString());
+                        writer.WriteLine(string.Format("Ending process at {0:F}", EndTime));
+                        writer.WriteLine("############################################################################################");
+                        writer.WriteLine();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to write out log file.");
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            if (!string.IsNullOrEmpty(options.LogAppend))
+            {
+                try
+                {
+                    using (TextWriter writer = File.AppendText(options.LogAppend))
+                    {
+                        writer.WriteLine("############################################################################################");
+                        writer.WriteLine(string.Format("Starting process at {0:F}", StartTime));
+                        writer.Write(LogOutput.ToString());
+                        writer.WriteLine(string.Format("Ending process at {0:F}", EndTime));
+                        writer.WriteLine("############################################################################################");
+                        writer.WriteLine();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed to write out append log file.");
+                    Console.WriteLine(ex.Message);
+                }
+            }
         }
 
         private static void ShowUsage()
@@ -165,6 +247,8 @@ namespace DatabaseRestore
             Console.WriteLine("  --moveallfiles <filepath>       : Tells SQL server to move all database files to the specified path when restoring, preserving file names.");
             Console.WriteLine("  --replacedatabase               : Tells SQL server to replace the existing database with this backup.");
             Console.WriteLine("  --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.");
+            Console.WriteLine("  --logfile <filepath>            : Writes log output to the specified file, overwriting the file if it exists.");
+            Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
             Console.WriteLine();
             Console.WriteLine("Autosource mode specifies which file to choose in the specified directory.");
             Console.WriteLine(" lastcreated : selects the newest file by creation date");
@@ -185,6 +269,14 @@ namespace DatabaseRestore
             return;
         }
 
+        private static bool PathContainsIllegalChars(string path)
+        {
+            char[] osillegal = Path.GetInvalidFileNameChars();
+            // we need to remove the slashes and colon from this list, because while those aren't legal for a file name, they are legal for a path, which is what we are testing.
+            char[] chars = osillegal.Where(c => c != '\\' && c != '/' && c != ':').ToArray();
+            return path.Any(chars.Contains);
+        }
+
         private static bool ParseOptions(string[] args, out OptionsClass options)
         {
             options = new OptionsClass();
@@ -201,14 +293,19 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("--autosource mode not specified.");
+                        LogString("--autosource mode not specified.");
                         return false;
                     }
                     string amode = args[pos];
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("--autosource path not specified.");
+                        LogString("--autosource path not specified.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--autosource path parameter contains invalid characters.");
                         return false;
                     }
                     options.SourcePath = args[pos];
@@ -222,7 +319,7 @@ namespace DatabaseRestore
                             options.AutoSourceMode = AutoSourceMode.lastmodified;
                             break;
                         default:
-                            Console.WriteLine(string.Format("Invalid --autosource mode specified: {0}", amode));
+                            LogString(string.Format("Invalid --autosource mode specified: {0}", amode));
                             return false;
                     }
                 }
@@ -231,7 +328,12 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing Source Path.");
+                        LogString("Missing Source Path.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--source path parameter contains invalid characters.");
                         return false;
                     }
                     options.SourceFile = args[pos];
@@ -242,7 +344,12 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing Temp File Name.");
+                        LogString("Missing Temp File Name.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--temp path parameter contains invalid characters.");
                         return false;
                     }
                     options.TempFile = args[pos];
@@ -253,7 +360,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing Destination Database Name.");
+                        LogString("Missing Destination Database Name.");
                         return false;
                     }
                     options.DatabaseName = args[pos];
@@ -264,7 +371,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing User Accounts to grant permission.");
+                        LogString("Missing User Accounts to grant permission.");
                         return false;
                     }
                     options.UserRightsString = args[pos];
@@ -274,7 +381,12 @@ namespace DatabaseRestore
                         string[] tempItem = r.Split(':');
                         if (tempItem.Length != 2)
                         {
-                            Console.WriteLine(string.Format("Unable to parse user permission: {0}", r));
+                            LogString(string.Format("Unable to parse --rights user permission: {0}", r));
+                            return false;
+                        }
+                        if (tempItem[0].Contains(']'))
+                        {
+                            LogString(string.Format("--rights user account {0} must not contain the ] character. ", r));
                             return false;
                         }
                         UserRightItem newRight = new UserRightItem();
@@ -300,7 +412,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing Server IP Address.");
+                        LogString("Missing Server IP Address.");
                         return false;
                     }
                     IPAddress testIP = null;
@@ -310,7 +422,7 @@ namespace DatabaseRestore
                     }
                     else
                     {
-                        Console.WriteLine(string.Format("Invalid IP address specified. To override, you can use --servername instead. {0}", args[pos]));
+                        LogString(string.Format("Invalid IP address specified. To override, you can use --servername instead. {0}", args[pos]));
                         return false;
                     }
                     pos++;
@@ -320,7 +432,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing Server Name.");
+                        LogString("Missing Server Name.");
                         return false;
                     }
                     options.SQLServerName = args[pos];
@@ -331,7 +443,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("Missing Server Port.");
+                        LogString("Missing Server Port.");
                         return false;
                     }
                     int testInt = 0;
@@ -339,7 +451,7 @@ namespace DatabaseRestore
                     {
                         if (testInt <= 0 || testInt > 65535)
                         {
-                            Console.WriteLine(string.Format("Invalid port specified: {0}", args[pos]));
+                            LogString(string.Format("Invalid port specified: {0}", args[pos]));
                             return false;
                         }
                         options.ServerPort = testInt;
@@ -351,7 +463,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("No username specified.");
+                        LogString("No username specified.");
                         return false;
                     }
                     options.SQLUsername = args[pos];
@@ -362,7 +474,7 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("No password specified.");
+                        LogString("No password specified.");
                         return false;
                     }
                     options.SQLPassword = args[pos];
@@ -373,14 +485,19 @@ namespace DatabaseRestore
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("No Logical file specified for --movefile <name> parameter.");
+                        LogString("No Logical file specified for --movefile <name> parameter.");
                         return false;
                     }
                     string logical = args[pos];
                     pos++;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("No Physical file specified for --movefile <filepath> parameter.");
+                        LogString("No Physical file specified for --movefile <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--movefile <filepath> parameter contains invalid characters.");
                         return false;
                     }
                     string physical = args[pos];
@@ -397,7 +514,12 @@ namespace DatabaseRestore
                     options.MoveAllFiles = true;
                     if (pos >= args.Length)
                     {
-                        Console.WriteLine("No path specified for --moveallfiles <filepath> parameter.");
+                        LogString("No path specified for --moveallfiles <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--moveallfiles <filepath> parameter contains invalid characters.");
                         return false;
                     }
                     options.MoveAllPath = args[pos];
@@ -413,9 +535,41 @@ namespace DatabaseRestore
                     pos++;
                     options.DbccCheckDB = true;
                 }
+                else if (args[pos].ToLower() == "--logfile")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No path specified for --logfile <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--logfile <filepath> parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.LogFile = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--logappend")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No path specified for --logappend <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--logappend <filepath> parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.LogAppend = args[pos];
+                    pos++;
+                }
                 else
                 {
-                    Console.WriteLine(string.Format("Unrecognized command line option {0}", args[pos]));
+                    LogString(string.Format("Unrecognized command line option {0}", args[pos]));
                     return false;
                 }
             }
@@ -424,29 +578,29 @@ namespace DatabaseRestore
 
         private static bool CheckOptions(OptionsClass options)
         {
-            // verify that --autosource and --source weren't specified together
             if (!string.IsNullOrEmpty(options.SourceFile) && !string.IsNullOrEmpty(options.SourcePath))
             {
-                Console.WriteLine("--autosource and --source were both specified, but only one is needed.");
+                LogString("--autosource and --source were both specified, but only one is needed.");
                 return false;
             }
             if (!string.IsNullOrEmpty(options.SourcePath) && !System.IO.Directory.Exists(options.SourcePath))
             {
-                Console.WriteLine(string.Format("Source path does not exist or access denied: {0}", options.SourcePath));
+                LogString(string.Format("Source path does not exist or access denied: {0}", options.SourcePath));
                 return false;
             }
+            LogString("Preparing processing plan and checking options.");
             if (!string.IsNullOrEmpty(options.SourcePath))
             {
                 if (options.AutoSourceMode == AutoSourceMode.None)
                 {
-                    Console.WriteLine("No --autosource mode was specified.");
+                    LogString("No --autosource mode was specified.");
                     return false;
                 }
                 options.SourceFile = null;
                 DirectoryInfo dirInfo = new DirectoryInfo(options.SourcePath);
                 if (dirInfo == null || !dirInfo.Exists)
                 {
-                    Console.WriteLine(string.Format("Source path does not exist or access denied: {0}", options.SourcePath));
+                    LogString(string.Format("Source path does not exist or access denied: {0}", options.SourcePath));
                     return false;
                 }
                 FileInfo[] files = dirInfo.GetFiles();
@@ -472,38 +626,38 @@ namespace DatabaseRestore
                 {
                     if (lastCreated == null)
                     {
-                        Console.WriteLine(string.Format("Couldn't find the last created file in the directory: {0}", options.SourcePath));
+                        LogString(string.Format("Couldn't find the last created file in the directory: {0}", options.SourcePath));
                         return false;
                     }
                     else
                     {
                         options.SourceFile = lastCreated.FullName;
-                        Console.WriteLine(string.Format("Autoselected newest source file: {0}", options.SourceFile));
+                        LogString(string.Format("Autoselected newest source file: {0}", options.SourceFile));
                     }
                 }
                 else if (options.AutoSourceMode == AutoSourceMode.lastmodified)
                 {
                     if (lastModified == null)
                     {
-                        Console.WriteLine(string.Format("Couldn't find the last modified file in the directory: {0}", options.SourcePath));
+                        LogString(string.Format("Couldn't find the last modified file in the directory: {0}", options.SourcePath));
                         return false;
                     }
                     else
                     {
                         options.SourceFile = lastModified.FullName;
-                        Console.WriteLine(string.Format("Autoselected most recently modified source file: {0}", options.SourceFile));
+                        LogString(string.Format("Autoselected most recently modified source file: {0}", options.SourceFile));
                     }
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("Didn't understand the --autosource mode: {0}", options.AutoSourceMode.ToString()));
+                    LogString(string.Format("Didn't understand the --autosource mode: {0}", options.AutoSourceMode.ToString()));
                     return false;
                 }
             }
 
             if (!string.IsNullOrEmpty(options.SourceFile) && !System.IO.File.Exists(options.SourceFile))
             {
-                Console.WriteLine(string.Format("Source file does not exist or access denied: {0}", options.SourceFile));
+                LogString(string.Format("Source file does not exist or access denied: {0}", options.SourceFile));
                 return false;
             }
 
@@ -512,18 +666,18 @@ namespace DatabaseRestore
                 if (options.TempFile.StartsWith("\\\\"))
                 {
                     // this is a UNC path. 
-                    Console.WriteLine("Detected temp folder is a UNC path. Skipping checks.");
+                    LogString("Detected temp folder is a UNC path. Skipping filepath checks.");
                 }
                 else if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(options.TempFile)))
                 {
-                    Console.WriteLine(string.Format("Temp Directory: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+                    LogString(string.Format("Temp Directory: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
                     if (System.IO.File.Exists(options.TempFile))
                     {
-                        Console.WriteLine(string.Format("Temp File exists, will replace: {0}", System.IO.Path.GetFileName(options.TempFile)));
+                        LogString(string.Format("Temp File exists, will replace: {0}", System.IO.Path.GetFileName(options.TempFile)));
                     }
                     else
                     {
-                        Console.WriteLine(string.Format("Temp File: {0}", System.IO.Path.GetFileName(options.TempFile)));
+                        LogString(string.Format("Temp File: {0}", System.IO.Path.GetFileName(options.TempFile)));
                     }
                 }
                 else
@@ -531,51 +685,51 @@ namespace DatabaseRestore
                     try
                     {
                         System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(options.TempFile));
-                        Console.WriteLine(string.Format("Created temp directory specified: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+                        LogString(string.Format("Created temp directory specified: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
                     }
                     catch
                     {
-                        Console.WriteLine(string.Format("Temp Directory does not exist: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
+                        LogString(string.Format("Temp Directory does not exist: {0}", System.IO.Path.GetDirectoryName(options.TempFile)));
                         return false;
                     }
                 }
             }
             else
             {
-                Console.WriteLine("No temp file specified. Will attempt to restore directly from source file.");
+                LogString("No temp file specified. Will attempt to restore directly from source file.");
             }
             if (string.IsNullOrEmpty(options.SQLServerIP) && string.IsNullOrEmpty(options.SQLServerName))
             {
-                Console.WriteLine("No SQL Server specified. Assuming localhost.");
+                LogString("No SQL Server specified. Assuming localhost.");
                 options.SQLServerName = "localhost";
             }
             else if (!string.IsNullOrEmpty(options.SQLServerIP) && !string.IsNullOrEmpty(options.SQLServerName))
             {
-                Console.WriteLine("Don't specify both --servername and --serverip. Use one or the other.");
+                LogString("Don't specify both --servername and --serverip. Use one or the other.");
                 return false;
             }
             else if (!string.IsNullOrEmpty(options.SQLServerIP))
             {
-                Console.WriteLine(string.Format("SQL Server IP: {0}", options.SQLServerIP));
+                LogString(string.Format("SQL Server IP: {0}", options.SQLServerIP));
                 // ip address validation was already done, so we can just copy the value to ServerName to simplify building the connection string.
                 options.SQLServerName = options.SQLServerIP;
             }
             else if (!string.IsNullOrEmpty(options.SQLServerName))
             {
-                Console.WriteLine(string.Format("SQL Server Name: {0}", options.SQLServerName));
+                LogString(string.Format("SQL Server Name: {0}", options.SQLServerName));
             }
             if (options.ServerPort != 1433)
             {
-                Console.WriteLine(string.Format("SQL server port: {0}", options.ServerPort));
+                LogString(string.Format("SQL server port: {0}", options.ServerPort));
             }
             if (string.IsNullOrEmpty(options.DatabaseName))
             {
-                Console.WriteLine("No Database name was specified.");
+                LogString("No Database name was specified.");
                 return false;
             }
             else
             {
-                Console.WriteLine(string.Format("Restoring (with replace) database: [{0}]", options.DatabaseName));
+                LogString(string.Format("Database to restore/replace: [{0}]", options.DatabaseName));
             }
             if (string.IsNullOrEmpty(options.SQLUsername) && string.IsNullOrEmpty(options.SQLPassword))
             {
@@ -586,46 +740,46 @@ namespace DatabaseRestore
                 options.SSPI = false;
                 if (string.IsNullOrEmpty(options.SQLUsername))
                 {
-                    Console.WriteLine("Missing SQL username. If specifying credentials, specify both --username and --password.");
+                    LogString("Missing SQL username. If specifying credentials, specify both --username and --password.");
                     return false;
                 }
                 if (string.IsNullOrEmpty(options.SQLPassword))
                 {
-                    Console.WriteLine("Missing SQL password. If specifying credentials, specify both --username and --password.");
+                    LogString("Missing SQL password. If specifying credentials, specify both --username and --password.");
                     return false;
                 }
             }
 
             if (options.UserRights.Count > 0)
             {
-                Console.WriteLine("Restoring access rights for users:");
+                LogString("Access rights to set for users:");
                 foreach (var userRight in options.UserRights)
                 {
-                    Console.Write("   ");
-                    Console.Write(userRight.Name);
-                    Console.Write(": ");
+                    LogString("   ", NewLine: false);
+                    LogString(userRight.Name, NewLine: false);
+                    LogString(": ", NewLine: false);
                     if (userRight.Read)
                     {
-                        Console.Write("Read ");
+                        LogString("Read ", NewLine: false);
                     }
                     if (userRight.Write)
                     {
-                        Console.Write("Write ");
+                        LogString("Write ", NewLine: false);
                     }
                     if (userRight.Owner)
                     {
-                        Console.Write("Owner");
+                        LogString("Owner", NewLine: false);
                     }
-                    Console.WriteLine();
+                    LogString("");
                 }
             }
             else
             {
-                Console.WriteLine("No user rights specified to create.");
+                LogString("No user rights specified to create.");
             }
             if (options.ReplaceDatabase)
             {
-                Console.WriteLine(string.Format("Database [{0}] will be restore WITH REPLACE option, overwritting any existing database.", options.DatabaseName));
+                LogString(string.Format("Database [{0}] will be restore WITH REPLACE option, overwriting any existing database.", options.DatabaseName));
             }
             if (options.MoveAllFiles)
             {
@@ -635,15 +789,15 @@ namespace DatabaseRestore
                 }
                 if (options.MoveItems.Count == 0)
                 {
-                    Console.WriteLine(string.Format("Backup set will be queried and all database files will be moved to \"{0}\"", options.MoveAllPath));
+                    LogString(string.Format("Backup set will be queried and all database files will be moved to \"{0}\"", options.MoveAllPath));
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("Backup set will be queried and any database files not listed below will be moved to \"{0}\"", options.MoveAllPath));
-                    Console.WriteLine("These files (if they exist) will be moved to:");
+                    LogString(string.Format("Backup set will be queried and any database files not listed below will be moved to \"{0}\"", options.MoveAllPath));
+                    LogString("These files (if they exist) will be moved to:");
                     foreach (var item in options.MoveItems)
                     {
-                        Console.WriteLine(string.Format(" '{0}' -> \"{1}\"", item.LogicalName, item.PhysicalName));
+                        LogString(string.Format(" '{0}' -> \"{1}\"", item.LogicalName, item.PhysicalName));
                     }
                 }
             }
@@ -651,20 +805,20 @@ namespace DatabaseRestore
             {
                 if (options.MoveItems.Count > 0)
                 {
-                    Console.WriteLine("Backup set will be queried and the following database files will be moved (if they exist):");
+                    LogString("Backup set will be queried and the following database files will be moved (if they exist):");
                     foreach (var item in options.MoveItems)
                     {
-                        Console.WriteLine(string.Format(" '{0}' -> \"{1}\"", item.LogicalName, item.PhysicalName));
+                        LogString(string.Format(" '{0}' -> \"{1}\"", item.LogicalName, item.PhysicalName));
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Database files will be restored to their original location. If this fails, try the --movefile or --moveallfiles options.");
+                    LogString("Database files will be restored to their original location. If this fails, try the --movefile or --moveallfiles options.");
                 }
             }
             if (options.DbccCheckDB)
             {
-                Console.WriteLine("After restoring, run DBCC CHECKDB to verify no corruption is present.");
+                LogString("After restoring, run DBCC CHECKDB to verify no corruption is present.");
             }
             return true;
         }
@@ -691,9 +845,9 @@ namespace DatabaseRestore
             {
                 try
                 {
-                    Console.WriteLine(string.Format("Copying file \"{0}\" to \"{1}\"", sourceFile, tempFile));
+                    LogString(string.Format("Copying file \"{0}\" to \"{1}\"", sourceFile, tempFile));
                     System.IO.File.Copy(sourceFile, tempFile);
-                    Console.WriteLine("Copy successful.");
+                    LogString("Copy successful.");
                 }
                 catch
                 {
@@ -739,22 +893,22 @@ namespace DatabaseRestore
             {
                 string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
                 List<MoveItem> moveItems = new List<MoveItem>();
-                Console.WriteLine("Preparing to query SQL server for backup set file list.");
+                LogString("Preparing to query SQL server for backup set file list.");
                 using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
                     StringBuilder querysb = new StringBuilder();
                     querysb.Append("RESTORE FILELISTONLY FROM DISK = @BAKPATH");
                     try
                     {
-                        Console.Write("Opening connection to SQL server... ");
+                        LogString("Opening connection to SQL server... ", NewLine: false);
                         connection.Open();
-                        Console.WriteLine("Successful");
+                        LogString("Successful");
                         using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
                         {
                             cmd.Parameters.AddWithValue("@BAKPATH", options.SourceFile);
-                            Console.Write("Getting file list... ");
+                            LogString("Getting file list... ", NewLine: false);
                             SqlDataReader reader = cmd.ExecuteReader();
-                            Console.WriteLine("Successful");
+                            LogString("Successful");
                             while (reader.Read())
                             {
                                 string logicalName = reader.GetString(0);
@@ -786,7 +940,7 @@ namespace DatabaseRestore
                                 }
                                 if (found)
                                 {
-                                    Console.WriteLine(string.Format("Database file {0} will be moved to {1}", logicalName, physicalName));
+                                    LogString(string.Format("Database file {0} will be moved to {1}", logicalName, physicalName));
                                 }
                             }
                         }
@@ -794,8 +948,8 @@ namespace DatabaseRestore
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("An exception occurred querying the backup files.");
-                        Console.WriteLine(ex.ToString());
+                        LogString("An exception occurred querying the backup files.");
+                        LogString(ex.ToString());
                         return false;
                     }
                 }
@@ -805,7 +959,7 @@ namespace DatabaseRestore
         private static bool RestoreDatabase(OptionsClass options)
         {
             string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
-            Console.WriteLine("Preparing to restore SQL Database.");
+            LogString("Preparing to restore SQL Database.");
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
                 bool WithAdded = false;
@@ -843,24 +997,24 @@ namespace DatabaseRestore
                 Debug.WriteLine(querysb.ToString());
                 try
                 {
-                    Console.Write("Opening connection to SQL server... ");
+                    LogString("Opening connection to SQL server... ", NewLine: false);
                     connection.Open();
-                    Console.WriteLine("Successful");
+                    LogString("Successful");
                     using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
                     {
                         foreach (var p in parms)
                         {
                             cmd.Parameters.AddWithValue(p.Key, p.Value);
                         }
-                        Console.Write("Restoring database... ");
+                        LogString("Restoring database... ", NewLine: false);
                         cmd.ExecuteNonQuery();
-                        Console.WriteLine("Successful");
+                        LogString("Successful");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("An exception occurred restoring the database");
-                    Console.WriteLine(ex.ToString());
+                    LogString("An exception occurred restoring the database");
+                    LogString(ex.ToString());
                     return false;
                 }
             }
@@ -877,15 +1031,15 @@ namespace DatabaseRestore
             if (options.UserRights.Count > 0)
             {
                 string SQLConnectionString = BuildConnectionString(options);
-                Console.WriteLine("Preparing to restore user rights.");
+                LogString("Preparing to restore user rights.");
                 using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
                     try
                     {
                         string query = "";
-                        Console.Write("Opening connection to SQL server... ");
+                        LogString("Opening connection to SQL server... ", NewLine: false);
                         connection.Open();
-                        Console.WriteLine("Successful");
+                        LogString("Successful");
 
                         foreach (var user in options.UserRights)
                         {
@@ -893,18 +1047,18 @@ namespace DatabaseRestore
                             query = string.Format("CREATE USER [{0}] FOR LOGIN [{0}]", user.Name);
                             using (SqlCommand cmd = new SqlCommand(query, connection))
                             {
-                                Console.Write(string.Format("Creating login for user [{0}]... ", user.Name));
+                                LogString(string.Format("Creating login for user [{0}]... ", user.Name), NewLine: false);
                                 cmd.ExecuteNonQuery();
-                                Console.WriteLine("Successful");
+                                LogString("Successful");
                             }
                             if (user.Read)
                             {
                                 query = string.Format("ALTER ROLE [db_datareader] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
                                 {
-                                    Console.Write(string.Format("Granting db_datareader to [{0}]... ", user.Name));
+                                    LogString(string.Format("Granting db_datareader to [{0}]... ", user.Name), NewLine: false);
                                     cmd.ExecuteNonQuery();
-                                    Console.WriteLine("Successful");
+                                    LogString("Successful");
                                 }
                             }
                             if (user.Write)
@@ -912,9 +1066,9 @@ namespace DatabaseRestore
                                 query = string.Format("ALTER ROLE [db_datawriter] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
                                 {
-                                    Console.Write(string.Format("Granting db_datawriter to [{0}]... ", user.Name));
+                                    LogString(string.Format("Granting db_datawriter to [{0}]... ", user.Name), NewLine: false);
                                     cmd.ExecuteNonQuery();
-                                    Console.WriteLine("Successful");
+                                    LogString("Successful");
                                 }
                             }
                             if (user.Owner)
@@ -922,17 +1076,17 @@ namespace DatabaseRestore
                                 query = string.Format("ALTER ROLE [db_owner] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
                                 {
-                                    Console.Write(string.Format("Granting db_owner to [{0}]... ", user.Name));
+                                    LogString(string.Format("Granting db_owner to [{0}]... ", user.Name), NewLine: false);
                                     cmd.ExecuteNonQuery();
-                                    Console.WriteLine("Successful");
+                                    LogString("Successful");
                                 }
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("An exception occurred assigning roles.");
-                        Console.WriteLine(ex.ToString());
+                        LogString("An exception occurred assigning roles.");
+                        LogString(ex.ToString());
                         return false;
                     }
                 }
@@ -951,25 +1105,25 @@ namespace DatabaseRestore
                     try
                     {
                         string query = "DBCC CHECKDB";
-                        Console.Write("Opening connection to SQL server... ");
+                        LogString("Opening connection to SQL server... ", NewLine: false);
                         connection.Open();
-                        Console.WriteLine("Successful");
+                        LogString("Successful");
                         using (SqlCommand cmd = new SqlCommand(query, connection))
                         {
-                            Console.Write("Running DBCC CHECKEDB... ");
+                            LogString("Running DBCC CHECKEDB... ", NewLine: false);
                             cmd.ExecuteNonQuery();
-                            Console.WriteLine("Successful. See Info messages below for any DBCC errors reported.");
+                            LogString("Successful. See Info messages below for any DBCC errors reported.");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("Error:");
-                        Console.WriteLine(ex.ToString());
+                        LogString("Error:");
+                        LogString(ex.ToString());
                         return false;
                     }
                     connection.InfoMessage -= Connection_InfoMessage;
-                    Console.WriteLine("Information Messages from SQL Server:");
-                    Console.WriteLine(InfoMessageSB.ToString());
+                    LogString("Information Messages from SQL Server:");
+                    LogString(InfoMessageSB.ToString());
                     InfoMessageSB.Clear();
                 } 
             }
