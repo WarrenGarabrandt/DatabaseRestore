@@ -21,6 +21,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Collections;
+using Microsoft.SqlServer.Server;
+using System.Diagnostics;
 
 namespace DatabaseRestore
 {
@@ -740,14 +742,16 @@ namespace DatabaseRestore
                 Console.WriteLine("Preparing to query SQL server for backup set file list.");
                 using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
-                    string query = "RESTORE FILELISTONLY FROM DISK=\'" + options.SourceFile + "\'";
+                    StringBuilder querysb = new StringBuilder();
+                    querysb.Append("RESTORE FILELISTONLY FROM DISK = @BAKPATH");
                     try
                     {
                         Console.Write("Opening connection to SQL server... ");
                         connection.Open();
                         Console.WriteLine("Successful");
-                        using (SqlCommand cmd = new SqlCommand(query, connection))
+                        using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
                         {
+                            cmd.Parameters.AddWithValue("@BAKPATH", options.SourceFile);
                             Console.Write("Getting file list... ");
                             SqlDataReader reader = cmd.ExecuteReader();
                             Console.WriteLine("Successful");
@@ -805,33 +809,49 @@ namespace DatabaseRestore
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
                 bool WithAdded = false;
-                string query = "RESTORE DATABASE [" + options.DatabaseName + "] \r\n" +
-                    "  FROM DISK = \'" + options.SourceFile + "\'\r\n";
+                List<KeyValuePair<string, string>> parms = new List<KeyValuePair<string, string>>();
+                int parcount = 0;
+                StringBuilder querysb = new StringBuilder();
+                querysb.Append("RESTORE DATABASE @DBNAME FROM DISK = @BAKPATH");
+                parms.Add(new KeyValuePair<string, string>("@DBNAME", options.DatabaseName));
+                parms.Add(new KeyValuePair<string, string>("@BAKPATH", options.SourceFile));
+
                 if (options.ReplaceDatabase)
                 {
+                    querysb.Append(" WITH REPLACE");
                     WithAdded = true;
-                    query += "  WITH REPLACE";
                 }
                 foreach (var mi in options.MoveItems)
                 {
                     if (WithAdded)
                     {
-                        query += string.Format(",\r\n  MOVE \'{0}\' TO \'{1}\'", mi.LogicalName, mi.PhysicalName);
+                        querysb.AppendFormat(", MOVE {0} TO {1}", ParName("@LNAME", parcount), ParName("@LPATH", parcount));
+                        parms.Add(new KeyValuePair<string, string>(ParName("@LNAME", parcount), mi.LogicalName));
+                        parms.Add(new KeyValuePair<string, string>(ParName("@LPATH", parcount), mi.PhysicalName));
+                        parcount++;
                     }
                     else
                     {
-                        query += string.Format("  WITH MOVE \'{0}\' TO \'{1}\'", mi.LogicalName, mi.PhysicalName);
+                        querysb.AppendFormat(" WITH MOVE {0} TO {1}", ParName("@LNAME", parcount), ParName("@LPATH", parcount));
+                        parms.Add(new KeyValuePair<string, string>(ParName("@LNAME", parcount), mi.LogicalName));
+                        parms.Add(new KeyValuePair<string, string>(ParName("@LPATH", parcount), mi.PhysicalName));
+                        parcount++;
                         WithAdded = true;
                     }
                 }
-                query += ";";
+                querysb.Append(";");
+                Debug.WriteLine(querysb.ToString());
                 try
                 {
                     Console.Write("Opening connection to SQL server... ");
                     connection.Open();
                     Console.WriteLine("Successful");
-                    using (SqlCommand cmd = new SqlCommand(query, connection))
+                    using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
                     {
+                        foreach (var p in parms)
+                        {
+                            cmd.Parameters.AddWithValue(p.Key, p.Value);
+                        }
                         Console.Write("Restoring database... ");
                         cmd.ExecuteNonQuery();
                         Console.WriteLine("Successful");
@@ -847,6 +867,11 @@ namespace DatabaseRestore
             return true;
         }
 
+        /// <summary>
+        /// CREATE USER and ALTER ROLE only accept literals, not parameters. So, this can't be parameterized. 
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
         private static bool SetDatabasePermissions(OptionsClass options)
         {
             if (options.UserRights.Count > 0)
@@ -914,7 +939,7 @@ namespace DatabaseRestore
             }
             return true;
         }
-    
+
         private static bool RunDBCC(OptionsClass options)
         {
             if (options.DbccCheckDB)
@@ -955,6 +980,11 @@ namespace DatabaseRestore
         private static void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
         {
             InfoMessageSB.AppendLine(e.Message);
+        }
+
+        private static string ParName(string name, int num)
+        {
+            return name + "_" + num.ToString();
         }
     }
 }
