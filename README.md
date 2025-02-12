@@ -44,6 +44,10 @@ Starting the tool with no arguments will display the usage instructions. Most pa
   
   --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.
 
+  --logfile <filepath>            : Writes log output to the specified file, overwriting the file if it exists.
+
+  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.
+
 ### Autosource
 Autosource mode specifies which file to choose in the specified directory.
 
@@ -136,7 +140,7 @@ c:\Program Files\Test" --the rest of your arguments become part of the path....
 Which will essentially break parsing of the arguments and likely result in unexpected behavior. Combining paths will definitely break, as the illegal character " will be used as part of the path.
 
 ## Future Plans
-Add logging options to allow the program to output to a log file instead of the command window, either appending to an existing file, generating a new log file each time, or replacing the log file.
+<s>Add logging options to allow the program to output to a log file instead of the command window, either appending to an existing file, generating a new log file each time, or replacing the log file.</s>Logging options have been added, see --logfile and --logappend parameters for more info.
 
 Add the option to automatically email out the log file on success, failure, or both to a specified email address.
 
