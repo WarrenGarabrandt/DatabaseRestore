@@ -140,7 +140,7 @@ Add logging options to allow the program to output to a log file instead of the 
 
 Add the option to automatically email out the log file on success, failure, or both to a specified email address.
 
-Capture the output of dbcc checkdb and look for failure messages, or at least capture the output and append it to the log and email.
+Capture the output of dbcc checkdb and look for failure messages, <s>or at least capture the output and append it to the log and email.</s> DBCC info messages are now captured and put in the output.
 
 Add an option to execute a specified SQL script after restoration is complete, so that it can be used to rebuild indexes, or run reports automatically, run arbitrary SQL instructions, etc.
 
