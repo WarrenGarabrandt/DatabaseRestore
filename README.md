@@ -121,7 +121,7 @@ Argumnents such as paths which contain spaces should be enclosed in double quote
 
 "c:\Program Files\Microsoft SQL Server\Backups"
 
-A backslash will escape a single character, so \\ will become \, \" will become ", etc.
+A backslash will escape a single character, so \\\\ will become \\, \\" will become ", etc.
 
 Don't put a trailing \ on the end of a folder path, as that will result in escaping the ".
 
