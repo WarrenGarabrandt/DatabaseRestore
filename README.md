@@ -77,22 +77,6 @@ If no --username and --password are specified, then integrated (SSPI) authentica
 
 If no --temp is specified, then will attempt to restore from --source or the automatically selected --autosource file directly. In that case, User account for SQL server process must have access to the source file.
 
-### Path Considerations
-
-Argumnents such as paths which contain spaces should be enclosed in double quotes, like this:
-
-"c:\Program Files\Microsoft SQL Server\Backups"
-
-Don't put a trailing \ on the end of a folder path, as that will result in escaping the ". This:
-
-"c:\Program Files\Test\"
-
-Will break parsing and become
-
-c:\Program Files\Test"
-
-Which will essentially break parsing of the arguments and likely result in unexpected behavior. Combining paths will definitely break, as the illegal character " will be used as part of the path.
-
 ### Replace and Move options
 
 The database will fail to restore if it already exists and the --replacedatabase is not specified.
@@ -131,7 +115,23 @@ Because of the way the SQL queries are constructed, it is absolutely possible to
 
 As with all programs downloaded from the Internet, you need to be careful and test things before deploying them on a production environment. You must set up a test server and test your use-case of the tool to make sure it does what you need without any unacceptable side-effects before deploying it to production. If you break something using this tool, please do let me know via a bug report, but ultimately I can't be responsible for other people's use scenarios. So BE CAREFUL!
 
+### Path Considerations
 
+Argumnents such as paths which contain spaces should be enclosed in double quotes, like this:
+
+"c:\Program Files\Microsoft SQL Server\Backups"
+
+A backslash will escape a single character, so \\ will become \, \" will become ", etc.
+
+Don't put a trailing \ on the end of a folder path, as that will result in escaping the ".
+
+"c:\Program Files\Test\"
+
+Will break parsing and become
+
+c:\Program Files\Test" --the rest of your arguments become part of the path....
+
+Which will essentially break parsing of the arguments and likely result in unexpected behavior. Combining paths will definitely break, as the illegal character " will be used as part of the path.
 
 ## Future Plans
 Add logging options to allow the program to output to a log file instead of the command window, either appending to an existing file, generating a new log file each time, or replacing the log file.
