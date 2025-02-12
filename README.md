@@ -5,7 +5,7 @@ It suppors copying a backup file from a directory or UNC path to another tempora
 
 The tool doesn't have any scheduling capabilities built in, but works with batch files, powershell scripts, task scheduler, SQL Server Agent, pretty much any program that can call an executable command line program and pass arguments to it. 
 
-Permissions for file copying inherit from the user account running the program. You'll need at least read permissions on the source folder where the backup files are. Either the SQL server needs read permissions to that location as well, or you need a temp directory that SQL server has access to. I suggest copying the backup files from the backup location to a subfolder in the SQL server backups directory of the target server, restoring from that, then the tool will delete the temporary file when done. If you are restoring a bak file to the same server that made the backup, then you don't need the temp directory, and the backup file will not be deleted (only temp files created by the tool are deleted).
+Permissions for file copying inherit from the user account running the program. You'll need at least read permissions on the source folder where the backup files are. Either the SQL server needs read permissions to that location as well, or you need a temp directory that SQL server has access to. I suggest having the tool copy the backup files from the backup location to a subfolder in the SQL server backups directory of the target server (use the --temp parameter), restoring from that, then the tool will delete the temporary file when done. If you are restoring a bak file to the same server that made the backup, then you don't need the temp directory, and the backup file will not be deleted (only temp files created by the tool are deleted).
 
 SQL server permissions can be either integrated authentication (SSPI), or passed via command line arguments to the program as username and password. Passing credentials through command line is inherently insecure, so I recommend using integrated authentication.
 
@@ -88,7 +88,7 @@ The database will fail to restore if the database file path on the source server
 ## Example Use
 --autosource lastcreated "C:\Temp\SQL Backups" --temp "\\\\testsql\\$backup\adventureworks.bak" --servername testsql --database AdventureWorks --rights "domain\usera:RWO;domain\userb:rw;sqluser:r" --replacedatabase --moveallfiles "C:\Program Files\Microsoft SQL Server\MSSQL15.SQLEXPRESS\MSSQL\DATA" --dbcccheckdb
 
-This will look in the directory "C:\Temp\SQL Backups" and locate the youngest file there by creation date. It will copy it to the location "\\testsql\$backup\adventureworks.bak".
+This will look in the directory "C:\Temp\SQL Backups" and locate the youngest file there by creation date. It will copy it to the location "\\\\testsql\\$backup\adventureworks.bak".
 
 Then a connection will be made to the SQL server testsql using the initial catalog master. The bak file will be restored over top of the database "AdventureWorks" if it exists, or a new database will be created. 
 
