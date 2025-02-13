@@ -25,14 +25,15 @@ using Microsoft.SqlServer.Server;
 using System.Diagnostics;
 using System.Security.Policy;
 using System.Reflection;
+using System.Xml.Serialization;
 
 namespace DatabaseRestore
 {
-    internal class Program
+    public class Program
     {
-        private const string BUILDRELEASE = "alpha1";
+        public const string BUILDRELEASE = "alpha1";
 
-        private class UserRightItem
+        public class UserRightItem
         {
             public string Name { get; set; }
             public bool Read { get; set; }
@@ -40,7 +41,7 @@ namespace DatabaseRestore
             public bool Owner { get; set; }
         }
 
-        private class MoveItem
+        public class MoveItem
         {
             public string LogicalName { get; set; }
             public string PhysicalName { get; set; }
@@ -53,7 +54,7 @@ namespace DatabaseRestore
             lastmodified = 2
         }
 
-        private class OptionsClass
+        public class OptionsClass
         {
             // --autosource mode
             public AutoSourceMode AutoSourceMode { get; set; }
@@ -94,6 +95,21 @@ namespace DatabaseRestore
             public string LogFile { get; set; }
             // --logappend
             public string LogAppend { get; set; }
+        }
+
+        public class SMTPProfileClass
+        {
+            public string SMTPServer { get; set; }
+            public int Port { get; set; }
+            public bool TLS { get; set; }
+            public bool RequireAuth { get; set; }
+            public string UserName { get; set; }
+            public string Password { get; set; }
+            public string EmailFrom { get; set; }
+            public string EmailTo { get; set; }
+            public string EmailSubjectTemplate { get; set; }
+            public string EmailBodyTemplte { get; set; }
+            public bool AttachLog { get; set; }
         }
 
         static int Main(string[] args)
@@ -170,12 +186,12 @@ namespace DatabaseRestore
             return 0;
         }
 
-        private static StringBuilder LogOutput = new StringBuilder();
+        public static StringBuilder LogOutput = new StringBuilder();
 
-        private static DateTime StartTime;
-        private static DateTime EndTime;
+        public static DateTime StartTime;
+        public static DateTime EndTime;
 
-        private static void LogString(string entry, bool NewLine = true)
+        public static void LogString(string entry, bool NewLine = true)
         {
             LogOutput.Append(entry);
             Console.Write(entry);
@@ -185,7 +201,7 @@ namespace DatabaseRestore
                 Console.WriteLine();
             }
         }
-        private static string ProgramNameVersionString
+        public static string ProgramNameVersionString
         {
             get
             {
@@ -195,7 +211,17 @@ namespace DatabaseRestore
             }
         }
 
-        private static void WriteLogs(OptionsClass options)
+        public static string ProgramVersionString
+        {
+            get
+            {
+                var assembly = Assembly.GetEntryAssembly();
+                var name = assembly.GetName();
+                return string.Format("{0}.{1}-{2}", name.Version.Major, name.Version.Minor, BUILDRELEASE);
+            }
+        }
+
+        public static void WriteLogs(OptionsClass options)
         {
             if (options == null)
             {
@@ -243,7 +269,7 @@ namespace DatabaseRestore
             }
         }
 
-        private static void ShowUsage()
+        public static void ShowUsage()
         {
             Console.WriteLine("Usage:");
             Console.WriteLine("  --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.");
@@ -282,7 +308,7 @@ namespace DatabaseRestore
             return;
         }
 
-        private static bool PathContainsIllegalChars(string path)
+        public static bool PathContainsIllegalChars(string path)
         {
             char[] osillegal = Path.GetInvalidFileNameChars();
             // we need to remove the slashes and colon from this list, because while those aren't legal for a file name, they are legal for a path, which is what we are testing.
@@ -290,7 +316,7 @@ namespace DatabaseRestore
             return path.Any(chars.Contains);
         }
 
-        private static bool ParseOptions(string[] args, out OptionsClass options)
+        public static bool ParseOptions(string[] args, out OptionsClass options)
         {
             options = new OptionsClass();
             options.UserRights = new List<UserRightItem>();
@@ -589,7 +615,7 @@ namespace DatabaseRestore
             return true;
         }
 
-        private static bool CheckOptions(OptionsClass options)
+        public static bool CheckOptions(OptionsClass options)
         {
             if (!string.IsNullOrEmpty(options.SourceFile) && !string.IsNullOrEmpty(options.SourcePath))
             {
@@ -836,7 +862,7 @@ namespace DatabaseRestore
             return true;
         }
 
-        private static bool CleanTemp(string tempPath)
+        public static bool CleanTemp(string tempPath)
         {
             if (System.IO.File.Exists(tempPath))
             {
@@ -852,7 +878,7 @@ namespace DatabaseRestore
             return true;
         }
 
-        private static bool CopyFile(string sourceFile, string tempFile)
+        public static bool CopyFile(string sourceFile, string tempFile)
         {
             if (System.IO.File.Exists(sourceFile))
             {
@@ -870,7 +896,7 @@ namespace DatabaseRestore
             return true;
         }
 
-        private static string BuildConnectionString(OptionsClass options, bool useMasterDB = false)
+        public static string BuildConnectionString(OptionsClass options, bool useMasterDB = false)
         {
             // connect with master as default database, as we're going to overwrite the database.
             string SQLConnectionString = null;
@@ -894,13 +920,82 @@ namespace DatabaseRestore
             return SQLConnectionString;
         }
 
+        public static List<string> GetUserDatabases(OptionsClass options)
+        {
+            List<string> databases = new List<string>();
+            string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
+            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            {
+                string query = "SELECT name FROM master.dbo.sysdatabases WHERE name NOT IN ('master', 'tempdb', 'model', 'msdb');";
+                connection.Open();
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        databases.Add(reader.GetString(0));
+                    }
+                }
+            }
+            return databases;
+        }
+
+        public static List<MoveItem> GetDatabaseFiles(OptionsClass options)
+        {
+            string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
+            List<MoveItem> moveItems = new List<MoveItem>();
+            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            {
+                StringBuilder querysb = new StringBuilder();
+                querysb.Append("SELECT mf.Name, mf.physical_name FROM sys.master_files mf INNER JOIN sys.databases db ON db.database_id = mf.database_id WHERE db.name = @DBNAME;");
+                connection.Open();
+                using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
+                {
+                    cmd.Parameters.AddWithValue("@DBNAME", options.DatabaseName);
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        string logicalName = reader.GetString(0);
+                        string physicalName = reader.GetString(1);
+                        moveItems.Add(new MoveItem()
+                        {
+                            LogicalName = logicalName,
+                            PhysicalName = physicalName
+                        });
+                    }
+                }
+            }
+            return moveItems;
+        }
+
+        public static List<string> GetSQLLogins(OptionsClass options)
+        {
+            string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
+            List<string> logins = new List<string>();
+            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            {
+                StringBuilder querysb = new StringBuilder();
+                querysb.Append("SELECT name FROM syslogins WHERE name NOT LIKE '##%';");
+                connection.Open();
+                using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
+                {
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        logins.Add(reader.GetString(0));
+                    }
+                }
+            }
+            return logins;
+        }
+
         /// <summary>
         /// If --moveallfiles or -movefile is specified, query the database with RESTORE FILELISTONLY to 
         /// prepare a list of WITH MOVE items for later.
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        private static bool PrepareDatabaseFiles(OptionsClass options)
+        public static bool PrepareDatabaseFiles(OptionsClass options)
         {
             if (options.MoveAllFiles || options.MoveItems.Count > 0)
             {
@@ -969,7 +1064,7 @@ namespace DatabaseRestore
             }
             return true;
         }
-        private static bool RestoreDatabase(OptionsClass options)
+        public static bool RestoreDatabase(OptionsClass options)
         {
             string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
             LogString("Preparing to restore SQL Database.");
@@ -1039,7 +1134,7 @@ namespace DatabaseRestore
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
-        private static bool SetDatabasePermissions(OptionsClass options)
+        public static bool SetDatabasePermissions(OptionsClass options)
         {
             if (options.UserRights.Count > 0)
             {
@@ -1107,7 +1202,7 @@ namespace DatabaseRestore
             return true;
         }
 
-        private static bool RunDBCC(OptionsClass options)
+        public static bool RunDBCC(OptionsClass options)
         {
             if (options.DbccCheckDB)
             {
@@ -1143,15 +1238,51 @@ namespace DatabaseRestore
             return true;
         }
 
-        private static StringBuilder InfoMessageSB = new StringBuilder();
-        private static void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
+        public static StringBuilder InfoMessageSB = new StringBuilder();
+        public static void Connection_InfoMessage(object sender, SqlInfoMessageEventArgs e)
         {
             InfoMessageSB.AppendLine(e.Message);
         }
 
-        private static string ParName(string name, int num)
+        public static string ParName(string name, int num)
         {
             return name + "_" + num.ToString();
         }
+
+        public static SMTPProfileClass LoadSMTPProfile(string path)
+        {
+            SMTPProfileClass profile = null;
+            try
+            {
+                XmlSerializer xser = new XmlSerializer(typeof(SMTPProfileClass));
+                using (TextReader reader = File.OpenText(path))
+                {
+                    profile = (SMTPProfileClass)xser.Deserialize(reader);
+                }
+                return profile;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static bool SaveSMTPProfile(SMTPProfileClass profile, string path)
+        {
+            try
+            {
+                XmlSerializer xser = new XmlSerializer(typeof(SMTPProfileClass));
+                using(TextWriter writer = File.CreateText(path))
+                {
+                    xser.Serialize(writer, profile);
+                }
+                return true;
+            }
+            catch 
+            {
+                return false;
+            }
+        }
+
     }
 }
