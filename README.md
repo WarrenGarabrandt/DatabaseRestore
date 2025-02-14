@@ -48,6 +48,8 @@ Starting the tool with no arguments will display the usage instructions. Most pa
 
   --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.
 
+  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log
+
 ### Autosource
 Autosource mode specifies which file to choose in the specified directory.
 
@@ -119,7 +121,7 @@ Because of the way the SQL queries are constructed, it is absolutely possible to
 
 As with all programs downloaded from the Internet, you need to be careful and test things before deploying them on a production environment. You must set up a test server and test your use-case of the tool to make sure it does what you need without any unacceptable side-effects before deploying it to production. If you break something using this tool, please do let me know via a bug report, but ultimately I can't be responsible for other people's use scenarios. So BE CAREFUL!
 
-Putting the character ] into a username field in the --rights parameter will break it. This is because the stored procedure used to run that query doesn't accept parameterized SQL. I tried it, and it doens't work. So, don't do that.
+Putting the character ] into a username field in the --rights parameter will break it. This is because the stored procedure used to run that query doesn't accept parameterized SQL. I tried it, and it doens't work. So, don't do that. There are checks in place when loading settings from command line that will throw an error if this is detected. 
 
 ### Path Considerations
 
@@ -142,11 +144,18 @@ Which will essentially break parsing of the arguments and likely result in unexp
 ## Future Plans
 <s>Add logging options to allow the program to output to a log file instead of the command window, either appending to an existing file, generating a new log file each time, or replacing the log file.</s>Logging options have been added, see --logfile and --logappend parameters for more info.
 
-Add the option to automatically email out the log file on success, failure, or both to a specified email address.
+Add the option to automatically email out the log file on success, failure, or both to a specified email address. This is in progress now.
 
 Capture the output of dbcc checkdb and look for failure messages, <s>or at least capture the output and append it to the log and email.</s> DBCC info messages are now captured and put in the output.
 
 Add an option to execute a specified SQL script after restoration is complete, so that it can be used to rebuild indexes, or run reports automatically, run arbitrary SQL instructions, etc.
+
+Add ability to load and save settings so that a job can be saved to a config file and called and modified easily. This is in progress now.
+
+Add some kind of encryption or obfuscation to protect SQL Server and SMTP credentials. This is only going to be good enough to stop casual observers and automated password scrapers, as it does need to be possible to decrypt them to run jobs. Either a password will be required to pass via command line, which only pushes back the problem one step, or the obfuscation is going to be very weak. The best security option is always going to be to use integrated authentication, limit database and filesystem rights to the bare minimum needed, and set up an SMTP relay to whitelist the sending server instead of requiring any credentials for sending mail. 
+
+# Database Restore GUI
+This is a graphics user interface front-end for the command line program. It allows you to enter settings in a graphical interface and save them out to a config file, or to open a previously saved config file to make changes. You can also use the GUI to on-demand run a database restore. 
 
 # MIT License
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
