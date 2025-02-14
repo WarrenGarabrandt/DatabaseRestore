@@ -845,5 +845,57 @@ namespace DatabaseRestoreGUI
                 MessageBox.Show("Error occurred saving the settings file.", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
+        private void pnl7CLI_VisibleChanged(object sender, EventArgs e)
+        {
+            if (pnl7CLI.Visible)
+            {
+                StringBuilder sb = new StringBuilder();
+                // build options for display
+                if (cmbSourceSelectionMode.SelectedIndex == 0)
+                {
+                    if (string.IsNullOrWhiteSpace(txtSourceAutoPath.Text))
+                    {
+                        txtCLIArgs.Text = "Error: no source path specified.";
+                        return;
+                    }
+                    if (txtSourceAutoPath.Text.EndsWith("\""))
+                    {
+                        txtCLIArgs.Text = "Error: source path shouldn't end in a \"";
+                        return;
+                    }
+                    sb.AppendFormat("--autosource \"{0}\" ", txtSourceAutoPath.Text.Trim());
+                    if (cmbAutoSourceAttribute.SelectedIndex == 0)
+                    {
+                        sb.Append("lastcreated ");
+                    }
+                    else
+                    {
+                        sb.Append("lastmodified ");
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(txtSourceFile.Text))
+                    {
+                        txtCLIArgs.Text = "Error: no source file specified.";
+                        return;
+                    }
+                    sb.AppendFormat("--source \"{0}\" ", txtSourceFile.Text.Trim());
+                }
+                if (chkSourceTempEnable.Checked)
+                {
+                    if (string.IsNullOrEmpty(txtSourceTempFilePath.Text))
+                    {
+                        txtCLIArgs.Text = "Error: no temp file specified.";
+                        return;
+                    }
+                    sb.AppendFormat("--temp \"{0}\"", txtSourceTempFilePath.Text.Trim());
+                }
+
+
+                txtCLIArgs.Text = sb.ToString();
+            }
+        }
     }
 }

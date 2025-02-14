@@ -145,6 +145,8 @@
             this.lblRightsHelp = new System.Windows.Forms.Label();
             this.cmdStartLoadSettings = new System.Windows.Forms.Button();
             this.cmdStartSaveSettings = new System.Windows.Forms.Button();
+            this.txtCLIArgs = new System.Windows.Forms.TextBox();
+            this.label21 = new System.Windows.Forms.Label();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -1411,6 +1413,8 @@
             this.pnl7CLI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl7CLI.Controls.Add(this.label21);
+            this.pnl7CLI.Controls.Add(this.txtCLIArgs);
             this.pnl7CLI.Controls.Add(this.label16);
             this.pnl7CLI.Location = new System.Drawing.Point(169, 12);
             this.pnl7CLI.Margin = new System.Windows.Forms.Padding(4);
@@ -1418,6 +1422,7 @@
             this.pnl7CLI.Size = new System.Drawing.Size(562, 476);
             this.pnl7CLI.TabIndex = 16;
             this.pnl7CLI.Tag = "CLIArguments";
+            this.pnl7CLI.VisibleChanged += new System.EventHandler(this.pnl7CLI_VisibleChanged);
             // 
             // label16
             // 
@@ -1485,12 +1490,33 @@
             this.cmdStartSaveSettings.UseVisualStyleBackColor = true;
             this.cmdStartSaveSettings.Click += new System.EventHandler(this.cmdStartSaveSettings_Click);
             // 
+            // txtCLIArgs
+            // 
+            this.txtCLIArgs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCLIArgs.Location = new System.Drawing.Point(7, 68);
+            this.txtCLIArgs.MinimumSize = new System.Drawing.Size(32, 100);
+            this.txtCLIArgs.Multiline = true;
+            this.txtCLIArgs.Name = "txtCLIArgs";
+            this.txtCLIArgs.ReadOnly = true;
+            this.txtCLIArgs.Size = new System.Drawing.Size(548, 120);
+            this.txtCLIArgs.TabIndex = 1;
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(4, 43);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(422, 16);
+            this.label21.TabIndex = 2;
+            this.label21.Text = "The configured options correspond to these command line arguments.";
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
-            this.Controls.Add(this.pnl6SMTP);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn8Run);
             this.Controls.Add(this.btn7CLI);
@@ -1500,16 +1526,18 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
+            this.Controls.Add(this.pnl1Source);
+            this.Controls.Add(this.pnl8Run);
+            this.Controls.Add(this.pnl4Rights);
+            this.Controls.Add(this.pnl7CLI);
+            this.Controls.Add(this.pnl6SMTP);
             this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.pnl3Opts);
             this.Controls.Add(this.pnl2SQL);
-            this.Controls.Add(this.pnl1Source);
-            this.Controls.Add(this.pnl8Run);
-            this.Controls.Add(this.pnl7CLI);
-            this.Controls.Add(this.pnl4Rights);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
+            this.MinimumSize = new System.Drawing.Size(600, 440);
             this.Name = "frmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Database Restore GUI";
@@ -1665,5 +1693,7 @@
         private System.Windows.Forms.Label lblRightsHelp;
         private System.Windows.Forms.Button cmdStartLoadSettings;
         private System.Windows.Forms.Button cmdStartSaveSettings;
+        private System.Windows.Forms.TextBox txtCLIArgs;
+        private System.Windows.Forms.Label label21;
     }
 }
