@@ -152,4 +152,7 @@ You may also run the database restore process on demand on the Run button.</valu
   <metadata name="colNewPath.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
+  <data name="lblRightsHelp.Text" xml:space="preserve">
+    <value>All Logins listed here will be added as users to the database, even if no rights are granted. Remove users by selecting a row and pressing delete and add new users by typing into the bottom row. Users must already exist as Logins in SQL server or the restore will fail.</value>
+  </data>
 </root>

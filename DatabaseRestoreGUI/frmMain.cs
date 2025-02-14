@@ -180,6 +180,7 @@ namespace DatabaseRestoreGUI
             {
                 try
                 {
+                    this.Cursor = Cursors.WaitCursor;
                     DatabaseRestore.Program.OptionsClass options = new DatabaseRestore.Program.OptionsClass()
                     {
                         SQLServerName = txtSQLServerName.Text.Trim(),
@@ -192,6 +193,7 @@ namespace DatabaseRestoreGUI
                     List<string> databases = DatabaseRestore.Program.GetUserDatabases(options);
                     if (databases.Count == 0)
                     {
+                        this.Cursor = Cursors.Default;
                         MessageBox.Show("Connection succeeded, but there are no user databases on that SQL server. Please type the database name instead.", 
                             "No Databases", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         cmbSQLDatabaseName.Items.Clear();
@@ -206,7 +208,12 @@ namespace DatabaseRestoreGUI
                 }
                 catch (Exception ex)
                 {
+                    this.Cursor = Cursors.Default;
                     MessageBox.Show("Couldn't get a list of databases. Exception: \r\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    this.Cursor = Cursors.Default;
                 }
             }
         }
@@ -258,6 +265,7 @@ namespace DatabaseRestoreGUI
             {
                 try
                 {
+                    this.Cursor = Cursors.WaitCursor;
                     DatabaseRestore.Program.OptionsClass options = new DatabaseRestore.Program.OptionsClass()
                     {
                         SQLServerName = txtSQLServerName.Text.Trim(),
@@ -277,7 +285,12 @@ namespace DatabaseRestoreGUI
                 }
                 catch (Exception ex)
                 {
+                    this.Cursor = Cursors.Default;
                     MessageBox.Show(string.Format("Couldn't get a list of database files. Exception: {0}", ex.Message), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    this.Cursor = Cursors.Default;
                 }
             }
         }
@@ -308,6 +321,7 @@ namespace DatabaseRestoreGUI
             {
                 try
                 {
+                    this.Cursor = Cursors.WaitCursor;
                     DatabaseRestore.Program.OptionsClass options = new DatabaseRestore.Program.OptionsClass()
                     {
                         SQLServerName = txtSQLServerName.Text.Trim(),
@@ -321,12 +335,17 @@ namespace DatabaseRestoreGUI
                     RightsUsers.Clear();
                     foreach (var m in logins)
                     {
-                        RightsUsers.Rows.Add(new[] { m });
+                        RightsUsers.Rows.Add(new object[] { m, false, false, false });
                     }
                 }
                 catch (Exception ex)
                 {
+                    this.Cursor = Cursors.Default;
                     MessageBox.Show(string.Format("Couldn't get a list of database files. Exception: {0}", ex.Message), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    this.Cursor = Cursors.Default;
                 }
             }
         }
@@ -335,6 +354,7 @@ namespace DatabaseRestoreGUI
         {
             cmdRightsImportLogins.Visible = chkRightsEnable.Checked;
             dgvRightsUsers.Visible = chkRightsEnable.Checked;
+            lblRightsHelp.Visible = chkRightsEnable.Checked;
         }
 
         private void cmdLogFileBrowse_Click(object sender, EventArgs e)
@@ -467,6 +487,362 @@ namespace DatabaseRestoreGUI
                         return;
                     }
                 }
+            }
+        }
+
+        private bool ValidateSettings()
+        {
+            if (cmbSourceSelectionMode.SelectedIndex == 0 && string.IsNullOrWhiteSpace(txtSourceAutoPath.Text))
+            {
+                MessageBox.Show("On the Source page, enter a path where the backup file can be located.", "Missing Source Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (cmbSourceSelectionMode.SelectedIndex == 1 && string.IsNullOrWhiteSpace(txtSourceFile.Text))
+            {
+                MessageBox.Show("On the Source page, enter a backup file to restore.", "Missing Source Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (chkSourceTempEnable.Checked && string.IsNullOrWhiteSpace(txtSourceTempFilePath.Text))
+            {
+                MessageBox.Show("On the Source page, the Copy Backup to Temp checkbox is checked, but no path is entered for the copy.", 
+                    "Missing Source Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (chkOptsMoveall.Checked && string.IsNullOrWhiteSpace(txtOptsMoveallPath.Text))
+            {
+                MessageBox.Show("On the Restore Options page, the Move all backup files checkbox is checked, but no path is entered.",
+                    "Missing Options Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (chkOptsMoveFile.Checked && OptsMoveFile.Rows.Count == 0)
+            {
+                MessageBox.Show("On the Restore Options page, the Move backup files checkbox is checked, but no database files are entered.",
+                    "Missing Options Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (chkOptsMoveFile.Checked && OptsMoveFile.Rows.Count > 0)
+            {
+                foreach (DataRow row in OptsMoveFile.Rows)
+                {
+                    if (string.IsNullOrWhiteSpace((string)row[0]) || string.IsNullOrWhiteSpace((string)row[2]))
+                    {
+                        MessageBox.Show("On the Restore Options page, make sure that all files to move have a logical name and new path entered.",
+                            "Missing Options Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return false;
+                    }
+                }
+            }
+            if (string.IsNullOrEmpty(txtSQLServerName.Text) || string.IsNullOrEmpty(cmbSQLDatabaseName.Text))
+            {
+                MessageBox.Show("On the SQL Connection page, enter a server name and database name.", "Missing SQL Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if (chkSQLUseCredentials.Checked && (string.IsNullOrWhiteSpace(txtSQLUsername.Text) || string.IsNullOrEmpty(txtSQLPassword.Text)))
+            {
+                MessageBox.Show("On the SQL Connection page, the Specify Username and Password checkbox is check, but required username and password has not been entered. \r\n" +
+                    "Enter Uncheck that to use integrated authentication, or enter a username and password.", "Missing SQL Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+            if ((chkLogEnable.Checked && string.IsNullOrWhiteSpace(txtLogFile.Text)) ||
+                (chkLogAppendEnable.Checked && string.IsNullOrWhiteSpace(txtLogAppendFile.Text)))
+            {
+                MessageBox.Show("On the Logging page, you must specify a log file for any enabled Logging methods.", "Missing Logging Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (chkSMTPSendEmail.Checked && string.IsNullOrWhiteSpace(txtSMTPProfile.Text))
+            {
+                MessageBox.Show("On the SMTP page, the Enable SMTP Profile is checked but required profile has not been specified.",
+                    "Missing SMTP Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private void cmdStartLoadSettings_Click(object sender, EventArgs e)
+        {
+            DatabaseRestore.Program.OptionsClass opts = null;
+
+            using (OpenFileDialog dialog = new OpenFileDialog())
+            {
+                dialog.Filter = "XML Settings File (*.XSF)|*.XSF";
+                dialog.CheckFileExists = true;
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    opts = DatabaseRestore.Program.LoadOptionsFile(dialog.FileName);
+                    if (opts == null)
+                    {
+                        MessageBox.Show("Unable to load the settings file.", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                }
+            }
+            // apply settintgs
+
+            ApplyOptionsFile(opts);
+
+        }
+
+        private void ApplyOptionsFile(DatabaseRestore.Program.OptionsClass opts)
+        {
+            // source page
+            if (opts.AutoSourceMode == DatabaseRestore.Program.AutoSourceMode.None)
+            {
+                cmbSourceSelectionMode.SelectedIndex = 1;
+                txtSourceFile.Text = opts.SourceFile;
+                txtSourceAutoPath.Text = "";
+                cmbAutoSourceAttribute.SelectedIndex = 0;
+            }
+            else
+            {
+                cmbSourceSelectionMode.SelectedIndex = 0;
+                txtSourceAutoPath.Text = opts.SourcePath;
+                txtSourceFile.Text = "";
+                if (opts.AutoSourceMode == DatabaseRestore.Program.AutoSourceMode.lastcreated)
+                {
+                    cmbAutoSourceAttribute.SelectedIndex = 0;
+                }
+                else
+                {
+                    cmbAutoSourceAttribute.SelectedIndex = 1;
+                }
+            }
+            chkSourceTempEnable.Checked = !string.IsNullOrWhiteSpace(opts.TempFile);
+            txtSourceTempFilePath.Text = opts.TempFile;
+            
+            // sql connection page
+            txtSQLServerName.Text = opts.SQLServerName;
+            if (opts.ServerPort < 1 || opts.ServerPort > 65535)
+            {
+                nudSQLPort.Value = 1433;
+            }
+            else
+            {
+                nudSQLPort.Value = opts.ServerPort;
+            }
+            if (opts.SSPI)
+            {
+                chkSQLUseCredentials.Checked = false;
+                txtSQLUsername.Text = "";
+                txtSQLPassword.Text = "";
+            }
+            else
+            {
+                chkSQLUseCredentials.Checked = true;
+                txtSQLUsername.Text = opts.SQLUsername;
+                txtSQLPassword.Text = opts.SQLPassword;
+            }
+            cmbSQLDatabaseName.Text = opts.DatabaseName;
+
+            // restore options page
+            chkOptsReplace.Checked = opts.ReplaceDatabase;
+            chkOptsCheckdb.Checked = opts.DbccCheckDB;
+            chkOptsMoveall.Checked = opts.MoveAllFiles;
+            if (opts.MoveAllFiles)
+            {
+                txtOptsMoveallPath.Text = opts.MoveAllPath;
+            }
+            else
+            {
+                txtOptsMoveallPath.Text = "";
+            }
+            OptsMoveFile.Clear();
+            if (opts.MoveItems.Count > 0)
+            {
+                chkOptsMoveFile.Checked = true;
+                foreach (var item in opts.MoveItems)
+                {
+                    OptsMoveFile.Rows.Add(new[] { item.LogicalName, "", item.PhysicalName });
+                }
+            }
+            else
+            {
+                chkOptsMoveFile.Checked = false;
+            }
+
+            RightsUsers.Clear();
+            // rights page
+            if (opts.UserRights.Count > 0)
+            {
+                chkRightsEnable.Checked = true;
+                foreach (var item in opts.UserRights)
+                {
+                    RightsUsers.Rows.Add(new object[] { item.Name, item.Read, item.Write, item.Owner });
+                }
+            }
+            else
+            {
+                chkRightsEnable.Checked = false;
+            }
+
+            // loggin page
+            if (!string.IsNullOrEmpty(opts.LogFile))
+            {
+                chkLogEnable.Checked = true;
+                txtLogFile.Text = opts.LogFile;
+            }
+            else
+            {
+                chkLogEnable.Checked = false;
+                txtLogFile.Text = "";
+            }
+            if (!string.IsNullOrEmpty(opts.LogAppend))
+            {
+                chkLogAppendEnable.Checked = true;
+                txtLogAppendFile.Text = opts.LogAppend;
+            }
+            else
+            {
+                chkLogAppendEnable.Checked = false;
+                txtLogAppendFile.Text = "";
+            }
+
+            // smtp page
+            if (!string.IsNullOrEmpty(opts.SMTPProfile))
+            {
+                chkSMTPSendEmail.Checked = true;
+                txtSMTPProfile.Text = opts.SMTPProfile;
+            }
+            else
+            {
+                chkSMTPSendEmail.Checked = false;
+                txtSMTPProfile.Text = "";
+            }
+        }
+
+        private DatabaseRestore.Program.OptionsClass BuildOptionsFile()
+        {
+            DatabaseRestore.Program.OptionsClass opts = new DatabaseRestore.Program.OptionsClass();
+
+            // source page
+            if (cmbSourceSelectionMode.SelectedIndex == 0)
+            {
+                opts.SourcePath = txtSourceAutoPath.Text.Trim();
+                if (cmbAutoSourceAttribute.SelectedIndex == 0)
+                {
+                    opts.AutoSourceMode = DatabaseRestore.Program.AutoSourceMode.lastcreated;
+                }
+                else
+                {
+                    opts.AutoSourceMode = DatabaseRestore.Program.AutoSourceMode.lastmodified;
+                }
+            }
+            else
+            {
+                opts.SourceFile = txtSourceFile.Text.Trim();
+                opts.AutoSourceMode = DatabaseRestore.Program.AutoSourceMode.None;
+            }
+            if (chkSourceTempEnable.Checked)
+            {
+                opts.TempFile = txtSourceTempFilePath.Text.Trim();
+            }
+
+            // sql connection page
+            opts.SQLServerName = txtSQLServerName.Text.Trim();
+            opts.ServerPort = (int)nudSQLPort.Value;
+            if (chkSQLUseCredentials.Checked)
+            {
+                opts.SSPI = false;
+                opts.SQLUsername = txtSQLUsername.Text.Trim();
+                opts.SQLPassword = txtSQLPassword.Text;
+            }
+            else
+            {
+                opts.SSPI = true;
+            }
+            opts.DatabaseName = cmbSQLDatabaseName.Text.Trim();
+
+            // restore options page
+            opts.ReplaceDatabase = chkOptsReplace.Checked;
+            opts.DbccCheckDB = chkOptsCheckdb.Checked;
+            opts.MoveAllFiles = chkOptsMoveall.Checked;
+            if (chkOptsMoveall.Checked)
+            {
+                opts.MoveAllPath = txtOptsMoveallPath.Text.Trim();
+            }
+            if (chkOptsMoveFile.Checked)
+            {
+                List<DatabaseRestore.Program.MoveItem> moveList = new List<DatabaseRestore.Program.MoveItem>();
+                foreach (DataRow row in OptsMoveFile.Rows)
+                {
+                    if (!string.IsNullOrWhiteSpace((string)row[0]) && !string.IsNullOrWhiteSpace((string)row[2]))
+                    {
+                        moveList.Add(new DatabaseRestore.Program.MoveItem()
+                        {
+                            LogicalName = (string)row[0],
+                            PhysicalName = (string)row[2]
+                        });
+                    }
+                }
+
+                opts.MoveItems.AddRange(moveList);
+            }
+
+            // rights page
+            if (chkRightsEnable.Checked)
+            {
+                List<DatabaseRestore.Program.UserRightItem> rights = new List<DatabaseRestore.Program.UserRightItem>();
+                foreach (DataRow row in RightsUsers.Rows)
+                {
+                    if (!string.IsNullOrWhiteSpace((string)row[0]))
+                    {
+                        rights.Add(new DatabaseRestore.Program.UserRightItem()
+                        {
+                            Name = (string)row[0],
+                            Read = row[1].Equals(true),
+                            Write = row[2].Equals(true),
+                            Owner = row[3].Equals(true),
+                        });
+                    }
+                }
+                opts.UserRights.AddRange(rights);
+            }
+
+            // logging page
+            if (chkLogEnable.Checked)
+            {
+                opts.LogFile = txtLogFile.Text.Trim();
+            }
+            if (chkLogAppendEnable.Checked)
+            {
+                opts.LogAppend = txtLogAppendFile.Text.Trim();
+            }
+
+            // smtp page
+            if (chkSMTPSendEmail.Checked)
+            {
+                opts.SMTPProfile = txtSMTPProfile.Text.Trim();
+            }
+            return opts;
+        }
+
+        private void cmdStartSaveSettings_Click(object sender, EventArgs e)
+        {
+            if (!ValidateSettings())
+            {
+                return;
+            }
+            string outputPath = null;
+            using (SaveFileDialog dialog = new SaveFileDialog())
+            {
+                dialog.Filter = "XML Settings File (*.XSF)|*.XSF";
+                dialog.DefaultExt = "XSF";
+                dialog.AddExtension = true;
+                if (dialog.ShowDialog()  == DialogResult.OK)
+                {
+                    outputPath = dialog.FileName;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            DatabaseRestore.Program.OptionsClass opts = BuildOptionsFile();
+
+            if (!DatabaseRestore.Program.SaveOptionsFile(opts, outputPath))
+            {
+                MessageBox.Show("Error occurred saving the settings file.", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

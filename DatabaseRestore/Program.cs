@@ -56,6 +56,14 @@ namespace DatabaseRestore
 
         public class OptionsClass
         {
+            public OptionsClass()
+            {
+                UserRights = new List<UserRightItem>();
+                MoveItems = new List<MoveItem>();
+                MoveAllFiles = false;
+                ReplaceDatabase = false;
+                DbccCheckDB = false;
+            }
             // --autosource mode
             public AutoSourceMode AutoSourceMode { get; set; }
             // --autosource path
@@ -95,6 +103,8 @@ namespace DatabaseRestore
             public string LogFile { get; set; }
             // --logappend
             public string LogAppend { get; set; }
+            // --smtpprofile
+            public string SMTPProfile { get; set; }
         }
 
         public class SMTPProfileClass
@@ -288,6 +298,7 @@ namespace DatabaseRestore
             Console.WriteLine("  --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.");
             Console.WriteLine("  --logfile <filepath>            : Writes log output to the specified file, overwriting the file if it exists.");
             Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
+            Console.WriteLine("  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log.");
             Console.WriteLine();
             Console.WriteLine("Autosource mode specifies which file to choose in the specified directory.");
             Console.WriteLine(" lastcreated : selects the newest file by creation date");
@@ -305,6 +316,7 @@ namespace DatabaseRestore
             Console.WriteLine("If no --temp is specified, then will attempt to restore from --source directly.");
             Console.WriteLine("In that case, User account for SQL server process must have access to the source file.");
             Console.WriteLine();
+            Console.WriteLine("SMTP Profile encapsulates settings and email template for sending an email log. Use the GUI to create one of these.");
             return;
         }
 
@@ -319,11 +331,6 @@ namespace DatabaseRestore
         public static bool ParseOptions(string[] args, out OptionsClass options)
         {
             options = new OptionsClass();
-            options.UserRights = new List<UserRightItem>();
-            options.MoveItems = new List<MoveItem>();
-            options.MoveAllFiles = false;
-            options.ReplaceDatabase = false;
-            options.DbccCheckDB = false;
             int pos = 0;
             while (pos < args.Length)
             {
@@ -604,6 +611,22 @@ namespace DatabaseRestore
                         return false;
                     }
                     options.LogAppend = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--smtpprofile")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No path specified for --smtpprofile <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--smtpprofile <filepath> parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.SMTPProfile = args[pos];
                     pos++;
                 }
                 else
@@ -1279,6 +1302,41 @@ namespace DatabaseRestore
                 return true;
             }
             catch 
+            {
+                return false;
+            }
+        }
+
+        public static OptionsClass LoadOptionsFile(string path)
+        {
+            OptionsClass options = null;
+            try
+            {
+                XmlSerializer xser = new XmlSerializer(typeof(OptionsClass));
+                using (TextReader reader = File.OpenText(path))
+                {
+                    options = (OptionsClass)xser.Deserialize(reader);
+                }
+                return options;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static bool SaveOptionsFile(OptionsClass options, string path)
+        {
+            try
+            {
+                XmlSerializer xser = new XmlSerializer (typeof(OptionsClass));
+                using (TextWriter writer = File.CreateText(path))
+                {
+                    xser.Serialize(writer, options);
+                }
+                return true;
+            }
+            catch
             {
                 return false;
             }

@@ -30,9 +30,9 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.pnl0Start = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
             this.lbl1Version = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             this.btn0Start = new System.Windows.Forms.CheckBox();
             this.btn1Soruce = new System.Windows.Forms.CheckBox();
             this.pnl1Source = new System.Windows.Forms.Panel();
@@ -81,6 +81,9 @@
             this.pnl3Opts = new System.Windows.Forms.Panel();
             this.cmdOptsMoveFileImport = new System.Windows.Forms.Button();
             this.dgvOptsMoveFile = new System.Windows.Forms.DataGridView();
+            this.colLogicalName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colOrigPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colNewPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.chkOptsMoveFile = new System.Windows.Forms.CheckBox();
             this.cmdOptsMoveAllPathHelp = new System.Windows.Forms.Button();
             this.cmdOptsMoveAllBrowse = new System.Windows.Forms.Button();
@@ -91,57 +94,57 @@
             this.chkOptsReplace = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.pnl4Rights = new System.Windows.Forms.Panel();
+            this.dgvRightsUsers = new System.Windows.Forms.DataGridView();
+            this.cmdRightsImportLogins = new System.Windows.Forms.Button();
+            this.chkRightsEnable = new System.Windows.Forms.CheckBox();
             this.label12 = new System.Windows.Forms.Label();
             this.pnl5Log = new System.Windows.Forms.Panel();
+            this.cmdLogAppendBrowse = new System.Windows.Forms.Button();
+            this.txtLogAppendFile = new System.Windows.Forms.TextBox();
+            this.lblLogAppendFile = new System.Windows.Forms.Label();
+            this.chkLogAppendEnable = new System.Windows.Forms.CheckBox();
+            this.cmdLogFileBrowse = new System.Windows.Forms.Button();
+            this.txtLogFile = new System.Windows.Forms.TextBox();
+            this.lblLogFile = new System.Windows.Forms.Label();
+            this.chkLogEnable = new System.Windows.Forms.CheckBox();
             this.label13 = new System.Windows.Forms.Label();
             this.pnl6SMTP = new System.Windows.Forms.Panel();
+            this.grpSMTPProfile = new System.Windows.Forms.GroupBox();
+            this.lblSMTPPassWarn = new System.Windows.Forms.Label();
+            this.cmdSMTPLoadProfile = new System.Windows.Forms.Button();
+            this.cmdSMTPSaveProfile = new System.Windows.Forms.Button();
+            this.txtSMTPBody = new System.Windows.Forms.TextBox();
+            this.chkSMTPAttachLog = new System.Windows.Forms.CheckBox();
+            this.label26 = new System.Windows.Forms.Label();
+            this.txtSMTPSubject = new System.Windows.Forms.TextBox();
+            this.label25 = new System.Windows.Forms.Label();
+            this.txtSMTPEmailTo = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.txtSMTPEmailFrom = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.txtSMTPPass = new System.Windows.Forms.TextBox();
+            this.lblSMTPPass = new System.Windows.Forms.Label();
+            this.txtSMTPUser = new System.Windows.Forms.TextBox();
+            this.lblSMTPUser = new System.Windows.Forms.Label();
+            this.chkSMTPAuth = new System.Windows.Forms.CheckBox();
+            this.chkSMTPTLS = new System.Windows.Forms.CheckBox();
+            this.nudSMTPPort = new System.Windows.Forms.NumericUpDown();
+            this.label20 = new System.Windows.Forms.Label();
+            this.txtSMTPServer = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.cmdSMTPProfileBrowse = new System.Windows.Forms.Button();
+            this.txtSMTPProfile = new System.Windows.Forms.TextBox();
+            this.lblSMTPProfile = new System.Windows.Forms.Label();
+            this.chkSMTPSendEmail = new System.Windows.Forms.CheckBox();
+            this.label18 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.pnl7CLI = new System.Windows.Forms.Panel();
             this.label16 = new System.Windows.Forms.Label();
             this.pnl8Run = new System.Windows.Forms.Panel();
             this.label17 = new System.Windows.Forms.Label();
-            this.colLogicalName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colOrigPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.colNewPath = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.chkRightsEnable = new System.Windows.Forms.CheckBox();
-            this.cmdRightsImportLogins = new System.Windows.Forms.Button();
-            this.dgvRightsUsers = new System.Windows.Forms.DataGridView();
-            this.chkLogEnable = new System.Windows.Forms.CheckBox();
-            this.lblLogFile = new System.Windows.Forms.Label();
-            this.txtLogFile = new System.Windows.Forms.TextBox();
-            this.cmdLogFileBrowse = new System.Windows.Forms.Button();
-            this.cmdLogAppendBrowse = new System.Windows.Forms.Button();
-            this.txtLogAppendFile = new System.Windows.Forms.TextBox();
-            this.lblLogAppendFile = new System.Windows.Forms.Label();
-            this.chkLogAppendEnable = new System.Windows.Forms.CheckBox();
-            this.label18 = new System.Windows.Forms.Label();
-            this.chkSMTPSendEmail = new System.Windows.Forms.CheckBox();
-            this.cmdSMTPProfileBrowse = new System.Windows.Forms.Button();
-            this.txtSMTPProfile = new System.Windows.Forms.TextBox();
-            this.lblSMTPProfile = new System.Windows.Forms.Label();
-            this.grpSMTPProfile = new System.Windows.Forms.GroupBox();
-            this.label19 = new System.Windows.Forms.Label();
-            this.txtSMTPServer = new System.Windows.Forms.TextBox();
-            this.label20 = new System.Windows.Forms.Label();
-            this.nudSMTPPort = new System.Windows.Forms.NumericUpDown();
-            this.chkSMTPTLS = new System.Windows.Forms.CheckBox();
-            this.chkSMTPAuth = new System.Windows.Forms.CheckBox();
-            this.txtSMTPUser = new System.Windows.Forms.TextBox();
-            this.lblSMTPUser = new System.Windows.Forms.Label();
-            this.txtSMTPPass = new System.Windows.Forms.TextBox();
-            this.lblSMTPPass = new System.Windows.Forms.Label();
-            this.txtSMTPEmailTo = new System.Windows.Forms.TextBox();
-            this.label23 = new System.Windows.Forms.Label();
-            this.txtSMTPEmailFrom = new System.Windows.Forms.TextBox();
-            this.label24 = new System.Windows.Forms.Label();
-            this.txtSMTPSubject = new System.Windows.Forms.TextBox();
-            this.label25 = new System.Windows.Forms.Label();
-            this.label26 = new System.Windows.Forms.Label();
-            this.chkSMTPAttachLog = new System.Windows.Forms.CheckBox();
-            this.txtSMTPBody = new System.Windows.Forms.TextBox();
-            this.cmdSMTPSaveProfile = new System.Windows.Forms.Button();
-            this.cmdSMTPLoadProfile = new System.Windows.Forms.Button();
-            this.lblSMTPPassWarn = new System.Windows.Forms.Label();
+            this.lblRightsHelp = new System.Windows.Forms.Label();
+            this.cmdStartLoadSettings = new System.Windows.Forms.Button();
+            this.cmdStartSaveSettings = new System.Windows.Forms.Button();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -152,13 +155,13 @@
             this.pnl3Opts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvOptsMoveFile)).BeginInit();
             this.pnl4Rights.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvRightsUsers)).BeginInit();
             this.pnl5Log.SuspendLayout();
             this.pnl6SMTP.SuspendLayout();
-            this.pnl7CLI.SuspendLayout();
-            this.pnl8Run.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvRightsUsers)).BeginInit();
             this.grpSMTPProfile.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudSMTPPort)).BeginInit();
+            this.pnl7CLI.SuspendLayout();
+            this.pnl8Run.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnl0Start
@@ -166,6 +169,8 @@
             this.pnl0Start.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl0Start.Controls.Add(this.cmdStartSaveSettings);
+            this.pnl0Start.Controls.Add(this.cmdStartLoadSettings);
             this.pnl0Start.Controls.Add(this.lbl1Version);
             this.pnl0Start.Controls.Add(this.label1);
             this.pnl0Start.Controls.Add(this.label2);
@@ -175,17 +180,6 @@
             this.pnl0Start.Size = new System.Drawing.Size(562, 476);
             this.pnl0Start.TabIndex = 0;
             this.pnl0Start.Tag = "Start";
-            // 
-            // label2
-            // 
-            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label2.Location = new System.Drawing.Point(4, 54);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(555, 422);
-            this.label2.TabIndex = 2;
-            this.label2.Text = resources.GetString("label2.Text");
             // 
             // lbl1Version
             // 
@@ -206,6 +200,17 @@
             this.label1.Size = new System.Drawing.Size(194, 24);
             this.label1.TabIndex = 0;
             this.label1.Text = "Database Restore GUI";
+            // 
+            // label2
+            // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label2.Location = new System.Drawing.Point(4, 54);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(555, 229);
+            this.label2.TabIndex = 2;
+            this.label2.Text = resources.GetString("label2.Text");
             // 
             // btn0Start
             // 
@@ -775,6 +780,30 @@
             this.dgvOptsMoveFile.TabIndex = 9;
             this.dgvOptsMoveFile.Visible = false;
             // 
+            // colLogicalName
+            // 
+            this.colLogicalName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.colLogicalName.DataPropertyName = "LogicalName";
+            this.colLogicalName.FillWeight = 35F;
+            this.colLogicalName.HeaderText = "Logical Name";
+            this.colLogicalName.MaxInputLength = 256;
+            this.colLogicalName.Name = "colLogicalName";
+            // 
+            // colOrigPath
+            // 
+            this.colOrigPath.DataPropertyName = "OriginalPath";
+            this.colOrigPath.HeaderText = "Original Path";
+            this.colOrigPath.Name = "colOrigPath";
+            this.colOrigPath.ReadOnly = true;
+            this.colOrigPath.Width = 75;
+            // 
+            // colNewPath
+            // 
+            this.colNewPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.colNewPath.DataPropertyName = "OverriddenPath";
+            this.colNewPath.HeaderText = "New Path";
+            this.colNewPath.Name = "colNewPath";
+            // 
             // chkOptsMoveFile
             // 
             this.chkOptsMoveFile.AutoSize = true;
@@ -874,6 +903,7 @@
             this.pnl4Rights.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl4Rights.Controls.Add(this.lblRightsHelp);
             this.pnl4Rights.Controls.Add(this.dgvRightsUsers);
             this.pnl4Rights.Controls.Add(this.cmdRightsImportLogins);
             this.pnl4Rights.Controls.Add(this.chkRightsEnable);
@@ -884,6 +914,40 @@
             this.pnl4Rights.Size = new System.Drawing.Size(562, 476);
             this.pnl4Rights.TabIndex = 13;
             this.pnl4Rights.Tag = "DatabaseRights";
+            // 
+            // dgvRightsUsers
+            // 
+            this.dgvRightsUsers.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvRightsUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvRightsUsers.Location = new System.Drawing.Point(7, 56);
+            this.dgvRightsUsers.Name = "dgvRightsUsers";
+            this.dgvRightsUsers.Size = new System.Drawing.Size(552, 345);
+            this.dgvRightsUsers.TabIndex = 3;
+            this.dgvRightsUsers.Visible = false;
+            // 
+            // cmdRightsImportLogins
+            // 
+            this.cmdRightsImportLogins.Location = new System.Drawing.Point(357, 27);
+            this.cmdRightsImportLogins.Name = "cmdRightsImportLogins";
+            this.cmdRightsImportLogins.Size = new System.Drawing.Size(113, 23);
+            this.cmdRightsImportLogins.TabIndex = 2;
+            this.cmdRightsImportLogins.Text = "Import Logins";
+            this.cmdRightsImportLogins.UseVisualStyleBackColor = true;
+            this.cmdRightsImportLogins.Visible = false;
+            this.cmdRightsImportLogins.Click += new System.EventHandler(this.cmdRightsImportLogins_Click);
+            // 
+            // chkRightsEnable
+            // 
+            this.chkRightsEnable.AutoSize = true;
+            this.chkRightsEnable.Location = new System.Drawing.Point(7, 29);
+            this.chkRightsEnable.Name = "chkRightsEnable";
+            this.chkRightsEnable.Size = new System.Drawing.Size(344, 20);
+            this.chkRightsEnable.TabIndex = 1;
+            this.chkRightsEnable.Text = "Add SQL Logins as database Users, and add to roles";
+            this.chkRightsEnable.UseVisualStyleBackColor = true;
+            this.chkRightsEnable.CheckedChanged += new System.EventHandler(this.chkRightsEnable_CheckedChanged);
             // 
             // label12
             // 
@@ -916,6 +980,88 @@
             this.pnl5Log.TabIndex = 14;
             this.pnl5Log.Tag = "Logging";
             // 
+            // cmdLogAppendBrowse
+            // 
+            this.cmdLogAppendBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdLogAppendBrowse.Location = new System.Drawing.Point(480, 107);
+            this.cmdLogAppendBrowse.Name = "cmdLogAppendBrowse";
+            this.cmdLogAppendBrowse.Size = new System.Drawing.Size(75, 23);
+            this.cmdLogAppendBrowse.TabIndex = 11;
+            this.cmdLogAppendBrowse.Text = "Browse";
+            this.cmdLogAppendBrowse.UseVisualStyleBackColor = true;
+            this.cmdLogAppendBrowse.Visible = false;
+            this.cmdLogAppendBrowse.Click += new System.EventHandler(this.cmdLogAppendBrowse_Click);
+            // 
+            // txtLogAppendFile
+            // 
+            this.txtLogAppendFile.Location = new System.Drawing.Point(63, 107);
+            this.txtLogAppendFile.Name = "txtLogAppendFile";
+            this.txtLogAppendFile.Size = new System.Drawing.Size(411, 22);
+            this.txtLogAppendFile.TabIndex = 10;
+            this.txtLogAppendFile.Visible = false;
+            // 
+            // lblLogAppendFile
+            // 
+            this.lblLogAppendFile.AutoSize = true;
+            this.lblLogAppendFile.Location = new System.Drawing.Point(4, 110);
+            this.lblLogAppendFile.Name = "lblLogAppendFile";
+            this.lblLogAppendFile.Size = new System.Drawing.Size(58, 16);
+            this.lblLogAppendFile.TabIndex = 9;
+            this.lblLogAppendFile.Text = "Log File:";
+            this.lblLogAppendFile.Visible = false;
+            // 
+            // chkLogAppendEnable
+            // 
+            this.chkLogAppendEnable.AutoSize = true;
+            this.chkLogAppendEnable.Location = new System.Drawing.Point(7, 85);
+            this.chkLogAppendEnable.Name = "chkLogAppendEnable";
+            this.chkLogAppendEnable.Size = new System.Drawing.Size(235, 20);
+            this.chkLogAppendEnable.TabIndex = 8;
+            this.chkLogAppendEnable.Text = "Append process output to a log file.";
+            this.chkLogAppendEnable.UseVisualStyleBackColor = true;
+            this.chkLogAppendEnable.CheckedChanged += new System.EventHandler(this.chkLogAppendEnable_CheckedChanged);
+            // 
+            // cmdLogFileBrowse
+            // 
+            this.cmdLogFileBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdLogFileBrowse.Location = new System.Drawing.Point(480, 57);
+            this.cmdLogFileBrowse.Name = "cmdLogFileBrowse";
+            this.cmdLogFileBrowse.Size = new System.Drawing.Size(75, 23);
+            this.cmdLogFileBrowse.TabIndex = 7;
+            this.cmdLogFileBrowse.Text = "Browse";
+            this.cmdLogFileBrowse.UseVisualStyleBackColor = true;
+            this.cmdLogFileBrowse.Visible = false;
+            this.cmdLogFileBrowse.Click += new System.EventHandler(this.cmdLogFileBrowse_Click);
+            // 
+            // txtLogFile
+            // 
+            this.txtLogFile.Location = new System.Drawing.Point(63, 57);
+            this.txtLogFile.Name = "txtLogFile";
+            this.txtLogFile.Size = new System.Drawing.Size(411, 22);
+            this.txtLogFile.TabIndex = 3;
+            this.txtLogFile.Visible = false;
+            // 
+            // lblLogFile
+            // 
+            this.lblLogFile.AutoSize = true;
+            this.lblLogFile.Location = new System.Drawing.Point(4, 60);
+            this.lblLogFile.Name = "lblLogFile";
+            this.lblLogFile.Size = new System.Drawing.Size(58, 16);
+            this.lblLogFile.TabIndex = 2;
+            this.lblLogFile.Text = "Log File:";
+            this.lblLogFile.Visible = false;
+            // 
+            // chkLogEnable
+            // 
+            this.chkLogEnable.AutoSize = true;
+            this.chkLogEnable.Location = new System.Drawing.Point(7, 35);
+            this.chkLogEnable.Name = "chkLogEnable";
+            this.chkLogEnable.Size = new System.Drawing.Size(218, 20);
+            this.chkLogEnable.TabIndex = 1;
+            this.chkLogEnable.Text = "Write process output to a log file.";
+            this.chkLogEnable.UseVisualStyleBackColor = true;
+            this.chkLogEnable.CheckedChanged += new System.EventHandler(this.chkLogEnable_CheckedChanged);
+            // 
             // label13
             // 
             this.label13.AutoSize = true;
@@ -944,6 +1090,311 @@
             this.pnl6SMTP.Size = new System.Drawing.Size(562, 476);
             this.pnl6SMTP.TabIndex = 15;
             this.pnl6SMTP.Tag = "SMTPOptions";
+            // 
+            // grpSMTPProfile
+            // 
+            this.grpSMTPProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpSMTPProfile.Controls.Add(this.lblSMTPPassWarn);
+            this.grpSMTPProfile.Controls.Add(this.cmdSMTPLoadProfile);
+            this.grpSMTPProfile.Controls.Add(this.cmdSMTPSaveProfile);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPBody);
+            this.grpSMTPProfile.Controls.Add(this.chkSMTPAttachLog);
+            this.grpSMTPProfile.Controls.Add(this.label26);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPSubject);
+            this.grpSMTPProfile.Controls.Add(this.label25);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPEmailTo);
+            this.grpSMTPProfile.Controls.Add(this.label23);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPEmailFrom);
+            this.grpSMTPProfile.Controls.Add(this.label24);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPPass);
+            this.grpSMTPProfile.Controls.Add(this.lblSMTPPass);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPUser);
+            this.grpSMTPProfile.Controls.Add(this.lblSMTPUser);
+            this.grpSMTPProfile.Controls.Add(this.chkSMTPAuth);
+            this.grpSMTPProfile.Controls.Add(this.chkSMTPTLS);
+            this.grpSMTPProfile.Controls.Add(this.nudSMTPPort);
+            this.grpSMTPProfile.Controls.Add(this.label20);
+            this.grpSMTPProfile.Controls.Add(this.txtSMTPServer);
+            this.grpSMTPProfile.Controls.Add(this.label19);
+            this.grpSMTPProfile.Location = new System.Drawing.Point(7, 115);
+            this.grpSMTPProfile.Name = "grpSMTPProfile";
+            this.grpSMTPProfile.Size = new System.Drawing.Size(548, 358);
+            this.grpSMTPProfile.TabIndex = 12;
+            this.grpSMTPProfile.TabStop = false;
+            this.grpSMTPProfile.Text = "SMTP Profile Editor";
+            // 
+            // lblSMTPPassWarn
+            // 
+            this.lblSMTPPassWarn.AutoSize = true;
+            this.lblSMTPPassWarn.Location = new System.Drawing.Point(4, 333);
+            this.lblSMTPPassWarn.Name = "lblSMTPPassWarn";
+            this.lblSMTPPassWarn.Size = new System.Drawing.Size(231, 16);
+            this.lblSMTPPassWarn.TabIndex = 21;
+            this.lblSMTPPassWarn.Text = "*Profile file will contain your password.";
+            this.lblSMTPPassWarn.Visible = false;
+            // 
+            // cmdSMTPLoadProfile
+            // 
+            this.cmdSMTPLoadProfile.Location = new System.Drawing.Point(297, 329);
+            this.cmdSMTPLoadProfile.Name = "cmdSMTPLoadProfile";
+            this.cmdSMTPLoadProfile.Size = new System.Drawing.Size(120, 23);
+            this.cmdSMTPLoadProfile.TabIndex = 20;
+            this.cmdSMTPLoadProfile.Text = "Load Profile File";
+            this.cmdSMTPLoadProfile.UseVisualStyleBackColor = true;
+            this.cmdSMTPLoadProfile.Click += new System.EventHandler(this.cmdSMTPLoadProfile_Click);
+            // 
+            // cmdSMTPSaveProfile
+            // 
+            this.cmdSMTPSaveProfile.Location = new System.Drawing.Point(423, 329);
+            this.cmdSMTPSaveProfile.Name = "cmdSMTPSaveProfile";
+            this.cmdSMTPSaveProfile.Size = new System.Drawing.Size(119, 23);
+            this.cmdSMTPSaveProfile.TabIndex = 19;
+            this.cmdSMTPSaveProfile.Text = "Save Profile File";
+            this.cmdSMTPSaveProfile.UseVisualStyleBackColor = true;
+            this.cmdSMTPSaveProfile.Click += new System.EventHandler(this.cmdSMTPSaveProfile_Click);
+            // 
+            // txtSMTPBody
+            // 
+            this.txtSMTPBody.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSMTPBody.Location = new System.Drawing.Point(3, 177);
+            this.txtSMTPBody.Multiline = true;
+            this.txtSMTPBody.Name = "txtSMTPBody";
+            this.txtSMTPBody.Size = new System.Drawing.Size(540, 146);
+            this.txtSMTPBody.TabIndex = 18;
+            this.txtSMTPBody.Text = "Database Restore of {$DATABASENAME} on {$SQLSERVER} {$ENDDATETIME}\r\nResults: {$RE" +
+    "SULT}\r\nSee attached log file for full details.\r\n\r\n";
+            // 
+            // chkSMTPAttachLog
+            // 
+            this.chkSMTPAttachLog.AutoSize = true;
+            this.chkSMTPAttachLog.Checked = true;
+            this.chkSMTPAttachLog.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkSMTPAttachLog.Location = new System.Drawing.Point(430, 132);
+            this.chkSMTPAttachLog.Name = "chkSMTPAttachLog";
+            this.chkSMTPAttachLog.Size = new System.Drawing.Size(89, 20);
+            this.chkSMTPAttachLog.TabIndex = 17;
+            this.chkSMTPAttachLog.Text = "Attach Log";
+            this.chkSMTPAttachLog.UseVisualStyleBackColor = true;
+            // 
+            // label26
+            // 
+            this.label26.AutoSize = true;
+            this.label26.Location = new System.Drawing.Point(1, 158);
+            this.label26.Name = "label26";
+            this.label26.Size = new System.Drawing.Size(163, 16);
+            this.label26.TabIndex = 16;
+            this.label26.Text = "Message Body Template:";
+            // 
+            // txtSMTPSubject
+            // 
+            this.txtSMTPSubject.Location = new System.Drawing.Point(85, 130);
+            this.txtSMTPSubject.Name = "txtSMTPSubject";
+            this.txtSMTPSubject.Size = new System.Drawing.Size(339, 22);
+            this.txtSMTPSubject.TabIndex = 15;
+            this.txtSMTPSubject.Text = "Database Restore Log {$SQLSERVER} {$DATABASENAME}";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(1, 133);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(83, 16);
+            this.label25.TabIndex = 14;
+            this.label25.Text = "Subject Line:";
+            // 
+            // txtSMTPEmailTo
+            // 
+            this.txtSMTPEmailTo.Location = new System.Drawing.Point(343, 102);
+            this.txtSMTPEmailTo.Name = "txtSMTPEmailTo";
+            this.txtSMTPEmailTo.Size = new System.Drawing.Size(179, 22);
+            this.txtSMTPEmailTo.TabIndex = 13;
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(273, 105);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(64, 16);
+            this.label23.TabIndex = 12;
+            this.label23.Text = "Email To:";
+            // 
+            // txtSMTPEmailFrom
+            // 
+            this.txtSMTPEmailFrom.Location = new System.Drawing.Point(85, 102);
+            this.txtSMTPEmailFrom.Name = "txtSMTPEmailFrom";
+            this.txtSMTPEmailFrom.Size = new System.Drawing.Size(179, 22);
+            this.txtSMTPEmailFrom.TabIndex = 11;
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(1, 105);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(78, 16);
+            this.label24.TabIndex = 10;
+            this.label24.Text = "Email From:";
+            // 
+            // txtSMTPPass
+            // 
+            this.txtSMTPPass.Location = new System.Drawing.Point(343, 74);
+            this.txtSMTPPass.Name = "txtSMTPPass";
+            this.txtSMTPPass.PasswordChar = '●';
+            this.txtSMTPPass.Size = new System.Drawing.Size(179, 22);
+            this.txtSMTPPass.TabIndex = 9;
+            this.txtSMTPPass.Visible = false;
+            // 
+            // lblSMTPPass
+            // 
+            this.lblSMTPPass.AutoSize = true;
+            this.lblSMTPPass.Location = new System.Drawing.Point(270, 78);
+            this.lblSMTPPass.Name = "lblSMTPPass";
+            this.lblSMTPPass.Size = new System.Drawing.Size(72, 16);
+            this.lblSMTPPass.TabIndex = 8;
+            this.lblSMTPPass.Text = "Password*";
+            this.lblSMTPPass.Visible = false;
+            // 
+            // txtSMTPUser
+            // 
+            this.txtSMTPUser.Location = new System.Drawing.Point(85, 74);
+            this.txtSMTPUser.Name = "txtSMTPUser";
+            this.txtSMTPUser.Size = new System.Drawing.Size(179, 22);
+            this.txtSMTPUser.TabIndex = 7;
+            this.txtSMTPUser.Visible = false;
+            // 
+            // lblSMTPUser
+            // 
+            this.lblSMTPUser.AutoSize = true;
+            this.lblSMTPUser.Location = new System.Drawing.Point(6, 77);
+            this.lblSMTPUser.Name = "lblSMTPUser";
+            this.lblSMTPUser.Size = new System.Drawing.Size(73, 16);
+            this.lblSMTPUser.TabIndex = 6;
+            this.lblSMTPUser.Text = "Username:";
+            this.lblSMTPUser.Visible = false;
+            // 
+            // chkSMTPAuth
+            // 
+            this.chkSMTPAuth.AutoSize = true;
+            this.chkSMTPAuth.Location = new System.Drawing.Point(9, 53);
+            this.chkSMTPAuth.Name = "chkSMTPAuth";
+            this.chkSMTPAuth.Size = new System.Drawing.Size(251, 20);
+            this.chkSMTPAuth.TabIndex = 5;
+            this.chkSMTPAuth.Text = "SMTP Server Requires Authentication";
+            this.chkSMTPAuth.UseVisualStyleBackColor = true;
+            this.chkSMTPAuth.CheckedChanged += new System.EventHandler(this.chkSMTPAuth_CheckedChanged);
+            // 
+            // chkSMTPTLS
+            // 
+            this.chkSMTPTLS.AutoSize = true;
+            this.chkSMTPTLS.Location = new System.Drawing.Point(460, 27);
+            this.chkSMTPTLS.Name = "chkSMTPTLS";
+            this.chkSMTPTLS.Size = new System.Drawing.Size(51, 20);
+            this.chkSMTPTLS.TabIndex = 4;
+            this.chkSMTPTLS.Text = "TLS";
+            this.chkSMTPTLS.UseVisualStyleBackColor = true;
+            // 
+            // nudSMTPPort
+            // 
+            this.nudSMTPPort.Location = new System.Drawing.Point(389, 26);
+            this.nudSMTPPort.Maximum = new decimal(new int[] {
+            65535,
+            0,
+            0,
+            0});
+            this.nudSMTPPort.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.nudSMTPPort.Name = "nudSMTPPort";
+            this.nudSMTPPort.Size = new System.Drawing.Size(59, 22);
+            this.nudSMTPPort.TabIndex = 3;
+            this.nudSMTPPort.Value = new decimal(new int[] {
+            25,
+            0,
+            0,
+            0});
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(349, 29);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(34, 16);
+            this.label20.TabIndex = 2;
+            this.label20.Text = "Port:";
+            // 
+            // txtSMTPServer
+            // 
+            this.txtSMTPServer.Location = new System.Drawing.Point(103, 25);
+            this.txtSMTPServer.Name = "txtSMTPServer";
+            this.txtSMTPServer.Size = new System.Drawing.Size(240, 22);
+            this.txtSMTPServer.TabIndex = 1;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(6, 28);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(91, 16);
+            this.label19.TabIndex = 0;
+            this.label19.Text = "SMTP Server:";
+            // 
+            // cmdSMTPProfileBrowse
+            // 
+            this.cmdSMTPProfileBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdSMTPProfileBrowse.Location = new System.Drawing.Point(480, 87);
+            this.cmdSMTPProfileBrowse.Name = "cmdSMTPProfileBrowse";
+            this.cmdSMTPProfileBrowse.Size = new System.Drawing.Size(75, 23);
+            this.cmdSMTPProfileBrowse.TabIndex = 11;
+            this.cmdSMTPProfileBrowse.Text = "Browse";
+            this.cmdSMTPProfileBrowse.UseVisualStyleBackColor = true;
+            this.cmdSMTPProfileBrowse.Visible = false;
+            // 
+            // txtSMTPProfile
+            // 
+            this.txtSMTPProfile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSMTPProfile.Location = new System.Drawing.Point(99, 87);
+            this.txtSMTPProfile.Name = "txtSMTPProfile";
+            this.txtSMTPProfile.Size = new System.Drawing.Size(375, 22);
+            this.txtSMTPProfile.TabIndex = 10;
+            this.txtSMTPProfile.Visible = false;
+            // 
+            // lblSMTPProfile
+            // 
+            this.lblSMTPProfile.AutoSize = true;
+            this.lblSMTPProfile.Location = new System.Drawing.Point(4, 90);
+            this.lblSMTPProfile.Name = "lblSMTPProfile";
+            this.lblSMTPProfile.Size = new System.Drawing.Size(89, 16);
+            this.lblSMTPProfile.TabIndex = 9;
+            this.lblSMTPProfile.Text = "SMTP Profile:";
+            this.lblSMTPProfile.Visible = false;
+            // 
+            // chkSMTPSendEmail
+            // 
+            this.chkSMTPSendEmail.AutoSize = true;
+            this.chkSMTPSendEmail.Location = new System.Drawing.Point(7, 68);
+            this.chkSMTPSendEmail.Name = "chkSMTPSendEmail";
+            this.chkSMTPSendEmail.Size = new System.Drawing.Size(153, 20);
+            this.chkSMTPSendEmail.TabIndex = 2;
+            this.chkSMTPSendEmail.Text = "Enable SMTP profile:";
+            this.chkSMTPSendEmail.UseVisualStyleBackColor = true;
+            this.chkSMTPSendEmail.CheckedChanged += new System.EventHandler(this.chkSMTPSendEmail_CheckedChanged);
+            // 
+            // label18
+            // 
+            this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label18.Location = new System.Drawing.Point(4, 29);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(551, 41);
+            this.label18.TabIndex = 1;
+            this.label18.Text = "To email log files, you must first create a SMTP profile and save it somewhere. T" +
+    "hen the command line argument can specify that profile file.";
             // 
             // label15
             // 
@@ -1001,456 +1452,45 @@
             this.label17.TabIndex = 0;
             this.label17.Text = "Run Database Restore Now";
             // 
-            // colLogicalName
+            // lblRightsHelp
             // 
-            this.colLogicalName.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colLogicalName.DataPropertyName = "LogicalName";
-            this.colLogicalName.FillWeight = 35F;
-            this.colLogicalName.HeaderText = "Logical Name";
-            this.colLogicalName.MaxInputLength = 256;
-            this.colLogicalName.Name = "colLogicalName";
-            // 
-            // colOrigPath
-            // 
-            this.colOrigPath.DataPropertyName = "OriginalPath";
-            this.colOrigPath.HeaderText = "Original Path";
-            this.colOrigPath.Name = "colOrigPath";
-            this.colOrigPath.ReadOnly = true;
-            this.colOrigPath.Width = 75;
-            // 
-            // colNewPath
-            // 
-            this.colNewPath.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.colNewPath.DataPropertyName = "OverriddenPath";
-            this.colNewPath.HeaderText = "New Path";
-            this.colNewPath.Name = "colNewPath";
-            // 
-            // chkRightsEnable
-            // 
-            this.chkRightsEnable.AutoSize = true;
-            this.chkRightsEnable.Location = new System.Drawing.Point(7, 29);
-            this.chkRightsEnable.Name = "chkRightsEnable";
-            this.chkRightsEnable.Size = new System.Drawing.Size(344, 20);
-            this.chkRightsEnable.TabIndex = 1;
-            this.chkRightsEnable.Text = "Add SQL Logins as database Users, and add to roles";
-            this.chkRightsEnable.UseVisualStyleBackColor = true;
-            this.chkRightsEnable.CheckedChanged += new System.EventHandler(this.chkRightsEnable_CheckedChanged);
-            // 
-            // cmdRightsImportLogins
-            // 
-            this.cmdRightsImportLogins.Location = new System.Drawing.Point(357, 27);
-            this.cmdRightsImportLogins.Name = "cmdRightsImportLogins";
-            this.cmdRightsImportLogins.Size = new System.Drawing.Size(113, 23);
-            this.cmdRightsImportLogins.TabIndex = 2;
-            this.cmdRightsImportLogins.Text = "Import Logins";
-            this.cmdRightsImportLogins.UseVisualStyleBackColor = true;
-            this.cmdRightsImportLogins.Visible = false;
-            this.cmdRightsImportLogins.Click += new System.EventHandler(this.cmdRightsImportLogins_Click);
-            // 
-            // dgvRightsUsers
-            // 
-            this.dgvRightsUsers.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.lblRightsHelp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dgvRightsUsers.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvRightsUsers.Location = new System.Drawing.Point(7, 56);
-            this.dgvRightsUsers.Name = "dgvRightsUsers";
-            this.dgvRightsUsers.Size = new System.Drawing.Size(552, 417);
-            this.dgvRightsUsers.TabIndex = 3;
-            this.dgvRightsUsers.Visible = false;
-            // 
-            // chkLogEnable
-            // 
-            this.chkLogEnable.AutoSize = true;
-            this.chkLogEnable.Location = new System.Drawing.Point(7, 35);
-            this.chkLogEnable.Name = "chkLogEnable";
-            this.chkLogEnable.Size = new System.Drawing.Size(218, 20);
-            this.chkLogEnable.TabIndex = 1;
-            this.chkLogEnable.Text = "Write process output to a log file.";
-            this.chkLogEnable.UseVisualStyleBackColor = true;
-            this.chkLogEnable.CheckedChanged += new System.EventHandler(this.chkLogEnable_CheckedChanged);
-            // 
-            // lblLogFile
-            // 
-            this.lblLogFile.AutoSize = true;
-            this.lblLogFile.Location = new System.Drawing.Point(4, 60);
-            this.lblLogFile.Name = "lblLogFile";
-            this.lblLogFile.Size = new System.Drawing.Size(58, 16);
-            this.lblLogFile.TabIndex = 2;
-            this.lblLogFile.Text = "Log File:";
-            this.lblLogFile.Visible = false;
-            // 
-            // txtLogFile
-            // 
-            this.txtLogFile.Location = new System.Drawing.Point(63, 57);
-            this.txtLogFile.Name = "txtLogFile";
-            this.txtLogFile.Size = new System.Drawing.Size(411, 22);
-            this.txtLogFile.TabIndex = 3;
-            this.txtLogFile.Visible = false;
-            // 
-            // cmdLogFileBrowse
-            // 
-            this.cmdLogFileBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdLogFileBrowse.Location = new System.Drawing.Point(480, 57);
-            this.cmdLogFileBrowse.Name = "cmdLogFileBrowse";
-            this.cmdLogFileBrowse.Size = new System.Drawing.Size(75, 23);
-            this.cmdLogFileBrowse.TabIndex = 7;
-            this.cmdLogFileBrowse.Text = "Browse";
-            this.cmdLogFileBrowse.UseVisualStyleBackColor = true;
-            this.cmdLogFileBrowse.Visible = false;
-            this.cmdLogFileBrowse.Click += new System.EventHandler(this.cmdLogFileBrowse_Click);
-            // 
-            // cmdLogAppendBrowse
-            // 
-            this.cmdLogAppendBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdLogAppendBrowse.Location = new System.Drawing.Point(480, 107);
-            this.cmdLogAppendBrowse.Name = "cmdLogAppendBrowse";
-            this.cmdLogAppendBrowse.Size = new System.Drawing.Size(75, 23);
-            this.cmdLogAppendBrowse.TabIndex = 11;
-            this.cmdLogAppendBrowse.Text = "Browse";
-            this.cmdLogAppendBrowse.UseVisualStyleBackColor = true;
-            this.cmdLogAppendBrowse.Visible = false;
-            this.cmdLogAppendBrowse.Click += new System.EventHandler(this.cmdLogAppendBrowse_Click);
-            // 
-            // txtLogAppendFile
-            // 
-            this.txtLogAppendFile.Location = new System.Drawing.Point(63, 107);
-            this.txtLogAppendFile.Name = "txtLogAppendFile";
-            this.txtLogAppendFile.Size = new System.Drawing.Size(411, 22);
-            this.txtLogAppendFile.TabIndex = 10;
-            this.txtLogAppendFile.Visible = false;
-            // 
-            // lblLogAppendFile
-            // 
-            this.lblLogAppendFile.AutoSize = true;
-            this.lblLogAppendFile.Location = new System.Drawing.Point(4, 110);
-            this.lblLogAppendFile.Name = "lblLogAppendFile";
-            this.lblLogAppendFile.Size = new System.Drawing.Size(58, 16);
-            this.lblLogAppendFile.TabIndex = 9;
-            this.lblLogAppendFile.Text = "Log File:";
-            this.lblLogAppendFile.Visible = false;
-            // 
-            // chkLogAppendEnable
-            // 
-            this.chkLogAppendEnable.AutoSize = true;
-            this.chkLogAppendEnable.Location = new System.Drawing.Point(7, 85);
-            this.chkLogAppendEnable.Name = "chkLogAppendEnable";
-            this.chkLogAppendEnable.Size = new System.Drawing.Size(235, 20);
-            this.chkLogAppendEnable.TabIndex = 8;
-            this.chkLogAppendEnable.Text = "Append process output to a log file.";
-            this.chkLogAppendEnable.UseVisualStyleBackColor = true;
-            this.chkLogAppendEnable.CheckedChanged += new System.EventHandler(this.chkLogAppendEnable_CheckedChanged);
-            // 
-            // label18
-            // 
-            this.label18.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label18.Location = new System.Drawing.Point(4, 29);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(551, 41);
-            this.label18.TabIndex = 1;
-            this.label18.Text = "To email log files, you must first create a SMTP profile and save it somewhere. T" +
-    "hen the command line argument can specify that profile file.";
-            // 
-            // chkSMTPSendEmail
-            // 
-            this.chkSMTPSendEmail.AutoSize = true;
-            this.chkSMTPSendEmail.Location = new System.Drawing.Point(7, 68);
-            this.chkSMTPSendEmail.Name = "chkSMTPSendEmail";
-            this.chkSMTPSendEmail.Size = new System.Drawing.Size(153, 20);
-            this.chkSMTPSendEmail.TabIndex = 2;
-            this.chkSMTPSendEmail.Text = "Enable SMTP profile:";
-            this.chkSMTPSendEmail.UseVisualStyleBackColor = true;
-            this.chkSMTPSendEmail.CheckedChanged += new System.EventHandler(this.chkSMTPSendEmail_CheckedChanged);
-            // 
-            // cmdSMTPProfileBrowse
-            // 
-            this.cmdSMTPProfileBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdSMTPProfileBrowse.Location = new System.Drawing.Point(480, 87);
-            this.cmdSMTPProfileBrowse.Name = "cmdSMTPProfileBrowse";
-            this.cmdSMTPProfileBrowse.Size = new System.Drawing.Size(75, 23);
-            this.cmdSMTPProfileBrowse.TabIndex = 11;
-            this.cmdSMTPProfileBrowse.Text = "Browse";
-            this.cmdSMTPProfileBrowse.UseVisualStyleBackColor = true;
-            this.cmdSMTPProfileBrowse.Visible = false;
-            // 
-            // txtSMTPProfile
-            // 
-            this.txtSMTPProfile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSMTPProfile.Location = new System.Drawing.Point(99, 87);
-            this.txtSMTPProfile.Name = "txtSMTPProfile";
-            this.txtSMTPProfile.Size = new System.Drawing.Size(375, 22);
-            this.txtSMTPProfile.TabIndex = 10;
-            this.txtSMTPProfile.Visible = false;
-            // 
-            // lblSMTPProfile
-            // 
-            this.lblSMTPProfile.AutoSize = true;
-            this.lblSMTPProfile.Location = new System.Drawing.Point(4, 90);
-            this.lblSMTPProfile.Name = "lblSMTPProfile";
-            this.lblSMTPProfile.Size = new System.Drawing.Size(89, 16);
-            this.lblSMTPProfile.TabIndex = 9;
-            this.lblSMTPProfile.Text = "SMTP Profile:";
-            this.lblSMTPProfile.Visible = false;
-            // 
-            // grpSMTPProfile
-            // 
-            this.grpSMTPProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.grpSMTPProfile.Controls.Add(this.lblSMTPPassWarn);
-            this.grpSMTPProfile.Controls.Add(this.cmdSMTPLoadProfile);
-            this.grpSMTPProfile.Controls.Add(this.cmdSMTPSaveProfile);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPBody);
-            this.grpSMTPProfile.Controls.Add(this.chkSMTPAttachLog);
-            this.grpSMTPProfile.Controls.Add(this.label26);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPSubject);
-            this.grpSMTPProfile.Controls.Add(this.label25);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPEmailTo);
-            this.grpSMTPProfile.Controls.Add(this.label23);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPEmailFrom);
-            this.grpSMTPProfile.Controls.Add(this.label24);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPPass);
-            this.grpSMTPProfile.Controls.Add(this.lblSMTPPass);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPUser);
-            this.grpSMTPProfile.Controls.Add(this.lblSMTPUser);
-            this.grpSMTPProfile.Controls.Add(this.chkSMTPAuth);
-            this.grpSMTPProfile.Controls.Add(this.chkSMTPTLS);
-            this.grpSMTPProfile.Controls.Add(this.nudSMTPPort);
-            this.grpSMTPProfile.Controls.Add(this.label20);
-            this.grpSMTPProfile.Controls.Add(this.txtSMTPServer);
-            this.grpSMTPProfile.Controls.Add(this.label19);
-            this.grpSMTPProfile.Location = new System.Drawing.Point(7, 115);
-            this.grpSMTPProfile.Name = "grpSMTPProfile";
-            this.grpSMTPProfile.Size = new System.Drawing.Size(548, 358);
-            this.grpSMTPProfile.TabIndex = 12;
-            this.grpSMTPProfile.TabStop = false;
-            this.grpSMTPProfile.Text = "SMTP Profile Editor";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Location = new System.Drawing.Point(6, 28);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(91, 16);
-            this.label19.TabIndex = 0;
-            this.label19.Text = "SMTP Server:";
-            // 
-            // txtSMTPServer
-            // 
-            this.txtSMTPServer.Location = new System.Drawing.Point(103, 25);
-            this.txtSMTPServer.Name = "txtSMTPServer";
-            this.txtSMTPServer.Size = new System.Drawing.Size(240, 22);
-            this.txtSMTPServer.TabIndex = 1;
-            // 
-            // label20
-            // 
-            this.label20.AutoSize = true;
-            this.label20.Location = new System.Drawing.Point(349, 29);
-            this.label20.Name = "label20";
-            this.label20.Size = new System.Drawing.Size(34, 16);
-            this.label20.TabIndex = 2;
-            this.label20.Text = "Port:";
-            // 
-            // nudSMTPPort
-            // 
-            this.nudSMTPPort.Location = new System.Drawing.Point(389, 26);
-            this.nudSMTPPort.Maximum = new decimal(new int[] {
-            65535,
-            0,
-            0,
-            0});
-            this.nudSMTPPort.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.nudSMTPPort.Name = "nudSMTPPort";
-            this.nudSMTPPort.Size = new System.Drawing.Size(59, 22);
-            this.nudSMTPPort.TabIndex = 3;
-            this.nudSMTPPort.Value = new decimal(new int[] {
-            25,
-            0,
-            0,
-            0});
-            // 
-            // chkSMTPTLS
-            // 
-            this.chkSMTPTLS.AutoSize = true;
-            this.chkSMTPTLS.Location = new System.Drawing.Point(460, 27);
-            this.chkSMTPTLS.Name = "chkSMTPTLS";
-            this.chkSMTPTLS.Size = new System.Drawing.Size(51, 20);
-            this.chkSMTPTLS.TabIndex = 4;
-            this.chkSMTPTLS.Text = "TLS";
-            this.chkSMTPTLS.UseVisualStyleBackColor = true;
-            // 
-            // chkSMTPAuth
-            // 
-            this.chkSMTPAuth.AutoSize = true;
-            this.chkSMTPAuth.Location = new System.Drawing.Point(9, 53);
-            this.chkSMTPAuth.Name = "chkSMTPAuth";
-            this.chkSMTPAuth.Size = new System.Drawing.Size(251, 20);
-            this.chkSMTPAuth.TabIndex = 5;
-            this.chkSMTPAuth.Text = "SMTP Server Requires Authentication";
-            this.chkSMTPAuth.UseVisualStyleBackColor = true;
-            this.chkSMTPAuth.CheckedChanged += new System.EventHandler(this.chkSMTPAuth_CheckedChanged);
-            // 
-            // txtSMTPUser
-            // 
-            this.txtSMTPUser.Location = new System.Drawing.Point(85, 74);
-            this.txtSMTPUser.Name = "txtSMTPUser";
-            this.txtSMTPUser.Size = new System.Drawing.Size(179, 22);
-            this.txtSMTPUser.TabIndex = 7;
-            this.txtSMTPUser.Visible = false;
-            // 
-            // lblSMTPUser
-            // 
-            this.lblSMTPUser.AutoSize = true;
-            this.lblSMTPUser.Location = new System.Drawing.Point(6, 77);
-            this.lblSMTPUser.Name = "lblSMTPUser";
-            this.lblSMTPUser.Size = new System.Drawing.Size(73, 16);
-            this.lblSMTPUser.TabIndex = 6;
-            this.lblSMTPUser.Text = "Username:";
-            this.lblSMTPUser.Visible = false;
-            // 
-            // txtSMTPPass
-            // 
-            this.txtSMTPPass.Location = new System.Drawing.Point(343, 74);
-            this.txtSMTPPass.Name = "txtSMTPPass";
-            this.txtSMTPPass.PasswordChar = '●';
-            this.txtSMTPPass.Size = new System.Drawing.Size(179, 22);
-            this.txtSMTPPass.TabIndex = 9;
-            this.txtSMTPPass.Visible = false;
-            // 
-            // lblSMTPPass
-            // 
-            this.lblSMTPPass.AutoSize = true;
-            this.lblSMTPPass.Location = new System.Drawing.Point(270, 78);
-            this.lblSMTPPass.Name = "lblSMTPPass";
-            this.lblSMTPPass.Size = new System.Drawing.Size(72, 16);
-            this.lblSMTPPass.TabIndex = 8;
-            this.lblSMTPPass.Text = "Password*";
-            this.lblSMTPPass.Visible = false;
-            // 
-            // txtSMTPEmailTo
-            // 
-            this.txtSMTPEmailTo.Location = new System.Drawing.Point(343, 102);
-            this.txtSMTPEmailTo.Name = "txtSMTPEmailTo";
-            this.txtSMTPEmailTo.Size = new System.Drawing.Size(179, 22);
-            this.txtSMTPEmailTo.TabIndex = 13;
-            // 
-            // label23
-            // 
-            this.label23.AutoSize = true;
-            this.label23.Location = new System.Drawing.Point(273, 105);
-            this.label23.Name = "label23";
-            this.label23.Size = new System.Drawing.Size(64, 16);
-            this.label23.TabIndex = 12;
-            this.label23.Text = "Email To:";
-            // 
-            // txtSMTPEmailFrom
-            // 
-            this.txtSMTPEmailFrom.Location = new System.Drawing.Point(85, 102);
-            this.txtSMTPEmailFrom.Name = "txtSMTPEmailFrom";
-            this.txtSMTPEmailFrom.Size = new System.Drawing.Size(179, 22);
-            this.txtSMTPEmailFrom.TabIndex = 11;
-            // 
-            // label24
-            // 
-            this.label24.AutoSize = true;
-            this.label24.Location = new System.Drawing.Point(1, 105);
-            this.label24.Name = "label24";
-            this.label24.Size = new System.Drawing.Size(78, 16);
-            this.label24.TabIndex = 10;
-            this.label24.Text = "Email From:";
-            // 
-            // txtSMTPSubject
-            // 
-            this.txtSMTPSubject.Location = new System.Drawing.Point(85, 130);
-            this.txtSMTPSubject.Name = "txtSMTPSubject";
-            this.txtSMTPSubject.Size = new System.Drawing.Size(339, 22);
-            this.txtSMTPSubject.TabIndex = 15;
-            this.txtSMTPSubject.Text = "Database Restore Log {$SQLSERVER} {$DATABASENAME}";
-            // 
-            // label25
-            // 
-            this.label25.AutoSize = true;
-            this.label25.Location = new System.Drawing.Point(1, 133);
-            this.label25.Name = "label25";
-            this.label25.Size = new System.Drawing.Size(83, 16);
-            this.label25.TabIndex = 14;
-            this.label25.Text = "Subject Line:";
-            // 
-            // label26
-            // 
-            this.label26.AutoSize = true;
-            this.label26.Location = new System.Drawing.Point(1, 158);
-            this.label26.Name = "label26";
-            this.label26.Size = new System.Drawing.Size(163, 16);
-            this.label26.TabIndex = 16;
-            this.label26.Text = "Message Body Template:";
-            // 
-            // chkSMTPAttachLog
-            // 
-            this.chkSMTPAttachLog.AutoSize = true;
-            this.chkSMTPAttachLog.Checked = true;
-            this.chkSMTPAttachLog.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkSMTPAttachLog.Location = new System.Drawing.Point(430, 132);
-            this.chkSMTPAttachLog.Name = "chkSMTPAttachLog";
-            this.chkSMTPAttachLog.Size = new System.Drawing.Size(89, 20);
-            this.chkSMTPAttachLog.TabIndex = 17;
-            this.chkSMTPAttachLog.Text = "Attach Log";
-            this.chkSMTPAttachLog.UseVisualStyleBackColor = true;
-            // 
-            // txtSMTPBody
-            // 
-            this.txtSMTPBody.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSMTPBody.Location = new System.Drawing.Point(3, 177);
-            this.txtSMTPBody.Multiline = true;
-            this.txtSMTPBody.Name = "txtSMTPBody";
-            this.txtSMTPBody.Size = new System.Drawing.Size(540, 146);
-            this.txtSMTPBody.TabIndex = 18;
-            this.txtSMTPBody.Text = "Database Restore of {$DATABASENAME} on {$SQLSERVER} {$ENDDATETIME}\r\nResults: {$RE" +
-    "SULT}\r\nSee attached log file for full details.\r\n\r\n";
-            // 
-            // cmdSMTPSaveProfile
-            // 
-            this.cmdSMTPSaveProfile.Location = new System.Drawing.Point(423, 329);
-            this.cmdSMTPSaveProfile.Name = "cmdSMTPSaveProfile";
-            this.cmdSMTPSaveProfile.Size = new System.Drawing.Size(119, 23);
-            this.cmdSMTPSaveProfile.TabIndex = 19;
-            this.cmdSMTPSaveProfile.Text = "Save Profile File";
-            this.cmdSMTPSaveProfile.UseVisualStyleBackColor = true;
-            this.cmdSMTPSaveProfile.Click += new System.EventHandler(this.cmdSMTPSaveProfile_Click);
-            // 
-            // cmdSMTPLoadProfile
-            // 
-            this.cmdSMTPLoadProfile.Location = new System.Drawing.Point(297, 329);
-            this.cmdSMTPLoadProfile.Name = "cmdSMTPLoadProfile";
-            this.cmdSMTPLoadProfile.Size = new System.Drawing.Size(120, 23);
-            this.cmdSMTPLoadProfile.TabIndex = 20;
-            this.cmdSMTPLoadProfile.Text = "Load Profile File";
-            this.cmdSMTPLoadProfile.UseVisualStyleBackColor = true;
-            this.cmdSMTPLoadProfile.Click += new System.EventHandler(this.cmdSMTPLoadProfile_Click);
-            // 
-            // lblSMTPPassWarn
-            // 
-            this.lblSMTPPassWarn.AutoSize = true;
-            this.lblSMTPPassWarn.Location = new System.Drawing.Point(4, 333);
-            this.lblSMTPPassWarn.Name = "lblSMTPPassWarn";
-            this.lblSMTPPassWarn.Size = new System.Drawing.Size(231, 16);
-            this.lblSMTPPassWarn.TabIndex = 21;
-            this.lblSMTPPassWarn.Text = "*Profile file will contain your password.";
-            this.lblSMTPPassWarn.Visible = false;
+            this.lblRightsHelp.Location = new System.Drawing.Point(3, 404);
+            this.lblRightsHelp.Name = "lblRightsHelp";
+            this.lblRightsHelp.Size = new System.Drawing.Size(553, 66);
+            this.lblRightsHelp.TabIndex = 4;
+            this.lblRightsHelp.Text = resources.GetString("lblRightsHelp.Text");
+            this.lblRightsHelp.Visible = false;
+            // 
+            // cmdStartLoadSettings
+            // 
+            this.cmdStartLoadSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdStartLoadSettings.Location = new System.Drawing.Point(408, 435);
+            this.cmdStartLoadSettings.Name = "cmdStartLoadSettings";
+            this.cmdStartLoadSettings.Size = new System.Drawing.Size(148, 32);
+            this.cmdStartLoadSettings.TabIndex = 3;
+            this.cmdStartLoadSettings.Text = "Load Saved Settings";
+            this.cmdStartLoadSettings.UseVisualStyleBackColor = true;
+            this.cmdStartLoadSettings.Click += new System.EventHandler(this.cmdStartLoadSettings_Click);
+            // 
+            // cmdStartSaveSettings
+            // 
+            this.cmdStartSaveSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdStartSaveSettings.Location = new System.Drawing.Point(254, 435);
+            this.cmdStartSaveSettings.Name = "cmdStartSaveSettings";
+            this.cmdStartSaveSettings.Size = new System.Drawing.Size(148, 32);
+            this.cmdStartSaveSettings.TabIndex = 4;
+            this.cmdStartSaveSettings.Text = "Save Current Settings";
+            this.cmdStartSaveSettings.UseVisualStyleBackColor = true;
+            this.cmdStartSaveSettings.Click += new System.EventHandler(this.cmdStartSaveSettings_Click);
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
+            this.Controls.Add(this.pnl6SMTP);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn8Run);
             this.Controls.Add(this.btn7CLI);
@@ -1460,15 +1500,14 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
-            this.Controls.Add(this.pnl6SMTP);
             this.Controls.Add(this.pnl5Log);
-            this.Controls.Add(this.pnl3Opts);
             this.Controls.Add(this.pnl0Start);
+            this.Controls.Add(this.pnl3Opts);
+            this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.pnl1Source);
             this.Controls.Add(this.pnl8Run);
             this.Controls.Add(this.pnl7CLI);
             this.Controls.Add(this.pnl4Rights);
-            this.Controls.Add(this.pnl2SQL);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "frmMain";
@@ -1492,18 +1531,18 @@
             ((System.ComponentModel.ISupportInitialize)(this.dgvOptsMoveFile)).EndInit();
             this.pnl4Rights.ResumeLayout(false);
             this.pnl4Rights.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvRightsUsers)).EndInit();
             this.pnl5Log.ResumeLayout(false);
             this.pnl5Log.PerformLayout();
             this.pnl6SMTP.ResumeLayout(false);
             this.pnl6SMTP.PerformLayout();
+            this.grpSMTPProfile.ResumeLayout(false);
+            this.grpSMTPProfile.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.nudSMTPPort)).EndInit();
             this.pnl7CLI.ResumeLayout(false);
             this.pnl7CLI.PerformLayout();
             this.pnl8Run.ResumeLayout(false);
             this.pnl8Run.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvRightsUsers)).EndInit();
-            this.grpSMTPProfile.ResumeLayout(false);
-            this.grpSMTPProfile.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.nudSMTPPort)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1623,5 +1662,8 @@
         private System.Windows.Forms.Button cmdSMTPLoadProfile;
         private System.Windows.Forms.Button cmdSMTPSaveProfile;
         private System.Windows.Forms.Label lblSMTPPassWarn;
+        private System.Windows.Forms.Label lblRightsHelp;
+        private System.Windows.Forms.Button cmdStartLoadSettings;
+        private System.Windows.Forms.Button cmdStartSaveSettings;
     }
 }
