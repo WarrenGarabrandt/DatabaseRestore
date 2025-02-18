@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -904,7 +905,66 @@ namespace DatabaseRestoreGUI
                     }
                     sb.AppendFormat("--temp \"{0}\"", txtSourceTempFilePath.Text.Trim());
                 }
-
+                // sql connection options
+                if (!string.IsNullOrWhiteSpace(txtSQLServerName.Text))
+                {
+                    string temp = EscapeArguments(txtSQLServerName.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "SQL server name is not valid.";
+                        return;
+                    }
+                    sb.AppendFormat(" --servername {0}", temp);
+                }
+                else
+                { 
+                    txtCLIArgs.Text = "No SQL server specified.";
+                    return;
+                }
+                if (nudSQLPort.Value != 1433)
+                {
+                    sb.AppendFormat(" --serverport {0}", (int)nudSQLPort.Value);
+                }
+                if (cmbSQLEncryptionMode.SelectedIndex == 1)
+                {
+                    sb.Append(" --encrypt");
+                }
+                if (chkSQLTrustCert.Checked)
+                {
+                    sb.Append(" --trustservercert");
+                }
+                if (!string.IsNullOrWhiteSpace(cmbSQLDatabaseName.Text))
+                {
+                    string temp = EscapeArguments(cmbSQLDatabaseName.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "SQL Database Name is not valid. (Some characters aren't valid to pass through command line arguments using this tool, but you may still be able to override this by escaping in double quotes on the command line manually.)";
+                        return;
+                    }
+                    sb.AppendFormat(" --database {0}", temp);
+                }
+                else
+                {
+                    txtCLIArgs.Text = "No SQL Database specified.";
+                    return;
+                }
+                if (!chkSQLUseCredentials.Checked)
+                {
+                    string temp = EscapeArguments(txtSQLUsername.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "No SQL server credentials specified. It's recommended to use integrated authentication.";
+                        return;
+                    }
+                    sb.AppendFormat(" --username {0}", temp);
+                    temp = EscapeArguments(txtSQLPassword.Text);
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "No SQL server credentials specified. It's recommended to use integrated authentication.";
+                        return;
+                    }
+                    sb.AppendFormat(" --password {0}", temp);
+                }
 
                 txtCLIArgs.Text = sb.ToString();
             }
@@ -916,6 +976,42 @@ namespace DatabaseRestoreGUI
             {
                 cmbSQLEncryptionMode.SelectedIndex = 1;
             }
+        }
+
+        /// <summary>
+        /// Quotes all arguments that contain whitespace, or begin with a quote and returns a single
+        /// argument string for use with Process.Start().
+        /// Code from: http://csharptest.net/529/how-to-correctly-escape-command-line-arguments-in-c/index.html
+        /// </summary>
+        /// <param name="args">A list of strings for arguments, may not contain null, '\0', '\r', or '\n'</param>
+        /// <returns>The combined list of escaped/quoted strings</returns>
+        /// <exception cref="System.ArgumentNullException">Raised when one of the arguments is null</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Raised if an argument contains '\0', '\r', or '\n'</exception>
+        public static string EscapeArguments(params string[] args)
+        {
+            StringBuilder arguments = new StringBuilder();
+            Regex invalidChar = new Regex("[\x00\x0a\x0d]");//  these can not be escaped
+            Regex needsQuotes = new Regex(@"\s|""");//          contains whitespace or two quote characters
+            Regex escapeQuote = new Regex(@"(\\*)(""|$)");//    one or more '\' followed with a quote or end of string
+            for (int carg = 0; args != null && carg < args.Length; carg++)
+            {
+                if (args[carg] == null) { throw new ArgumentNullException("args[" + carg + "]"); }
+                if (invalidChar.IsMatch(args[carg])) { throw new ArgumentOutOfRangeException("args[" + carg + "]"); }
+                if (args[carg] == String.Empty) { arguments.Append("\"\""); }
+                else if (!needsQuotes.IsMatch(args[carg])) { arguments.Append(args[carg]); }
+                else
+                {
+                    arguments.Append('"');
+                    arguments.Append(escapeQuote.Replace(args[carg], m =>
+                    m.Groups[1].Value + m.Groups[1].Value +
+                    (m.Groups[2].Value == "\"" ? "\\\"" : "")
+                    ));
+                    arguments.Append('"');
+                }
+                if (carg + 1 < args.Length)
+                    arguments.Append(' ');
+            }
+            return arguments.ToString();
         }
     }
 }
