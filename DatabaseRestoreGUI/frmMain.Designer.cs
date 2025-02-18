@@ -30,6 +30,8 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             this.pnl0Start = new System.Windows.Forms.Panel();
+            this.cmdStartSaveSettings = new System.Windows.Forms.Button();
+            this.cmdStartLoadSettings = new System.Windows.Forms.Button();
             this.lbl1Version = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
@@ -94,6 +96,7 @@
             this.chkOptsReplace = new System.Windows.Forms.CheckBox();
             this.label14 = new System.Windows.Forms.Label();
             this.pnl4Rights = new System.Windows.Forms.Panel();
+            this.lblRightsHelp = new System.Windows.Forms.Label();
             this.dgvRightsUsers = new System.Windows.Forms.DataGridView();
             this.cmdRightsImportLogins = new System.Windows.Forms.Button();
             this.chkRightsEnable = new System.Windows.Forms.CheckBox();
@@ -139,14 +142,14 @@
             this.label18 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.pnl7CLI = new System.Windows.Forms.Panel();
+            this.label21 = new System.Windows.Forms.Label();
+            this.txtCLIArgs = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.pnl8Run = new System.Windows.Forms.Panel();
             this.label17 = new System.Windows.Forms.Label();
-            this.lblRightsHelp = new System.Windows.Forms.Label();
-            this.cmdStartLoadSettings = new System.Windows.Forms.Button();
-            this.cmdStartSaveSettings = new System.Windows.Forms.Button();
-            this.txtCLIArgs = new System.Windows.Forms.TextBox();
-            this.label21 = new System.Windows.Forms.Label();
+            this.label22 = new System.Windows.Forms.Label();
+            this.cmbSQLEncryptionMode = new System.Windows.Forms.ComboBox();
+            this.chkSQLTrustCert = new System.Windows.Forms.CheckBox();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -182,6 +185,28 @@
             this.pnl0Start.Size = new System.Drawing.Size(562, 476);
             this.pnl0Start.TabIndex = 0;
             this.pnl0Start.Tag = "Start";
+            // 
+            // cmdStartSaveSettings
+            // 
+            this.cmdStartSaveSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdStartSaveSettings.Location = new System.Drawing.Point(254, 435);
+            this.cmdStartSaveSettings.Name = "cmdStartSaveSettings";
+            this.cmdStartSaveSettings.Size = new System.Drawing.Size(148, 32);
+            this.cmdStartSaveSettings.TabIndex = 4;
+            this.cmdStartSaveSettings.Text = "Save Current Settings";
+            this.cmdStartSaveSettings.UseVisualStyleBackColor = true;
+            this.cmdStartSaveSettings.Click += new System.EventHandler(this.cmdStartSaveSettings_Click);
+            // 
+            // cmdStartLoadSettings
+            // 
+            this.cmdStartLoadSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdStartLoadSettings.Location = new System.Drawing.Point(408, 435);
+            this.cmdStartLoadSettings.Name = "cmdStartLoadSettings";
+            this.cmdStartLoadSettings.Size = new System.Drawing.Size(148, 32);
+            this.cmdStartLoadSettings.TabIndex = 3;
+            this.cmdStartLoadSettings.Text = "Load Saved Settings";
+            this.cmdStartLoadSettings.UseVisualStyleBackColor = true;
+            this.cmdStartLoadSettings.Click += new System.EventHandler(this.cmdStartLoadSettings_Click);
             // 
             // lbl1Version
             // 
@@ -535,6 +560,9 @@
             this.pnl2SQL.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl2SQL.Controls.Add(this.chkSQLTrustCert);
+            this.pnl2SQL.Controls.Add(this.cmbSQLEncryptionMode);
+            this.pnl2SQL.Controls.Add(this.label22);
             this.pnl2SQL.Controls.Add(this.cmbSQLDatabaseName);
             this.pnl2SQL.Controls.Add(this.lblSQLCredentialInfo);
             this.pnl2SQL.Controls.Add(this.txtSQLPassword);
@@ -557,18 +585,19 @@
             this.pnl2SQL.Size = new System.Drawing.Size(562, 476);
             this.pnl2SQL.TabIndex = 10;
             this.pnl2SQL.Tag = "SQLConnection";
+            this.pnl2SQL.VisibleChanged += new System.EventHandler(this.pnl2SQL_VisibleChanged);
             // 
             // cmbSQLDatabaseName
             // 
             this.cmbSQLDatabaseName.FormattingEnabled = true;
-            this.cmbSQLDatabaseName.Location = new System.Drawing.Point(97, 91);
+            this.cmbSQLDatabaseName.Location = new System.Drawing.Point(97, 150);
             this.cmbSQLDatabaseName.Name = "cmbSQLDatabaseName";
             this.cmbSQLDatabaseName.Size = new System.Drawing.Size(244, 24);
-            this.cmbSQLDatabaseName.TabIndex = 16;
+            this.cmbSQLDatabaseName.TabIndex = 5;
             // 
             // lblSQLCredentialInfo
             // 
-            this.lblSQLCredentialInfo.Location = new System.Drawing.Point(3, 200);
+            this.lblSQLCredentialInfo.Location = new System.Drawing.Point(3, 259);
             this.lblSQLCredentialInfo.Name = "lblSQLCredentialInfo";
             this.lblSQLCredentialInfo.Size = new System.Drawing.Size(552, 83);
             this.lblSQLCredentialInfo.TabIndex = 15;
@@ -577,17 +606,17 @@
             // 
             // txtSQLPassword
             // 
-            this.txtSQLPassword.Location = new System.Drawing.Point(97, 173);
+            this.txtSQLPassword.Location = new System.Drawing.Point(97, 232);
             this.txtSQLPassword.Name = "txtSQLPassword";
             this.txtSQLPassword.PasswordChar = '●';
             this.txtSQLPassword.Size = new System.Drawing.Size(244, 22);
-            this.txtSQLPassword.TabIndex = 14;
+            this.txtSQLPassword.TabIndex = 10;
             this.txtSQLPassword.Visible = false;
             // 
             // lblSQLPassword
             // 
             this.lblSQLPassword.AutoSize = true;
-            this.lblSQLPassword.Location = new System.Drawing.Point(27, 176);
+            this.lblSQLPassword.Location = new System.Drawing.Point(27, 235);
             this.lblSQLPassword.Name = "lblSQLPassword";
             this.lblSQLPassword.Size = new System.Drawing.Size(67, 16);
             this.lblSQLPassword.TabIndex = 13;
@@ -596,16 +625,16 @@
             // 
             // txtSQLUsername
             // 
-            this.txtSQLUsername.Location = new System.Drawing.Point(97, 145);
+            this.txtSQLUsername.Location = new System.Drawing.Point(97, 204);
             this.txtSQLUsername.Name = "txtSQLUsername";
             this.txtSQLUsername.Size = new System.Drawing.Size(244, 22);
-            this.txtSQLUsername.TabIndex = 12;
+            this.txtSQLUsername.TabIndex = 9;
             this.txtSQLUsername.Visible = false;
             // 
             // lblSQLUsername
             // 
             this.lblSQLUsername.AutoSize = true;
-            this.lblSQLUsername.Location = new System.Drawing.Point(24, 148);
+            this.lblSQLUsername.Location = new System.Drawing.Point(24, 207);
             this.lblSQLUsername.Name = "lblSQLUsername";
             this.lblSQLUsername.Size = new System.Drawing.Size(70, 16);
             this.lblSQLUsername.TabIndex = 11;
@@ -615,30 +644,30 @@
             // chkSQLUseCredentials
             // 
             this.chkSQLUseCredentials.AutoSize = true;
-            this.chkSQLUseCredentials.Location = new System.Drawing.Point(97, 119);
+            this.chkSQLUseCredentials.Location = new System.Drawing.Point(97, 178);
             this.chkSQLUseCredentials.Name = "chkSQLUseCredentials";
             this.chkSQLUseCredentials.Size = new System.Drawing.Size(343, 20);
-            this.chkSQLUseCredentials.TabIndex = 10;
+            this.chkSQLUseCredentials.TabIndex = 8;
             this.chkSQLUseCredentials.Text = "Specify Username and Password (no integrated auth)";
             this.chkSQLUseCredentials.UseVisualStyleBackColor = true;
             this.chkSQLUseCredentials.CheckedChanged += new System.EventHandler(this.chkSQLUseCredentials_CheckedChanged);
             // 
             // cmdSQLDatabaseNameQuery
             // 
-            this.cmdSQLDatabaseNameQuery.Location = new System.Drawing.Point(347, 91);
+            this.cmdSQLDatabaseNameQuery.Location = new System.Drawing.Point(347, 150);
             this.cmdSQLDatabaseNameQuery.Name = "cmdSQLDatabaseNameQuery";
             this.cmdSQLDatabaseNameQuery.Size = new System.Drawing.Size(55, 23);
-            this.cmdSQLDatabaseNameQuery.TabIndex = 9;
+            this.cmdSQLDatabaseNameQuery.TabIndex = 6;
             this.cmdSQLDatabaseNameQuery.Text = "Query";
             this.cmdSQLDatabaseNameQuery.UseVisualStyleBackColor = true;
             this.cmdSQLDatabaseNameQuery.Click += new System.EventHandler(this.cmdSQLDatabaseNameQuery_Click);
             // 
             // cmdSQLDatabaseNameHelp
             // 
-            this.cmdSQLDatabaseNameHelp.Location = new System.Drawing.Point(408, 91);
+            this.cmdSQLDatabaseNameHelp.Location = new System.Drawing.Point(408, 150);
             this.cmdSQLDatabaseNameHelp.Name = "cmdSQLDatabaseNameHelp";
             this.cmdSQLDatabaseNameHelp.Size = new System.Drawing.Size(21, 23);
-            this.cmdSQLDatabaseNameHelp.TabIndex = 8;
+            this.cmdSQLDatabaseNameHelp.TabIndex = 7;
             this.cmdSQLDatabaseNameHelp.Text = "?";
             this.cmdSQLDatabaseNameHelp.UseVisualStyleBackColor = true;
             this.cmdSQLDatabaseNameHelp.Click += new System.EventHandler(this.cmdSQLDatabaseNameHelp_Click);
@@ -646,7 +675,7 @@
             // label11
             // 
             this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(24, 94);
+            this.label11.Location = new System.Drawing.Point(24, 153);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(67, 16);
             this.label11.TabIndex = 6;
@@ -667,7 +696,7 @@
             0});
             this.nudSQLPort.Name = "nudSQLPort";
             this.nudSQLPort.Size = new System.Drawing.Size(82, 22);
-            this.nudSQLPort.TabIndex = 5;
+            this.nudSQLPort.TabIndex = 2;
             this.nudSQLPort.Value = new decimal(new int[] {
             1433,
             0,
@@ -698,7 +727,7 @@
             this.txtSQLServerName.Location = new System.Drawing.Point(97, 32);
             this.txtSQLServerName.Name = "txtSQLServerName";
             this.txtSQLServerName.Size = new System.Drawing.Size(244, 22);
-            this.txtSQLServerName.TabIndex = 2;
+            this.txtSQLServerName.TabIndex = 1;
             // 
             // label8
             // 
@@ -916,6 +945,17 @@
             this.pnl4Rights.Size = new System.Drawing.Size(562, 476);
             this.pnl4Rights.TabIndex = 13;
             this.pnl4Rights.Tag = "DatabaseRights";
+            // 
+            // lblRightsHelp
+            // 
+            this.lblRightsHelp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblRightsHelp.Location = new System.Drawing.Point(3, 404);
+            this.lblRightsHelp.Name = "lblRightsHelp";
+            this.lblRightsHelp.Size = new System.Drawing.Size(553, 66);
+            this.lblRightsHelp.TabIndex = 4;
+            this.lblRightsHelp.Text = resources.GetString("lblRightsHelp.Text");
+            this.lblRightsHelp.Visible = false;
             // 
             // dgvRightsUsers
             // 
@@ -1424,6 +1464,28 @@
             this.pnl7CLI.Tag = "CLIArguments";
             this.pnl7CLI.VisibleChanged += new System.EventHandler(this.pnl7CLI_VisibleChanged);
             // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(4, 43);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(422, 16);
+            this.label21.TabIndex = 2;
+            this.label21.Text = "The configured options correspond to these command line arguments.";
+            // 
+            // txtCLIArgs
+            // 
+            this.txtCLIArgs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtCLIArgs.Location = new System.Drawing.Point(7, 68);
+            this.txtCLIArgs.MinimumSize = new System.Drawing.Size(32, 100);
+            this.txtCLIArgs.Multiline = true;
+            this.txtCLIArgs.Name = "txtCLIArgs";
+            this.txtCLIArgs.ReadOnly = true;
+            this.txtCLIArgs.Size = new System.Drawing.Size(548, 120);
+            this.txtCLIArgs.TabIndex = 1;
+            // 
             // label16
             // 
             this.label16.AutoSize = true;
@@ -1457,60 +1519,36 @@
             this.label17.TabIndex = 0;
             this.label17.Text = "Run Database Restore Now";
             // 
-            // lblRightsHelp
+            // label22
             // 
-            this.lblRightsHelp.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lblRightsHelp.Location = new System.Drawing.Point(3, 404);
-            this.lblRightsHelp.Name = "lblRightsHelp";
-            this.lblRightsHelp.Size = new System.Drawing.Size(553, 66);
-            this.lblRightsHelp.TabIndex = 4;
-            this.lblRightsHelp.Text = resources.GetString("lblRightsHelp.Text");
-            this.lblRightsHelp.Visible = false;
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(23, 97);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(70, 16);
+            this.label22.TabIndex = 17;
+            this.label22.Text = "Encryption";
             // 
-            // cmdStartLoadSettings
+            // cmbSQLEncryptionMode
             // 
-            this.cmdStartLoadSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdStartLoadSettings.Location = new System.Drawing.Point(408, 435);
-            this.cmdStartLoadSettings.Name = "cmdStartLoadSettings";
-            this.cmdStartLoadSettings.Size = new System.Drawing.Size(148, 32);
-            this.cmdStartLoadSettings.TabIndex = 3;
-            this.cmdStartLoadSettings.Text = "Load Saved Settings";
-            this.cmdStartLoadSettings.UseVisualStyleBackColor = true;
-            this.cmdStartLoadSettings.Click += new System.EventHandler(this.cmdStartLoadSettings_Click);
+            this.cmbSQLEncryptionMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSQLEncryptionMode.FormattingEnabled = true;
+            this.cmbSQLEncryptionMode.Items.AddRange(new object[] {
+            "Optional",
+            "Mandatory"});
+            this.cmbSQLEncryptionMode.Location = new System.Drawing.Point(97, 94);
+            this.cmbSQLEncryptionMode.Name = "cmbSQLEncryptionMode";
+            this.cmbSQLEncryptionMode.Size = new System.Drawing.Size(244, 24);
+            this.cmbSQLEncryptionMode.TabIndex = 3;
             // 
-            // cmdStartSaveSettings
+            // chkSQLTrustCert
             // 
-            this.cmdStartSaveSettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdStartSaveSettings.Location = new System.Drawing.Point(254, 435);
-            this.cmdStartSaveSettings.Name = "cmdStartSaveSettings";
-            this.cmdStartSaveSettings.Size = new System.Drawing.Size(148, 32);
-            this.cmdStartSaveSettings.TabIndex = 4;
-            this.cmdStartSaveSettings.Text = "Save Current Settings";
-            this.cmdStartSaveSettings.UseVisualStyleBackColor = true;
-            this.cmdStartSaveSettings.Click += new System.EventHandler(this.cmdStartSaveSettings_Click);
-            // 
-            // txtCLIArgs
-            // 
-            this.txtCLIArgs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtCLIArgs.Location = new System.Drawing.Point(7, 68);
-            this.txtCLIArgs.MinimumSize = new System.Drawing.Size(32, 100);
-            this.txtCLIArgs.Multiline = true;
-            this.txtCLIArgs.Name = "txtCLIArgs";
-            this.txtCLIArgs.ReadOnly = true;
-            this.txtCLIArgs.Size = new System.Drawing.Size(548, 120);
-            this.txtCLIArgs.TabIndex = 1;
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Location = new System.Drawing.Point(4, 43);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(422, 16);
-            this.label21.TabIndex = 2;
-            this.label21.Text = "The configured options correspond to these command line arguments.";
+            this.chkSQLTrustCert.AutoSize = true;
+            this.chkSQLTrustCert.Location = new System.Drawing.Point(97, 124);
+            this.chkSQLTrustCert.Name = "chkSQLTrustCert";
+            this.chkSQLTrustCert.Size = new System.Drawing.Size(182, 20);
+            this.chkSQLTrustCert.TabIndex = 4;
+            this.chkSQLTrustCert.Text = "Trust the Server Certificate";
+            this.chkSQLTrustCert.UseVisualStyleBackColor = true;
             // 
             // frmMain
             // 
@@ -1526,6 +1564,7 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
+            this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.pnl1Source);
             this.Controls.Add(this.pnl8Run);
             this.Controls.Add(this.pnl4Rights);
@@ -1534,7 +1573,6 @@
             this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.pnl3Opts);
-            this.Controls.Add(this.pnl2SQL);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(600, 440);
@@ -1695,5 +1733,8 @@
         private System.Windows.Forms.Button cmdStartSaveSettings;
         private System.Windows.Forms.TextBox txtCLIArgs;
         private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.ComboBox cmbSQLEncryptionMode;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.CheckBox chkSQLTrustCert;
     }
 }

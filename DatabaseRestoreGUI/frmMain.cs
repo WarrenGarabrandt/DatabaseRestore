@@ -188,6 +188,8 @@ namespace DatabaseRestoreGUI
                         SSPI = !chkSQLUseCredentials.Checked,
                         SQLUsername = txtSQLUsername.Text.Trim(),
                         SQLPassword = txtSQLPassword.Text,
+                        EncryptSQL = cmbSQLEncryptionMode.SelectedIndex == 1,
+                        TrustServerCert = chkSQLTrustCert.Checked,
                         DatabaseName = "",
                     };
                     List<string> databases = DatabaseRestore.Program.GetUserDatabases(options);
@@ -273,6 +275,8 @@ namespace DatabaseRestoreGUI
                         SSPI = !chkSQLUseCredentials.Checked,
                         SQLUsername = txtSQLUsername.Text.Trim(),
                         SQLPassword = txtSQLPassword.Text,
+                        EncryptSQL = cmbSQLEncryptionMode.SelectedIndex == 1,
+                        TrustServerCert = chkSQLTrustCert.Checked,
                         DatabaseName = cmbSQLDatabaseName.Text
                     };
                     List<DatabaseRestore.Program.MoveItem> MoveItems = DatabaseRestore.Program.GetDatabaseFiles(options);
@@ -329,6 +333,8 @@ namespace DatabaseRestoreGUI
                         SSPI = !chkSQLUseCredentials.Checked,
                         SQLUsername = txtSQLUsername.Text.Trim(),
                         SQLPassword = txtSQLPassword.Text,
+                        EncryptSQL = cmbSQLEncryptionMode.SelectedIndex == 1,
+                        TrustServerCert = chkSQLTrustCert.Checked,
                         DatabaseName = cmbSQLDatabaseName.Text
                     };
                     List<string> logins = DatabaseRestore.Program.GetSQLLogins(options);
@@ -751,6 +757,9 @@ namespace DatabaseRestoreGUI
             {
                 opts.SSPI = true;
             }
+
+            opts.EncryptSQL = cmbSQLEncryptionMode.SelectedIndex == 1;
+            opts.TrustServerCert = chkSQLTrustCert.Checked;
             opts.DatabaseName = cmbSQLDatabaseName.Text.Trim();
 
             // restore options page
@@ -854,6 +863,7 @@ namespace DatabaseRestoreGUI
                 // build options for display
                 if (cmbSourceSelectionMode.SelectedIndex == 0)
                 {
+                    // source mode: auto directory
                     if (string.IsNullOrWhiteSpace(txtSourceAutoPath.Text))
                     {
                         txtCLIArgs.Text = "Error: no source path specified.";
@@ -876,6 +886,7 @@ namespace DatabaseRestoreGUI
                 }
                 else
                 {
+                    // source mode: file
                     if (string.IsNullOrWhiteSpace(txtSourceFile.Text))
                     {
                         txtCLIArgs.Text = "Error: no source file specified.";
@@ -885,6 +896,7 @@ namespace DatabaseRestoreGUI
                 }
                 if (chkSourceTempEnable.Checked)
                 {
+                    // temp file in use
                     if (string.IsNullOrEmpty(txtSourceTempFilePath.Text))
                     {
                         txtCLIArgs.Text = "Error: no temp file specified.";
@@ -895,6 +907,14 @@ namespace DatabaseRestoreGUI
 
 
                 txtCLIArgs.Text = sb.ToString();
+            }
+        }
+
+        private void pnl2SQL_VisibleChanged(object sender, EventArgs e)
+        {
+            if (cmbSQLEncryptionMode.SelectedIndex == -1 )
+            {
+                cmbSQLEncryptionMode.SelectedIndex = 1;
             }
         }
     }

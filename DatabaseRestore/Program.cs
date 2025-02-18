@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.Security.Policy;
 using System.Reflection;
 using System.Xml.Serialization;
+using System.Diagnostics.SymbolStore;
 
 namespace DatabaseRestore
 {
@@ -63,6 +64,8 @@ namespace DatabaseRestore
                 MoveAllFiles = false;
                 ReplaceDatabase = false;
                 DbccCheckDB = false;
+                EncryptSQL = false;
+                TrustServerCert = false;
             }
             // --autosource mode
             public AutoSourceMode AutoSourceMode { get; set; }
@@ -86,6 +89,10 @@ namespace DatabaseRestore
             public string SQLUsername { get; set; }
             // --password
             public string SQLPassword { get; set; }
+            // --encrypt
+            public bool EncryptSQL {  get; set; }
+            // --trustservercert
+            public bool TrustServerCert { get; set; }
             // --rights
             public string UserRightsString { get; set; }
             // parsed from --rights
@@ -288,6 +295,8 @@ namespace DatabaseRestore
             Console.WriteLine("  --serverip -i <ip>              : IP address of the server to connect to.");
             Console.WriteLine("  --servername -n <name>          : name of the server to connect to.");
             Console.WriteLine("  --serverport -p <port>          : port of the server to connect to.");
+            Console.WriteLine("  --encrypt -e                    : Force encryption of the SQL connection.");
+            Console.WriteLine("  --trustservercert -t            : Trust the server's certificate. Required to connect for self-signed or untrusted certs.");
             Console.WriteLine("  --database -d <name>            : name of the database to overwrite with this backup.");
             Console.WriteLine("  --username -u <username>        : username to connect to SQL server as.");
             Console.WriteLine("  --password -p <password>        : password to connect to SQL server (INSECURE)");
@@ -525,6 +534,16 @@ namespace DatabaseRestore
                     }
                     options.SQLPassword = args[pos];
                     pos++;
+                }
+                else if (args[pos].ToLower() == "--encrypt" || args[pos].ToLower() == "-e")
+                {
+                    pos++;
+                    options.EncryptSQL = true;
+                }
+                else if (args[pos].ToLower() == "--trustservercert" || args[pos].ToLower() == "-t")
+                {
+                    pos++;
+                    options.TrustServerCert = true;
                 }
                 else if (args[pos].ToLower() == "--movefile" || args[pos].ToLower() == "-m")
                 {
@@ -784,6 +803,14 @@ namespace DatabaseRestore
             {
                 LogString(string.Format("SQL server port: {0}", options.ServerPort));
             }
+            if (options.EncryptSQL)
+            {
+                LogString("SQL server encrypted connection set to forced.");   
+            }
+            if (options.TrustServerCert)
+            {
+                LogString("SQL server certificate will be trusted (allow self-signed).");
+            }
             if (string.IsNullOrEmpty(options.DatabaseName))
             {
                 LogString("No Database name was specified.");
@@ -939,6 +966,14 @@ namespace DatabaseRestore
             else
             {
                 SQLConnectionString += string.Format("User ID={0};Password={1};", options.SQLUsername, options.SQLPassword);
+            }
+            if (options.EncryptSQL)
+            {
+                SQLConnectionString += "Encrypt=True;";
+            }
+            if (options.TrustServerCert)
+            {
+                SQLConnectionString += "TrustServerCertificate=True;";
             }
             return SQLConnectionString;
         }
