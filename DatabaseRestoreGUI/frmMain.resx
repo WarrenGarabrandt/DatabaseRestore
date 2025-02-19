@@ -132,7 +132,8 @@ You may also run the database restore process on demand on the Run button.</valu
     <value>* Please note: this file path must be accessible to both the user account running this backup restore process and to the SQL Server Service account. A network share of a subfolder inside the normal SQL Server Backup directory is usually a good spot if this program is not running on the SQL server itself. This file will be automatically overwriten and deleted when running.</value>
   </data>
   <data name="lblSQLCredentialInfo.Text" xml:space="preserve">
-    <value>WARNING: Provided SQL Server Credentials will be passed via commnd line arguments in clear text. This is inherently insecure. It is recommended that you add a Windows user account to SQL server and use integrated authentication instead for better security.</value>
+    <value>WARNING: Provided SQL Server Credentials will be passed via commnd line arguments in clear text. This is inherently insecure. It is recommended that you add a Windows user account to SQL server and use integrated authentication instead for better security.
+If the Password contains \, ", or a space, or the password ends with a \, you won't be able to pass that successfully through a command line argument.</value>
   </data>
   <metadata name="colLogicalName.UserAddedColumn" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -153,6 +154,6 @@ You may also run the database restore process on demand on the Run button.</valu
     <value>True</value>
   </metadata>
   <data name="lblRightsHelp.Text" xml:space="preserve">
-    <value>All Logins listed here will be added as users to the database, even if no rights are granted. Remove users by selecting a row and pressing delete and add new users by typing into the bottom row. Users must already exist as Logins in SQL server or the restore will fail.</value>
+    <value>Add users by typing into the bottom empry row, and remove users by selecting a row and pressing delete. Users must already exist as Logins in SQL server or the restore will fail. You must specify at least one role for each listed user.</value>
   </data>
 </root>

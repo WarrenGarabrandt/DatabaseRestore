@@ -63,6 +63,9 @@
             this.btn7CLI = new System.Windows.Forms.CheckBox();
             this.btn8Run = new System.Windows.Forms.CheckBox();
             this.pnl2SQL = new System.Windows.Forms.Panel();
+            this.chkSQLTrustCert = new System.Windows.Forms.CheckBox();
+            this.cmbSQLEncryptionMode = new System.Windows.Forms.ComboBox();
+            this.label22 = new System.Windows.Forms.Label();
             this.cmbSQLDatabaseName = new System.Windows.Forms.ComboBox();
             this.lblSQLCredentialInfo = new System.Windows.Forms.Label();
             this.txtSQLPassword = new System.Windows.Forms.TextBox();
@@ -147,9 +150,6 @@
             this.label16 = new System.Windows.Forms.Label();
             this.pnl8Run = new System.Windows.Forms.Panel();
             this.label17 = new System.Windows.Forms.Label();
-            this.label22 = new System.Windows.Forms.Label();
-            this.cmbSQLEncryptionMode = new System.Windows.Forms.ComboBox();
-            this.chkSQLTrustCert = new System.Windows.Forms.CheckBox();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -586,6 +586,37 @@
             this.pnl2SQL.TabIndex = 10;
             this.pnl2SQL.Tag = "SQLConnection";
             this.pnl2SQL.VisibleChanged += new System.EventHandler(this.pnl2SQL_VisibleChanged);
+            // 
+            // chkSQLTrustCert
+            // 
+            this.chkSQLTrustCert.AutoSize = true;
+            this.chkSQLTrustCert.Location = new System.Drawing.Point(97, 124);
+            this.chkSQLTrustCert.Name = "chkSQLTrustCert";
+            this.chkSQLTrustCert.Size = new System.Drawing.Size(182, 20);
+            this.chkSQLTrustCert.TabIndex = 4;
+            this.chkSQLTrustCert.Text = "Trust the Server Certificate";
+            this.chkSQLTrustCert.UseVisualStyleBackColor = true;
+            // 
+            // cmbSQLEncryptionMode
+            // 
+            this.cmbSQLEncryptionMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSQLEncryptionMode.FormattingEnabled = true;
+            this.cmbSQLEncryptionMode.Items.AddRange(new object[] {
+            "Optional",
+            "Mandatory"});
+            this.cmbSQLEncryptionMode.Location = new System.Drawing.Point(97, 94);
+            this.cmbSQLEncryptionMode.Name = "cmbSQLEncryptionMode";
+            this.cmbSQLEncryptionMode.Size = new System.Drawing.Size(244, 24);
+            this.cmbSQLEncryptionMode.TabIndex = 3;
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(23, 97);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(70, 16);
+            this.label22.TabIndex = 17;
+            this.label22.Text = "Encryption";
             // 
             // cmbSQLDatabaseName
             // 
@@ -1519,42 +1550,13 @@
             this.label17.TabIndex = 0;
             this.label17.Text = "Run Database Restore Now";
             // 
-            // label22
-            // 
-            this.label22.AutoSize = true;
-            this.label22.Location = new System.Drawing.Point(23, 97);
-            this.label22.Name = "label22";
-            this.label22.Size = new System.Drawing.Size(70, 16);
-            this.label22.TabIndex = 17;
-            this.label22.Text = "Encryption";
-            // 
-            // cmbSQLEncryptionMode
-            // 
-            this.cmbSQLEncryptionMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSQLEncryptionMode.FormattingEnabled = true;
-            this.cmbSQLEncryptionMode.Items.AddRange(new object[] {
-            "Optional",
-            "Mandatory"});
-            this.cmbSQLEncryptionMode.Location = new System.Drawing.Point(97, 94);
-            this.cmbSQLEncryptionMode.Name = "cmbSQLEncryptionMode";
-            this.cmbSQLEncryptionMode.Size = new System.Drawing.Size(244, 24);
-            this.cmbSQLEncryptionMode.TabIndex = 3;
-            // 
-            // chkSQLTrustCert
-            // 
-            this.chkSQLTrustCert.AutoSize = true;
-            this.chkSQLTrustCert.Location = new System.Drawing.Point(97, 124);
-            this.chkSQLTrustCert.Name = "chkSQLTrustCert";
-            this.chkSQLTrustCert.Size = new System.Drawing.Size(182, 20);
-            this.chkSQLTrustCert.TabIndex = 4;
-            this.chkSQLTrustCert.Text = "Trust the Server Certificate";
-            this.chkSQLTrustCert.UseVisualStyleBackColor = true;
-            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
+            this.Controls.Add(this.pnl6SMTP);
+            this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn8Run);
             this.Controls.Add(this.btn7CLI);
@@ -1567,11 +1569,9 @@
             this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.pnl1Source);
             this.Controls.Add(this.pnl8Run);
-            this.Controls.Add(this.pnl4Rights);
             this.Controls.Add(this.pnl7CLI);
-            this.Controls.Add(this.pnl6SMTP);
-            this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.pnl0Start);
+            this.Controls.Add(this.pnl4Rights);
             this.Controls.Add(this.pnl3Opts);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);

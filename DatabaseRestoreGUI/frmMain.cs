@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -865,17 +866,13 @@ namespace DatabaseRestoreGUI
                 if (cmbSourceSelectionMode.SelectedIndex == 0)
                 {
                     // source mode: auto directory
-                    if (string.IsNullOrWhiteSpace(txtSourceAutoPath.Text))
+                    string temp = EscapeArguments(txtSourceAutoPath.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
                     {
                         txtCLIArgs.Text = "Error: no source path specified.";
                         return;
                     }
-                    if (txtSourceAutoPath.Text.EndsWith("\""))
-                    {
-                        txtCLIArgs.Text = "Error: source path shouldn't end in a \"";
-                        return;
-                    }
-                    sb.AppendFormat("--autosource \"{0}\" ", txtSourceAutoPath.Text.Trim());
+                    sb.Append("--autosource ");
                     if (cmbAutoSourceAttribute.SelectedIndex == 0)
                     {
                         sb.Append("lastcreated ");
@@ -884,26 +881,29 @@ namespace DatabaseRestoreGUI
                     {
                         sb.Append("lastmodified ");
                     }
+                    sb.Append(temp);
                 }
                 else
                 {
                     // source mode: file
-                    if (string.IsNullOrWhiteSpace(txtSourceFile.Text))
+                    string temp = EscapeArguments(txtSourceFile.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
                     {
                         txtCLIArgs.Text = "Error: no source file specified.";
                         return;
                     }
-                    sb.AppendFormat("--source \"{0}\" ", txtSourceFile.Text.Trim());
+                    sb.AppendFormat("--source {0}", temp);
                 }
                 if (chkSourceTempEnable.Checked)
                 {
                     // temp file in use
-                    if (string.IsNullOrEmpty(txtSourceTempFilePath.Text))
+                    string temp = EscapeArguments(txtSourceTempFilePath.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
                     {
                         txtCLIArgs.Text = "Error: no temp file specified.";
                         return;
                     }
-                    sb.AppendFormat("--temp \"{0}\"", txtSourceTempFilePath.Text.Trim());
+                    sb.AppendFormat(" --temp {0}", temp);
                 }
                 // sql connection options
                 if (!string.IsNullOrWhiteSpace(txtSQLServerName.Text))
@@ -948,7 +948,7 @@ namespace DatabaseRestoreGUI
                     txtCLIArgs.Text = "No SQL Database specified.";
                     return;
                 }
-                if (!chkSQLUseCredentials.Checked)
+                if (chkSQLUseCredentials.Checked)
                 {
                     string temp = EscapeArguments(txtSQLUsername.Text.Trim());
                     if (string.IsNullOrEmpty(temp))
@@ -965,6 +965,120 @@ namespace DatabaseRestoreGUI
                     }
                     sb.AppendFormat(" --password {0}", temp);
                 }
+                // restore options
+                if (chkOptsReplace.Checked)
+                {
+                    sb.Append(" --replacedatabase");
+                }
+                if (chkOptsCheckdb.Checked)
+                {
+                    sb.Append(" --dbcccheckdb");
+                }
+                if (chkOptsMoveall.Checked)
+                {
+                    string temp = EscapeArguments(txtOptsMoveallPath.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "Move All Files reqires a path to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --moveallfiles {0}", temp);
+                }
+                if (chkOptsMoveFile.Checked)
+                {
+                    List<DatabaseRestore.Program.MoveItem> moveList = new List<DatabaseRestore.Program.MoveItem>();
+                    foreach (DataRow row in OptsMoveFile.Rows)
+                    {
+                        if (!string.IsNullOrWhiteSpace((string)row[0]) && !string.IsNullOrWhiteSpace((string)row[2]))
+                        {
+                            moveList.Add(new DatabaseRestore.Program.MoveItem()
+                            {
+                                LogicalName = (string)row[0],
+                                PhysicalName = (string)row[2]
+                            });
+                        }
+                    }
+                    foreach (var m in moveList)
+                    {
+                        string tempLogical = EscapeArguments(m.LogicalName.Trim());
+                        string tempPhysical = EscapeArguments(m.PhysicalName.Trim());
+                        if (string.IsNullOrEmpty(tempLogical) || string.IsNullOrEmpty(tempPhysical))
+                        {
+                            txtCLIArgs.Text = "Move database files requires a logical name and a physical path for each line.";
+                            return;
+                        }
+                        sb.AppendFormat(" --movefile {0} {1}", tempLogical, tempPhysical);
+                    }                    
+                }
+
+                // rights
+                if (chkRightsEnable.Checked)
+                {
+                    sb.Append(" --rights ");
+                    List<DatabaseRestore.Program.UserRightItem> rights = new List<DatabaseRestore.Program.UserRightItem>();
+                    StringBuilder rightssb = new StringBuilder();
+                    foreach (DataRow row in RightsUsers.Rows)
+                    {
+                        string tempUser = ((string)row[0]).Trim();
+                        if (string.IsNullOrEmpty(tempUser) || tempUser.Contains(";") || tempUser.Contains(":"))
+                        {
+                            txtCLIArgs.Text = "On the Database Rights page, Username is required and can't contain a ; or a :";
+                            return;
+                        }
+                        bool read = row[1].Equals(true);
+                        bool write = row[2].Equals(true);
+                        bool owner = row[3].Equals(true);
+                        if (!(read || write || owner))
+                        {
+                            txtCLIArgs.Text = "On the Database Rights page, east listed user must have at least one role selected:";
+                            return;
+                        }
+                        if (rightssb.Length > 0)
+                        {
+                            rightssb.Append(";");
+                        }
+                        rightssb.AppendFormat("{0}:{1}{2}{3}", tempUser, read ? "R" : "", write ? "W" : "", owner ? "O" : "");
+                    }
+                    string temp = EscapeArguments(rightssb.ToString());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "On the Database Rights page, Add SQL logins option require at least one user.";
+                        return;
+                    }
+                    sb.Append(temp);
+                }
+                // log
+                if (chkLogEnable.Checked)
+                {
+                    string temp = EscapeArguments(txtLogFile.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "Logging requires a file to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --logfile {0}", temp);
+                }
+                if (chkLogAppendEnable.Checked)
+                {
+                    string temp = EscapeArguments(txtLogAppendFile.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "Append logging requires a file to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --logappend {0}", temp);
+                }
+                //smtp
+                if (chkSMTPSendEmail.Checked)
+                {
+                    string temp = EscapeArguments(txtSMTPProfile.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "SMTP Profile requires a file to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --smtpprofile {0}", temp);
+                }
 
                 txtCLIArgs.Text = sb.ToString();
             }
@@ -978,40 +1092,29 @@ namespace DatabaseRestoreGUI
             }
         }
 
-        /// <summary>
-        /// Quotes all arguments that contain whitespace, or begin with a quote and returns a single
-        /// argument string for use with Process.Start().
-        /// Code from: http://csharptest.net/529/how-to-correctly-escape-command-line-arguments-in-c/index.html
-        /// </summary>
-        /// <param name="args">A list of strings for arguments, may not contain null, '\0', '\r', or '\n'</param>
-        /// <returns>The combined list of escaped/quoted strings</returns>
-        /// <exception cref="System.ArgumentNullException">Raised when one of the arguments is null</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">Raised if an argument contains '\0', '\r', or '\n'</exception>
-        public static string EscapeArguments(params string[] args)
+        public string EscapeArguments(string arg)
         {
-            StringBuilder arguments = new StringBuilder();
-            Regex invalidChar = new Regex("[\x00\x0a\x0d]");//  these can not be escaped
-            Regex needsQuotes = new Regex(@"\s|""");//          contains whitespace or two quote characters
-            Regex escapeQuote = new Regex(@"(\\*)(""|$)");//    one or more '\' followed with a quote or end of string
-            for (int carg = 0; args != null && carg < args.Length; carg++)
+            if (string.IsNullOrEmpty(arg))
             {
-                if (args[carg] == null) { throw new ArgumentNullException("args[" + carg + "]"); }
-                if (invalidChar.IsMatch(args[carg])) { throw new ArgumentOutOfRangeException("args[" + carg + "]"); }
-                if (args[carg] == String.Empty) { arguments.Append("\"\""); }
-                else if (!needsQuotes.IsMatch(args[carg])) { arguments.Append(args[carg]); }
-                else
-                {
-                    arguments.Append('"');
-                    arguments.Append(escapeQuote.Replace(args[carg], m =>
-                    m.Groups[1].Value + m.Groups[1].Value +
-                    (m.Groups[2].Value == "\"" ? "\\\"" : "")
-                    ));
-                    arguments.Append('"');
-                }
-                if (carg + 1 < args.Length)
-                    arguments.Append(' ');
+                return "";
             }
-            return arguments.ToString();
+            char[] illegalchars = { '\0', '\r', '\n', '\t' };
+            if (arg.Any(c => illegalchars.Contains(c)))
+            {
+                throw new Exception("Can't contain null, tab, or a new line.");
+            } 
+            //strip trailing \
+            while (arg.Length > 0 && arg.EndsWith("\\"))
+            {
+                arg = arg.Substring(0, arg.Length - 1);
+            }
+            if (arg.Contains('\"') || arg.Contains(' '))
+            {
+                arg = arg.Replace("\"", "\\\"");
+                arg = "\"" + arg + "\"";
+            }
+            return arg;
         }
+
     }
 }
