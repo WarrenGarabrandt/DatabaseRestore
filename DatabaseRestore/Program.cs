@@ -28,6 +28,7 @@ using System.Reflection;
 using System.Xml.Serialization;
 using System.Diagnostics.SymbolStore;
 using System.Reflection.Emit;
+using static DatabaseRestore.Program;
 
 namespace DatabaseRestore
 {
@@ -856,6 +857,12 @@ namespace DatabaseRestore
                     LogString("   ", NewLine: false);
                     LogString(userRight.Name, NewLine: false);
                     LogString(": ", NewLine: false);
+                    bool roleAssigned = userRight.Read || userRight.Write || userRight.Owner;
+                    if (!roleAssigned)
+                    {
+                        LogString("No Roles have been selected. Check Role assignments and try again.");
+                        return false;
+                    }
                     if (userRight.Read)
                     {
                         LogString("Read ", NewLine: false);
@@ -874,6 +881,27 @@ namespace DatabaseRestore
             else
             {
                 LogString("No user rights specified to create.");
+            }
+            // check logins to make sure they exist on the target sql server.
+            List<string> logins;
+            try
+            {
+                LogString("Connecting to SQL server to get a list of logins...", NewLine: false);
+                logins = GetSQLLogins(options);
+                LogString("Successful.");
+                foreach (var userRight in options.UserRights)
+                {
+                    if (!logins.Contains(userRight.Name, StringComparer.OrdinalIgnoreCase))
+                    {
+                        LogString(String.Format("The Login {0} does not exist on the SQL server.", userRight.Name));
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogString(string.Format("Unable to connect to SQL server to verify logins. Exception: {0}", ex.Message));
+                return false;
             }
             if (options.ReplaceDatabase)
             {
@@ -1211,22 +1239,58 @@ namespace DatabaseRestore
                 {
                     try
                     {
-                        string query = "";
+                        string query;
                         LogString("Opening connection to SQL server... ", NewLine: false);
                         connection.Open();
                         LogString("Successful");
-
+                        LogString("Getting list of users from the database... ", NewLine: false);
+                        List<string> existingUsers = new List<string>();
+                        query = "SELECT name as Username FROM sys.database_principals WHERE type not in ('A', 'G', 'R', 'X') and sid is not null and name != 'guest';";
+                        using (SqlCommand cmd = new SqlCommand(query, connection))
+                        {
+                            SqlDataReader reader = cmd.ExecuteReader();
+                            while (reader.Read())
+                            {
+                                existingUsers.Add(reader.GetString(0));
+                            }
+                            reader.Close();
+                        }
+                        LogString("Successful");
                         foreach (var user in options.UserRights)
                         {
                             // create the user
-                            query = string.Format("CREATE USER [{0}] FOR LOGIN [{0}]", user.Name);
+                            if (!existingUsers.Contains(user.Name, StringComparer.OrdinalIgnoreCase))
+                            {
+                                query = string.Format("CREATE USER [{0}] FOR LOGIN [{0}]", user.Name);
+                                using (SqlCommand cmd = new SqlCommand(query, connection))
+                                {
+                                    LogString(string.Format("Creating login for user [{0}]... ", user.Name), NewLine: false);
+                                    cmd.ExecuteNonQuery();
+                                    LogString("Successful");
+                                }
+                            }
+
+                            query = string.Format("SELECT IS_ROLEMEMBER('db_datareader', '{0}') AS Reader, " +
+                                "IS_ROLEMEMBER('db_datawriter', '{0}') AS Writer, " +
+                                "IS_ROLEMEMBER('db_owner', '{0}') AS Owner;", user.Name);
+                            bool isdbreader = false;
+                            bool isdbwriter = false;
+                            bool isdbowner = false;
                             using (SqlCommand cmd = new SqlCommand(query, connection))
                             {
-                                LogString(string.Format("Creating login for user [{0}]... ", user.Name), NewLine: false);
-                                cmd.ExecuteNonQuery();
+                                LogString(string.Format("Retrieving current Roles for {0}...", user.Name), NewLine: false);
+                                SqlDataReader reader = cmd.ExecuteReader();
+                                if (reader.Read())
+                                {
+                                    isdbreader = reader.GetInt32(0) == 1;
+                                    isdbwriter = reader.GetInt32(1) == 1;
+                                    isdbowner = reader.GetInt32(2) == 1;
+                                }
+                                reader.Close();
                                 LogString("Successful");
+                                LogString(string.Format("Existing Roles for user: {0}{1}{2}", isdbreader ? "READER " : "", isdbwriter ? "WRITER " : "", isdbowner ? "OWNER" : ""));
                             }
-                            if (user.Read)
+                            if (user.Read && !isdbreader)
                             {
                                 query = string.Format("ALTER ROLE [db_datareader] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
@@ -1236,7 +1300,7 @@ namespace DatabaseRestore
                                     LogString("Successful");
                                 }
                             }
-                            if (user.Write)
+                            if (user.Write && !isdbwriter)
                             {
                                 query = string.Format("ALTER ROLE [db_datawriter] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
@@ -1246,7 +1310,7 @@ namespace DatabaseRestore
                                     LogString("Successful");
                                 }
                             }
-                            if (user.Owner)
+                            if (user.Owner && !isdbowner)
                             {
                                 query = string.Format("ALTER ROLE [db_owner] ADD MEMBER [{0}]", user.Name);
                                 using (SqlCommand cmd = new SqlCommand(query, connection))
