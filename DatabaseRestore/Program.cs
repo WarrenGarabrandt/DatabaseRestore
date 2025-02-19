@@ -27,6 +27,7 @@ using System.Security.Policy;
 using System.Reflection;
 using System.Xml.Serialization;
 using System.Diagnostics.SymbolStore;
+using System.Reflection.Emit;
 
 namespace DatabaseRestore
 {
@@ -143,8 +144,15 @@ namespace DatabaseRestore
             {
                 return -1;
             }
+            int result = RunJob(options);               
+
+            return result;
+        }
+
+        public static int RunJob(OptionsClass options)
+        {
             try
-            {
+            { 
                 if (!CheckOptions(options))
                 {
                     return -2;
@@ -202,6 +210,7 @@ namespace DatabaseRestore
             }
             return 0;
         }
+
 
         public static StringBuilder LogOutput = new StringBuilder();
 

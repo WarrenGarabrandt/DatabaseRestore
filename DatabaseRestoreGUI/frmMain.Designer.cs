@@ -149,6 +149,9 @@
             this.txtCLIArgs = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
             this.pnl8Run = new System.Windows.Forms.Panel();
+            this.txtRunOutput = new System.Windows.Forms.TextBox();
+            this.cmdRunStart = new System.Windows.Forms.Button();
+            this.lblRunBuildStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
@@ -1532,6 +1535,9 @@
             this.pnl8Run.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl8Run.Controls.Add(this.txtRunOutput);
+            this.pnl8Run.Controls.Add(this.cmdRunStart);
+            this.pnl8Run.Controls.Add(this.lblRunBuildStatus);
             this.pnl8Run.Controls.Add(this.label17);
             this.pnl8Run.Location = new System.Drawing.Point(169, 12);
             this.pnl8Run.Margin = new System.Windows.Forms.Padding(4);
@@ -1539,6 +1545,41 @@
             this.pnl8Run.Size = new System.Drawing.Size(562, 476);
             this.pnl8Run.TabIndex = 17;
             this.pnl8Run.Tag = "Run";
+            this.pnl8Run.VisibleChanged += new System.EventHandler(this.pnl8Run_VisibleChanged);
+            // 
+            // txtRunOutput
+            // 
+            this.txtRunOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtRunOutput.Location = new System.Drawing.Point(7, 94);
+            this.txtRunOutput.Multiline = true;
+            this.txtRunOutput.Name = "txtRunOutput";
+            this.txtRunOutput.ReadOnly = true;
+            this.txtRunOutput.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.txtRunOutput.Size = new System.Drawing.Size(548, 376);
+            this.txtRunOutput.TabIndex = 3;
+            // 
+            // cmdRunStart
+            // 
+            this.cmdRunStart.Enabled = false;
+            this.cmdRunStart.Location = new System.Drawing.Point(7, 68);
+            this.cmdRunStart.Name = "cmdRunStart";
+            this.cmdRunStart.Size = new System.Drawing.Size(75, 23);
+            this.cmdRunStart.TabIndex = 2;
+            this.cmdRunStart.Text = "Run";
+            this.cmdRunStart.UseVisualStyleBackColor = true;
+            this.cmdRunStart.Click += new System.EventHandler(this.cmdRunStart_Click);
+            // 
+            // lblRunBuildStatus
+            // 
+            this.lblRunBuildStatus.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblRunBuildStatus.Location = new System.Drawing.Point(4, 29);
+            this.lblRunBuildStatus.Name = "lblRunBuildStatus";
+            this.lblRunBuildStatus.Size = new System.Drawing.Size(555, 35);
+            this.lblRunBuildStatus.TabIndex = 1;
+            this.lblRunBuildStatus.Text = "Job Build Status";
             // 
             // label17
             // 
@@ -1555,8 +1596,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
-            this.Controls.Add(this.pnl6SMTP);
-            this.Controls.Add(this.pnl5Log);
+            this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn8Run);
             this.Controls.Add(this.btn7CLI);
@@ -1566,11 +1606,12 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
-            this.Controls.Add(this.pnl2SQL);
-            this.Controls.Add(this.pnl1Source);
-            this.Controls.Add(this.pnl8Run);
-            this.Controls.Add(this.pnl7CLI);
             this.Controls.Add(this.pnl0Start);
+            this.Controls.Add(this.pnl8Run);
+            this.Controls.Add(this.pnl6SMTP);
+            this.Controls.Add(this.pnl5Log);
+            this.Controls.Add(this.pnl1Source);
+            this.Controls.Add(this.pnl7CLI);
             this.Controls.Add(this.pnl4Rights);
             this.Controls.Add(this.pnl3Opts);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -1736,5 +1777,8 @@
         private System.Windows.Forms.ComboBox cmbSQLEncryptionMode;
         private System.Windows.Forms.Label label22;
         private System.Windows.Forms.CheckBox chkSQLTrustCert;
+        private System.Windows.Forms.Label lblRunBuildStatus;
+        private System.Windows.Forms.Button cmdRunStart;
+        private System.Windows.Forms.TextBox txtRunOutput;
     }
 }

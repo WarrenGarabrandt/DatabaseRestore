@@ -641,6 +641,15 @@ namespace DatabaseRestoreGUI
                 txtSQLUsername.Text = opts.SQLUsername;
                 txtSQLPassword.Text = opts.SQLPassword;
             }
+            if (opts.EncryptSQL)
+            {
+                cmbSQLEncryptionMode.SelectedIndex = 1;
+            }
+            else
+            {
+                cmbSQLEncryptionMode.SelectedIndex = 0;
+            }
+            chkSQLTrustCert.Checked = opts.TrustServerCert;
             cmbSQLDatabaseName.Text = opts.DatabaseName;
 
             // restore options page
@@ -1116,5 +1125,78 @@ namespace DatabaseRestoreGUI
             return arg;
         }
 
+        bool Running = false;
+        BackgroundWorker DemandJobRunner = null;
+        private void pnl8Run_VisibleChanged(object sender, EventArgs e)
+        {
+            if (!Running && pnl8Run.Visible)
+            {
+                lblRunBuildStatus.Text = "";
+                cmdRunStart.Enabled = false;
+                // check values and build job.
+                if (!ValidateSettings())
+                {
+                    lblRunBuildStatus.Text = "Please check settings and come back to this page to retry checks.";
+                    return;
+                }
+                lblRunBuildStatus.Text = "Initial checks complete, and job has been built.\r\nClick Run restore the backup now.";
+                cmdRunStart.Enabled = true;
+            }        
+        }
+
+        private void cmdRunStart_Click(object sender, EventArgs e)
+        {
+            if (Running)
+            {
+                cmdRunStart.Enabled = false;
+                return;
+            }
+            if (DemandJobRunner == null)
+            {
+                DemandJobRunner = new BackgroundWorker();
+                DemandJobRunner.RunWorkerCompleted += DemandJobRunner_RunWorkerCompleted;
+                DemandJobRunner.DoWork += DemandJobRunner_DoWork;
+            }
+            cmdRunStart.Enabled = false;
+            if (DemandJobRunner.IsBusy == false)
+            {
+                if (!ValidateSettings())
+                {
+                    lblRunBuildStatus.Text = "Please check settings and come back to this page to retry checks.";
+                    return;
+                }
+                DatabaseRestore.Program.OptionsClass DemandRunOptions = BuildOptionsFile();
+                Running = true;
+                lblRunBuildStatus.Text = "Job is running. Please wait for completion, then see output below.";
+                txtRunOutput.Text = "Please wait for log output.";
+                DemandJobRunner.RunWorkerAsync(DemandRunOptions);
+            }
+        }
+
+        private void DemandJobRunner_DoWork(object sender, DoWorkEventArgs e)
+        {
+            DatabaseRestore.Program.OptionsClass opts = e.Argument as DatabaseRestore.Program.OptionsClass;
+            if (opts == null)
+            {
+                e.Result = "No demand job options provided.";
+                return;
+            }
+            DatabaseRestore.Program.LogOutput.Clear();
+            DatabaseRestore.Program.RunJob(opts);
+            e.Result = DatabaseRestore.Program.LogOutput.ToString();
+            return;
+        }
+
+        private void DemandJobRunner_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Result is string s)
+            {
+                txtRunOutput.Text += s;
+                txtRunOutput.SelectionStart = txtRunOutput.Text.Length;
+                txtRunOutput.ScrollToCaret();
+            }
+            Running = false;
+            lblRunBuildStatus.Text = "Job as stopped. See lob below for any errors.";
+        }
     }
 }
