@@ -299,6 +299,8 @@ namespace DatabaseRestore
         public static void ShowUsage()
         {
             Console.WriteLine("Usage:");
+            Console.WriteLine("  --loadsettings <path>        : Loads settings from a settings file (created with the GUI).");
+            Console.WriteLine("  --settingspassword <password>   : Specifies a password to decrypt the --loadsettings file, only specify if that file is password protected.");
             Console.WriteLine("  --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.");
             Console.WriteLine("  --source -s <filepath>          : source database backup file.");
             Console.WriteLine("  --temp -t <filepath>            : temporary directory and file name to copy the source to before restoring.");
@@ -318,6 +320,12 @@ namespace DatabaseRestore
             Console.WriteLine("  --logfile <filepath>            : Writes log output to the specified file, overwriting the file if it exists.");
             Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
             Console.WriteLine("  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log.");
+            Console.WriteLine();
+            Console.WriteLine("If --loadsettings is specified, any command line arguments provided override the settings in the file.");
+            Console.WriteLine("If the settings file is password protected, use the --settingspassword argument to specify the password to decrypt it.");
+            Console.WriteLine("It is still insecure to pass password through command line arguments, so if an attacker has access to the computer, then");
+            Console.WriteLine("they can capture the command line argument and decrypt the file themselves. For best security, us integrated authentication");
+            Console.WriteLine("for SQL server so that no SQL server password has to be saved or passed through command line anywhere.");
             Console.WriteLine();
             Console.WriteLine("Autosource mode specifies which file to choose in the specified directory.");
             Console.WriteLine(" lastcreated : selects the newest file by creation date");
@@ -349,8 +357,148 @@ namespace DatabaseRestore
 
         public static bool ParseOptions(string[] args, out OptionsClass options)
         {
-            options = new OptionsClass();
+            options = null;
+            // first, scan the arguments to see if a settings file is specified.  If so, load that, then parse other arguments to override the settings file.
             int pos = 0;
+            string SettingsFile = null;
+            string SettingsPassword = null;
+            while (pos < args.Length)
+            {
+                if (args[pos].ToLower() == "--loadsettings")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("--loadsettings file not specified.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--loadsettings path argument contains invalid characters.");
+                        return false;
+                    }
+                    if (!string.IsNullOrEmpty(SettingsFile))
+                    {
+                        LogString("Only one --loadsettings argument is allowed.");
+                        return false;
+                    }
+                    SettingsFile = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--settingspassword")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("--settingspassword password not specified.");
+                        return false;
+                    }
+                    if (!string.IsNullOrEmpty(SettingsPassword))
+                    {
+                        LogString("Only one --settingspassword argument is allowed.");
+                        return false;
+                    }
+                    SettingsPassword = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--autosource" || args[pos].ToLower() == "-a")
+                {
+                    pos+= 3;
+                }
+                else if (args[pos].ToLower() == "--source" || args[pos].ToLower() == "-s")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--temp" || args[pos].ToLower() == "-t")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--database" || args[pos].ToLower() == "-d")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--rights" || args[pos].ToLower() == "-r")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--serverip" || args[pos].ToLower() == "-i")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--servername" || args[pos].ToLower() == "-n")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--serverport" || args[pos].ToLower() == "-p")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--username" || args[pos].ToLower() == "-u")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--password" || args[pos].ToLower() == "-p")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--encrypt" || args[pos].ToLower() == "-e")
+                {
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--trustservercert" || args[pos].ToLower() == "-t")
+                {
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--movefile" || args[pos].ToLower() == "-m")
+                {
+                    pos += 3;
+                }
+                else if (args[pos].ToLower() == "--moveallfiles")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--replacedatabase")
+                {
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--dbcccheckdb")
+                {
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--logfile")
+                {
+                    pos+= 2;
+                }
+                else if (args[pos].ToLower() == "--logappend")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--smtpprofile")
+                {
+                    pos += 2;
+                }
+                else
+                {
+                    LogString(string.Format("Unrecognized command line option {0}", args[pos]));
+                    return false;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(SettingsFile))
+            {
+                options = LoadOptionsFile(SettingsFile, SettingsPassword);
+                if (options == null)
+                {
+                    LogString("An error occurred processing the --loadsettings file. Verify the file exists and that the password is correct.");
+                    return false;
+                }
+            }
+            else
+            {
+                options = new OptionsClass();
+            }
+            pos = 0;
+
             while (pos < args.Length)
             {
                 if (args[pos].ToLower() == "--autosource" || args[pos].ToLower() == "-a")
@@ -658,6 +806,14 @@ namespace DatabaseRestore
                     options.SMTPProfile = args[pos];
                     pos++;
                 }
+                else if (args[pos].ToLower() == "--loadsettings")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--settingspassword")
+                {
+                    pos += 2;
+                }
                 else
                 {
                     LogString(string.Format("Unrecognized command line option {0}", args[pos]));
@@ -757,7 +913,7 @@ namespace DatabaseRestore
                 if (options.TempFile.StartsWith("\\\\"))
                 {
                     // this is a UNC path. 
-                    LogString("Detected temp folder is a UNC path. Skipping filepath checks.");
+                    LogString(String.Format("Detected temp folder is a UNC path. Skipping filepath checks: {0}", options.TempFile));
                 }
                 else if (System.IO.Directory.Exists(System.IO.Path.GetDirectoryName(options.TempFile)))
                 {
@@ -1415,7 +1571,7 @@ namespace DatabaseRestore
             }
         }
 
-        public static OptionsClass LoadOptionsFile(string path)
+        public static OptionsClass LoadOptionsFile(string path, string password = null)
         {
             OptionsClass options = null;
             try
@@ -1433,7 +1589,7 @@ namespace DatabaseRestore
             }
         }
 
-        public static bool SaveOptionsFile(OptionsClass options, string path)
+        public static bool SaveOptionsFile(OptionsClass options, string path, string password = null)
         {
             try
             {
