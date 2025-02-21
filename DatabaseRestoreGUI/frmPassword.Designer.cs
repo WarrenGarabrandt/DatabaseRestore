@@ -40,11 +40,12 @@
             // txtPass1
             // 
             this.txtPass1.Location = new System.Drawing.Point(16, 29);
-            this.txtPass1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.txtPass1.Margin = new System.Windows.Forms.Padding(4);
             this.txtPass1.Name = "txtPass1";
             this.txtPass1.PasswordChar = '●';
             this.txtPass1.Size = new System.Drawing.Size(218, 22);
             this.txtPass1.TabIndex = 0;
+            this.txtPass1.TextChanged += new System.EventHandler(this.txtPass1_TextChanged);
             // 
             // lblEnter
             // 
@@ -60,7 +61,7 @@
             // 
             this.cmdOk.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdOk.Location = new System.Drawing.Point(134, 125);
-            this.cmdOk.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmdOk.Margin = new System.Windows.Forms.Padding(4);
             this.cmdOk.Name = "cmdOk";
             this.cmdOk.Size = new System.Drawing.Size(100, 28);
             this.cmdOk.TabIndex = 2;
@@ -73,7 +74,7 @@
             this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cmdCancel.Location = new System.Drawing.Point(16, 125);
-            this.cmdCancel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.cmdCancel.Margin = new System.Windows.Forms.Padding(4);
             this.cmdCancel.Name = "cmdCancel";
             this.cmdCancel.Size = new System.Drawing.Size(100, 28);
             this.cmdCancel.TabIndex = 3;
@@ -128,7 +129,7 @@
             this.Controls.Add(this.txtPass1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmPassword";

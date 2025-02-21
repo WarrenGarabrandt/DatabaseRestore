@@ -68,5 +68,20 @@ namespace DatabaseRestoreGUI
             this.DialogResult= DialogResult.Cancel;
             this.Close();
         }
+
+        private void txtPass1_TextChanged(object sender, EventArgs e)
+        {
+            if (txtPass2.Visible)
+            {
+                if (txtPass1.Text != txtPass2.Text)
+                {
+                    lblError.Visible = true;
+                }
+                else
+                {
+                    lblError.Visible = false;
+                }
+            }
+        }
     }
 }
