@@ -135,6 +135,7 @@ namespace DatabaseRestore
             public bool AttachLog { get; set; }
         }
 
+        /*
         private static void TestCrypto()
         {
             string Loremipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
@@ -143,13 +144,13 @@ namespace DatabaseRestore
             TestStream.Write(testBuffer, 0, testBuffer.Length);
             TestStream.Seek(0, SeekOrigin.Begin);
 
-            if (!EncryptAndSaveFile(@"C:\temp\testfile.XSF", "", TestStream))
+            if (!EncryptAndSaveFile(@"C:\temp\testfile.XSF", "hijkelemenop", TestStream))
             {
                 Console.WriteLine("Failed to Encrypt.");
                 return;
             }
 
-            MemoryStream result = LoadAndDecryptFile(@"C:\temp\testfile.XSF", "");
+            MemoryStream result = LoadAndDecryptFile(@"C:\temp\testfile.XSF", "hijkelemenop");
             byte[] decryptBuff = result.ToArray();
             string decryptString = Encoding.UTF8.GetString(decryptBuff);
             if (decryptString == Loremipsum)
@@ -160,12 +161,10 @@ namespace DatabaseRestore
             {
                 Console.WriteLine("Data mismatch.");
             }
-        }
+        }*/
 
         static int Main(string[] args)
         {
-            TestCrypto();
-            return 0;
             StartTime = DateTime.Now;
             LogString(ProgramNameVersionString);
             if (args.Length == 0)
