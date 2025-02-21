@@ -238,7 +238,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.Location = new System.Drawing.Point(4, 54);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(555, 229);
+            this.label2.Size = new System.Drawing.Size(555, 378);
             this.label2.TabIndex = 2;
             this.label2.Text = resources.GetString("label2.Text");
             // 
@@ -1203,6 +1203,7 @@
             // 
             // lblSMTPPassWarn
             // 
+            this.lblSMTPPassWarn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblSMTPPassWarn.AutoSize = true;
             this.lblSMTPPassWarn.Location = new System.Drawing.Point(4, 333);
             this.lblSMTPPassWarn.Name = "lblSMTPPassWarn";
@@ -1213,6 +1214,7 @@
             // 
             // cmdSMTPLoadProfile
             // 
+            this.cmdSMTPLoadProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdSMTPLoadProfile.Location = new System.Drawing.Point(297, 329);
             this.cmdSMTPLoadProfile.Name = "cmdSMTPLoadProfile";
             this.cmdSMTPLoadProfile.Size = new System.Drawing.Size(120, 23);
@@ -1223,6 +1225,7 @@
             // 
             // cmdSMTPSaveProfile
             // 
+            this.cmdSMTPSaveProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cmdSMTPSaveProfile.Location = new System.Drawing.Point(423, 329);
             this.cmdSMTPSaveProfile.Name = "cmdSMTPSaveProfile";
             this.cmdSMTPSaveProfile.Size = new System.Drawing.Size(119, 23);
@@ -1596,6 +1599,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
+            this.Controls.Add(this.pnl6SMTP);
+            this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn8Run);
@@ -1606,9 +1611,7 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
-            this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.pnl8Run);
-            this.Controls.Add(this.pnl6SMTP);
             this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.pnl1Source);
             this.Controls.Add(this.pnl7CLI);

@@ -29,12 +29,16 @@ using System.Xml.Serialization;
 using System.Diagnostics.SymbolStore;
 using System.Reflection.Emit;
 using static DatabaseRestore.Program;
+using System.Net.NetworkInformation;
+using System.Security.Cryptography;
+using System.Runtime.Remoting.Messaging;
 
 namespace DatabaseRestore
 {
     public class Program
     {
         public const string BUILDRELEASE = "alpha1";
+        public const int KEYITERATIONS = 1000;
 
         public class UserRightItem
         {
@@ -131,8 +135,37 @@ namespace DatabaseRestore
             public bool AttachLog { get; set; }
         }
 
+        private static void TestCrypto()
+        {
+            string Loremipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
+            MemoryStream TestStream = new MemoryStream();
+            byte[] testBuffer = Encoding.UTF8.GetBytes(Loremipsum);
+            TestStream.Write(testBuffer, 0, testBuffer.Length);
+            TestStream.Seek(0, SeekOrigin.Begin);
+
+            if (!EncryptAndSaveFile(@"C:\temp\testfile.XSF", "", TestStream))
+            {
+                Console.WriteLine("Failed to Encrypt.");
+                return;
+            }
+
+            MemoryStream result = LoadAndDecryptFile(@"C:\temp\testfile.XSF", "");
+            byte[] decryptBuff = result.ToArray();
+            string decryptString = Encoding.UTF8.GetString(decryptBuff);
+            if (decryptString == Loremipsum)
+            {
+                Console.WriteLine("SUCCESS!");
+            }
+            else
+            {
+                Console.WriteLine("Data mismatch.");
+            }
+        }
+
         static int Main(string[] args)
         {
+            TestCrypto();
+            return 0;
             StartTime = DateTime.Now;
             LogString(ProgramNameVersionString);
             if (args.Length == 0)
@@ -361,7 +394,7 @@ namespace DatabaseRestore
             // first, scan the arguments to see if a settings file is specified.  If so, load that, then parse other arguments to override the settings file.
             int pos = 0;
             string SettingsFile = null;
-            string SettingsPassword = null;
+            string SettingsPassword = "";
             while (pos < args.Length)
             {
                 if (args[pos].ToLower() == "--loadsettings")
@@ -1536,16 +1569,15 @@ namespace DatabaseRestore
             return name + "_" + num.ToString();
         }
 
-        public static SMTPProfileClass LoadSMTPProfile(string path)
+        public static SMTPProfileClass LoadSMTPProfile(string path, string password = "")
         {
             SMTPProfileClass profile = null;
             try
             {
                 XmlSerializer xser = new XmlSerializer(typeof(SMTPProfileClass));
-                using (TextReader reader = File.OpenText(path))
-                {
-                    profile = (SMTPProfileClass)xser.Deserialize(reader);
-                }
+                MemoryStream stream = LoadAndDecryptFile(path, password);
+                profile = (SMTPProfileClass)xser.Deserialize(stream);
+                stream.Dispose();
                 return profile;
             }
             catch
@@ -1554,14 +1586,15 @@ namespace DatabaseRestore
             }
         }
 
-        public static bool SaveSMTPProfile(SMTPProfileClass profile, string path)
+        public static bool SaveSMTPProfile(SMTPProfileClass profile, string path, string password = "")
         {
             try
             {
                 XmlSerializer xser = new XmlSerializer(typeof(SMTPProfileClass));
-                using(TextWriter writer = File.CreateText(path))
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    xser.Serialize(writer, profile);
+                    xser.Serialize(stream, profile);
+                    EncryptAndSaveFile(path, password, stream);
                 }
                 return true;
             }
@@ -1571,16 +1604,15 @@ namespace DatabaseRestore
             }
         }
 
-        public static OptionsClass LoadOptionsFile(string path, string password = null)
+        public static OptionsClass LoadOptionsFile(string path, string password = "")
         {
             OptionsClass options = null;
             try
             {
                 XmlSerializer xser = new XmlSerializer(typeof(OptionsClass));
-                using (TextReader reader = File.OpenText(path))
-                {
-                    options = (OptionsClass)xser.Deserialize(reader);
-                }
+                MemoryStream stream = LoadAndDecryptFile(path, password);
+                options = (OptionsClass)xser.Deserialize(stream);
+                stream.Dispose();
                 return options;
             }
             catch
@@ -1589,14 +1621,15 @@ namespace DatabaseRestore
             }
         }
 
-        public static bool SaveOptionsFile(OptionsClass options, string path, string password = null)
+        public static bool SaveOptionsFile(OptionsClass options, string path, string password = "")
         {
             try
             {
                 XmlSerializer xser = new XmlSerializer (typeof(OptionsClass));
-                using (TextWriter writer = File.CreateText(path))
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    xser.Serialize(writer, options);
+                    xser.Serialize(stream, options);
+                    EncryptAndSaveFile(path, password, stream);
                 }
                 return true;
             }
@@ -1605,6 +1638,145 @@ namespace DatabaseRestore
                 return false;
             }
         }
+
+        private static bool EncryptAndSaveFile(string path, string password, MemoryStream data)
+        {
+            byte[] HeaderBytes = new byte[28];
+            byte[] magicNumber = Encoding.ASCII.GetBytes("EXOF");
+            byte[] IV = new byte[16];
+            byte[] Salt = new byte[8];
+            data.Seek(0, SeekOrigin.Begin);
+            byte[] SrcSizeBytes = BitConverter.GetBytes((int)data.Length);
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(IV);
+                rng.GetBytes(Salt);
+            }
+            Array.Copy(magicNumber, 0, HeaderBytes, 0, 4);
+            Array.Copy(IV, 0, HeaderBytes, 4, 16);
+            Array.Copy(Salt, 0, HeaderBytes, 20, 8);
+            Rfc2898DeriveBytes k1 = new Rfc2898DeriveBytes(password, Salt, KEYITERATIONS);
+            using (var aes = new AesManaged())
+            {
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.Zeros;
+                aes.BlockSize = 128;
+                aes.KeySize = 128;
+                aes.Key = k1.GetBytes(16);
+                aes.IV = IV;
+                ICryptoTransform encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+                byte[] block = new byte[16];
+                int bpos = 0;
+                Array.Copy(SrcSizeBytes, 0, block, 0, SrcSizeBytes.Length);
+                bpos += SrcSizeBytes.Length;
+                using (Stream writer = File.Create(path))
+                {
+                    writer.Write(HeaderBytes, 0, HeaderBytes.Length);
+                    bool first = true;
+                    while (first || data.Position < data.Length)
+                    {
+                        first = false;
+                        int avail = block.Length - bpos;
+                        int read = data.Read(block, bpos, avail);
+                        bpos += read;
+                        if (data.Position < data.Length)
+                        {
+                            encryptor.TransformBlock(block, 0, bpos, block, 0);
+                        }
+                        else
+                        {
+                            block = encryptor.TransformFinalBlock(block, 0, 16);
+                        }
+                        writer.Write(block, 0, block.Length);
+                        bpos = 0;
+                    }
+                }
+            }            
+            return true;
+
+        }
+
+        private static MemoryStream LoadAndDecryptFile(string path, string password)
+        {
+            MemoryStream Result = null;
+            using (Stream reader = File.OpenRead(path))
+            {
+                if (reader.Length < 44) // 28 byte header + a single 16 byte block minimum size for valid file.
+                {
+                    throw new Exception("Decrypt file error.");
+                }
+
+                byte[] HeaderBytes = new byte[28];
+                int read = reader.Read(HeaderBytes, 0, HeaderBytes.Length);
+                if (read != 28)
+                {
+                    throw new Exception("Decrypt file error.");
+                }
+                string magicNumber = Encoding.ASCII.GetString(HeaderBytes, 0, 4);
+                if (magicNumber != "EXOF")
+                {
+                    throw new Exception("Decrypt file error.");
+                }
+                byte[] IV = new byte[16];
+                byte[] Salt = new byte[8];
+                Array.Copy(HeaderBytes, 4, IV, 0, 16);
+                Array.Copy(HeaderBytes, 20, Salt, 0, 8);
+                int DecryptedLength = 0;
+
+                Rfc2898DeriveBytes k1 = new Rfc2898DeriveBytes(password, Salt, KEYITERATIONS);
+                using (var aes = new AesManaged())
+                {
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.Zeros;
+                    aes.BlockSize = 128;
+                    aes.KeySize = 128;
+                    aes.Key = k1.GetBytes(16);
+                    aes.IV = IV;
+                    ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+                    bool first = true;
+                    byte[] block = new byte[16];
+                    int bstart = 0;
+                    while (first || reader.Position < reader.Length)
+                    {
+                        bstart = 0;
+                        read = reader.Read(block, 0, block.Length);
+                        if (reader.Position < reader.Length)
+                        {
+                            decryptor.TransformBlock(block, 0, read, block, 0);
+                        }
+                        else
+                        {
+                            block = decryptor.TransformFinalBlock(block, 0, read);
+                        }
+                        if (first)
+                        {
+                            first = false;
+                            DecryptedLength = BitConverter.ToInt32(block, 0);
+                            if (DecryptedLength < 0)
+                            {
+                                throw new Exception("Decrypt file error.");
+                            }
+                            bstart = 4;
+                            Result = new MemoryStream(DecryptedLength);
+                        }
+                        int copylen = read - bstart;
+                        if (Result.Position + copylen > DecryptedLength)
+                        {
+                            copylen = (int)(DecryptedLength - Result.Position);
+                            if (copylen < 0 || copylen > block.Length - bstart)
+                            {
+                                throw new Exception("Decrypt file error.");
+                            }
+                        }
+                        Result.Write(block, bstart, copylen);
+                    }
+                }
+                Result.Seek(0, SeekOrigin.Begin);
+                return Result;
+            }
+        }
+           
 
     }
 }

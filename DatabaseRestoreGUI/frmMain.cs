@@ -469,7 +469,12 @@ namespace DatabaseRestoreGUI
                 saveFileDialog.OverwritePrompt = true;
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    if (!DatabaseRestore.Program.SaveSMTPProfile(profile, saveFileDialog.FileName))
+                    frmPassword pass = new frmPassword();
+                    if (pass.ShowDialog() != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    if (!DatabaseRestore.Program.SaveSMTPProfile(profile, saveFileDialog.FileName, pass.txtPass1.Text))
                     {
                         MessageBox.Show("There was an error saving the profile.", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
@@ -486,7 +491,13 @@ namespace DatabaseRestoreGUI
                 openFileDialog.CheckFileExists = true;
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    DatabaseRestore.Program.SMTPProfileClass profile = DatabaseRestore.Program.LoadSMTPProfile(openFileDialog.FileName);
+                    frmPassword pass = new frmPassword();
+                    pass.CreateNewPassword = false;
+                    if (pass.ShowDialog() != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    DatabaseRestore.Program.SMTPProfileClass profile = DatabaseRestore.Program.LoadSMTPProfile(openFileDialog.FileName, pass.txtPass1.Text);
                     if (profile != null)
                     {
                         // populate UI controls
@@ -590,7 +601,13 @@ namespace DatabaseRestoreGUI
                 dialog.CheckFileExists = true;
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    opts = DatabaseRestore.Program.LoadOptionsFile(dialog.FileName);
+                    frmPassword pass = new frmPassword();
+                    pass.CreateNewPassword = false;
+                    if (pass.ShowDialog() != DialogResult.OK)
+                    {
+                        return;
+                    }
+                    opts = DatabaseRestore.Program.LoadOptionsFile(dialog.FileName, pass.txtPass1.Text);
                     if (opts == null)
                     {
                         MessageBox.Show("Unable to load the settings file.", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -870,9 +887,15 @@ namespace DatabaseRestoreGUI
                     return;
                 }
             }
+            frmPassword pass = new frmPassword();
+            if (pass.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
             DatabaseRestore.Program.OptionsClass opts = BuildOptionsFile();
 
-            if (!DatabaseRestore.Program.SaveOptionsFile(opts, outputPath))
+            if (!DatabaseRestore.Program.SaveOptionsFile(opts, outputPath, pass.txtPass1.Text))
             {
                 MessageBox.Show("Error occurred saving the settings file.", "Save Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
