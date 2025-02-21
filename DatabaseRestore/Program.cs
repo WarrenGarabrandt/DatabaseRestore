@@ -72,6 +72,7 @@ namespace DatabaseRestore
                 DbccCheckDB = false;
                 EncryptSQL = false;
                 TrustServerCert = false;
+                SMTPPassword = "";
             }
             // --autosource mode
             public AutoSourceMode AutoSourceMode { get; set; }
@@ -118,6 +119,8 @@ namespace DatabaseRestore
             public string LogAppend { get; set; }
             // --smtpprofile
             public string SMTPProfile { get; set; }
+            // --smtppassword
+            public string SMTPPassword { get; set; }
         }
 
         public class SMTPProfileClass
@@ -352,6 +355,7 @@ namespace DatabaseRestore
             Console.WriteLine("  --logfile <filepath>            : Writes log output to the specified file, overwriting the file if it exists.");
             Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
             Console.WriteLine("  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log.");
+            Console.WriteLine("  --smtppassword <password>       : Password to decrypt the SMTP Profile file.");
             Console.WriteLine();
             Console.WriteLine("If --loadsettings is specified, any command line arguments provided override the settings in the file.");
             Console.WriteLine("If the settings file is password protected, use the --settingspassword argument to specify the password to decrypt it.");
@@ -506,6 +510,10 @@ namespace DatabaseRestore
                     pos += 2;
                 }
                 else if (args[pos].ToLower() == "--smtpprofile")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--smtppassword")
                 {
                     pos += 2;
                 }
@@ -836,6 +844,17 @@ namespace DatabaseRestore
                         return false;
                     }
                     options.SMTPProfile = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--smtppassword")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No password specified for --smtppassword <password> parameter.");
+                        return false;
+                    }
+                    options.SMTPPassword = args[pos];
                     pos++;
                 }
                 else if (args[pos].ToLower() == "--loadsettings")
