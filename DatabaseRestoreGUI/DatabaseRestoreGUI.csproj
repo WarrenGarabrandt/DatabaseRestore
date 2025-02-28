@@ -92,6 +92,7 @@
     <ProjectReference Include="..\DatabaseRestore\DatabaseRestore.csproj">
       <Project>{85238222-910d-4d47-8e4c-5763a7cf0e08}</Project>
       <Name>DatabaseRestore</Name>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

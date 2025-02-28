@@ -153,6 +153,8 @@
             this.cmdRunStart = new System.Windows.Forms.Button();
             this.lblRunBuildStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
+            this.txtSMTPProfilePass = new System.Windows.Forms.TextBox();
+            this.lblSMTPProfilePass = new System.Windows.Forms.Label();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -1153,6 +1155,8 @@
             this.pnl6SMTP.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl6SMTP.Controls.Add(this.txtSMTPProfilePass);
+            this.pnl6SMTP.Controls.Add(this.lblSMTPProfilePass);
             this.pnl6SMTP.Controls.Add(this.grpSMTPProfile);
             this.pnl6SMTP.Controls.Add(this.cmdSMTPProfileBrowse);
             this.pnl6SMTP.Controls.Add(this.txtSMTPProfile);
@@ -1194,9 +1198,9 @@
             this.grpSMTPProfile.Controls.Add(this.label20);
             this.grpSMTPProfile.Controls.Add(this.txtSMTPServer);
             this.grpSMTPProfile.Controls.Add(this.label19);
-            this.grpSMTPProfile.Location = new System.Drawing.Point(7, 115);
+            this.grpSMTPProfile.Location = new System.Drawing.Point(7, 140);
             this.grpSMTPProfile.Name = "grpSMTPProfile";
-            this.grpSMTPProfile.Size = new System.Drawing.Size(548, 358);
+            this.grpSMTPProfile.Size = new System.Drawing.Size(548, 333);
             this.grpSMTPProfile.TabIndex = 12;
             this.grpSMTPProfile.TabStop = false;
             this.grpSMTPProfile.Text = "SMTP Profile Editor";
@@ -1205,7 +1209,7 @@
             // 
             this.lblSMTPPassWarn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblSMTPPassWarn.AutoSize = true;
-            this.lblSMTPPassWarn.Location = new System.Drawing.Point(4, 333);
+            this.lblSMTPPassWarn.Location = new System.Drawing.Point(5, 301);
             this.lblSMTPPassWarn.Name = "lblSMTPPassWarn";
             this.lblSMTPPassWarn.Size = new System.Drawing.Size(231, 16);
             this.lblSMTPPassWarn.TabIndex = 21;
@@ -1215,7 +1219,7 @@
             // cmdSMTPLoadProfile
             // 
             this.cmdSMTPLoadProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdSMTPLoadProfile.Location = new System.Drawing.Point(297, 329);
+            this.cmdSMTPLoadProfile.Location = new System.Drawing.Point(297, 304);
             this.cmdSMTPLoadProfile.Name = "cmdSMTPLoadProfile";
             this.cmdSMTPLoadProfile.Size = new System.Drawing.Size(120, 23);
             this.cmdSMTPLoadProfile.TabIndex = 20;
@@ -1226,7 +1230,7 @@
             // cmdSMTPSaveProfile
             // 
             this.cmdSMTPSaveProfile.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdSMTPSaveProfile.Location = new System.Drawing.Point(423, 329);
+            this.cmdSMTPSaveProfile.Location = new System.Drawing.Point(423, 304);
             this.cmdSMTPSaveProfile.Name = "cmdSMTPSaveProfile";
             this.cmdSMTPSaveProfile.Size = new System.Drawing.Size(119, 23);
             this.cmdSMTPSaveProfile.TabIndex = 19;
@@ -1242,10 +1246,10 @@
             this.txtSMTPBody.Location = new System.Drawing.Point(3, 177);
             this.txtSMTPBody.Multiline = true;
             this.txtSMTPBody.Name = "txtSMTPBody";
-            this.txtSMTPBody.Size = new System.Drawing.Size(540, 146);
+            this.txtSMTPBody.Size = new System.Drawing.Size(540, 121);
             this.txtSMTPBody.TabIndex = 18;
-            this.txtSMTPBody.Text = "Database Restore of {$DATABASENAME} on {$SQLSERVER} {$ENDDATETIME}\r\nResults: {$RE" +
-    "SULT}\r\nSee attached log file for full details.\r\n\r\n";
+            this.txtSMTPBody.Text = "Database Restore of {$DATABASENAME} on {$SQLSERVER} tast finished at {$ENDDATETIM" +
+    "E}\r\nResults: {$RESULT}\r\nSee attached log file for full details.\r\n\r\n";
             // 
             // chkSMTPAttachLog
             // 
@@ -1274,7 +1278,7 @@
             this.txtSMTPSubject.Name = "txtSMTPSubject";
             this.txtSMTPSubject.Size = new System.Drawing.Size(339, 22);
             this.txtSMTPSubject.TabIndex = 15;
-            this.txtSMTPSubject.Text = "Database Restore Log {$SQLSERVER} {$DATABASENAME}";
+            this.txtSMTPSubject.Text = "Database Restore {$DATABASENAME} on {$SQLSERVER} ";
             // 
             // label25
             // 
@@ -1359,9 +1363,9 @@
             this.chkSMTPAuth.AutoSize = true;
             this.chkSMTPAuth.Location = new System.Drawing.Point(9, 53);
             this.chkSMTPAuth.Name = "chkSMTPAuth";
-            this.chkSMTPAuth.Size = new System.Drawing.Size(251, 20);
+            this.chkSMTPAuth.Size = new System.Drawing.Size(518, 20);
             this.chkSMTPAuth.TabIndex = 5;
-            this.chkSMTPAuth.Text = "SMTP Server Requires Authentication";
+            this.chkSMTPAuth.Text = "SMTP Server Requires Authentication (uses default creds if no username provided)";
             this.chkSMTPAuth.UseVisualStyleBackColor = true;
             this.chkSMTPAuth.CheckedChanged += new System.EventHandler(this.chkSMTPAuth_CheckedChanged);
             // 
@@ -1432,6 +1436,7 @@
             this.cmdSMTPProfileBrowse.Text = "Browse";
             this.cmdSMTPProfileBrowse.UseVisualStyleBackColor = true;
             this.cmdSMTPProfileBrowse.Visible = false;
+            this.cmdSMTPProfileBrowse.Click += new System.EventHandler(this.cmdSMTPProfileBrowse_Click);
             // 
             // txtSMTPProfile
             // 
@@ -1594,14 +1599,30 @@
             this.label17.TabIndex = 0;
             this.label17.Text = "Run Database Restore Now";
             // 
+            // txtSMTPProfilePass
+            // 
+            this.txtSMTPProfilePass.Location = new System.Drawing.Point(100, 114);
+            this.txtSMTPProfilePass.Name = "txtSMTPProfilePass";
+            this.txtSMTPProfilePass.PasswordChar = '●';
+            this.txtSMTPProfilePass.Size = new System.Drawing.Size(179, 22);
+            this.txtSMTPProfilePass.TabIndex = 14;
+            this.txtSMTPProfilePass.Visible = false;
+            // 
+            // lblSMTPProfilePass
+            // 
+            this.lblSMTPProfilePass.AutoSize = true;
+            this.lblSMTPProfilePass.Location = new System.Drawing.Point(21, 117);
+            this.lblSMTPProfilePass.Name = "lblSMTPProfilePass";
+            this.lblSMTPProfilePass.Size = new System.Drawing.Size(72, 16);
+            this.lblSMTPProfilePass.TabIndex = 13;
+            this.lblSMTPProfilePass.Text = "Password*";
+            this.lblSMTPProfilePass.Visible = false;
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
-            this.Controls.Add(this.pnl6SMTP);
-            this.Controls.Add(this.pnl0Start);
-            this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn8Run);
             this.Controls.Add(this.btn7CLI);
@@ -1611,6 +1632,9 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
+            this.Controls.Add(this.pnl6SMTP);
+            this.Controls.Add(this.pnl0Start);
+            this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.pnl8Run);
             this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.pnl1Source);
@@ -1783,5 +1807,7 @@
         private System.Windows.Forms.Label lblRunBuildStatus;
         private System.Windows.Forms.Button cmdRunStart;
         private System.Windows.Forms.TextBox txtRunOutput;
+        private System.Windows.Forms.TextBox txtSMTPProfilePass;
+        private System.Windows.Forms.Label lblSMTPProfilePass;
     }
 }

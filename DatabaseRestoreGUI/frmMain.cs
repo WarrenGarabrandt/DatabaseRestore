@@ -422,6 +422,8 @@ namespace DatabaseRestoreGUI
         {
             lblSMTPProfile.Visible = chkSMTPSendEmail.Checked;
             txtSMTPProfile.Visible = chkSMTPSendEmail.Checked;
+            lblSMTPProfilePass.Visible = chkSMTPSendEmail.Checked;
+            txtSMTPProfilePass.Visible = chkSMTPSendEmail.Checked;
             cmdSMTPProfileBrowse.Visible = chkSMTPSendEmail.Checked;
         }
 
@@ -441,12 +443,6 @@ namespace DatabaseRestoreGUI
                 MessageBox.Show("Missing SMTP Server", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            if (chkSMTPAuth.Checked && (string.IsNullOrWhiteSpace(txtSMTPUser.Text) || string.IsNullOrWhiteSpace(txtSMTPPass.Text)))
-            {
-                MessageBox.Show("Missing SMTP Credentials.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
             DatabaseRestore.Program.SMTPProfileClass profile = new DatabaseRestore.Program.SMTPProfileClass()
             {
                 SMTPServer = txtSMTPServer.Text.Trim(),
@@ -749,11 +745,13 @@ namespace DatabaseRestoreGUI
             {
                 chkSMTPSendEmail.Checked = true;
                 txtSMTPProfile.Text = opts.SMTPProfile;
+                txtSMTPProfilePass.Text = opts.SMTPPassword;
             }
             else
             {
                 chkSMTPSendEmail.Checked = false;
                 txtSMTPProfile.Text = "";
+                txtSMTPProfilePass.Text = "";
             }
         }
 
@@ -862,6 +860,7 @@ namespace DatabaseRestoreGUI
             if (chkSMTPSendEmail.Checked)
             {
                 opts.SMTPProfile = txtSMTPProfile.Text.Trim();
+                opts.SMTPPassword = txtSMTPProfilePass.Text;
             }
             return opts;
         }
@@ -1121,7 +1120,12 @@ namespace DatabaseRestoreGUI
                         txtCLIArgs.Text = "SMTP Profile requires a file to be specified.";
                         return;
                     }
-                    sb.AppendFormat(" --smtpprofile {0}", temp);
+                    sb.AppendFormat(" --smtpprofile {0}", temp); 
+                    if (!string.IsNullOrEmpty(txtSMTPProfilePass.Text))
+                    {
+                        temp = EscapeArguments(txtSMTPProfilePass.Text);
+                        sb.AppendFormat(" --smtppassword {0}", temp);
+                    }
                 }
 
                 txtCLIArgs.Text = sb.ToString();
@@ -1232,6 +1236,20 @@ namespace DatabaseRestoreGUI
             }
             Running = false;
             lblRunBuildStatus.Text = "Job as stopped. See lob below for any errors.";
+        }
+
+        private void cmdSMTPProfileBrowse_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "SMTP Profile (*.ESF)|*.ESF";
+                openFileDialog.CheckFileExists = true;
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtSMTPProfile.Text = openFileDialog.FileName;
+                }
+
+            }
         }
     }
 }

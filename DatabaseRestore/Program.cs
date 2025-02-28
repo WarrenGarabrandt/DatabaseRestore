@@ -32,6 +32,8 @@ using static DatabaseRestore.Program;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Runtime.Remoting.Messaging;
+using System.Net.Mail;
+using System.Net.Configuration;
 
 namespace DatabaseRestore
 {
@@ -187,53 +189,55 @@ namespace DatabaseRestore
 
         public static int RunJob(OptionsClass options)
         {
+            int errorCode = 0;
+            SMTPProfileClass smtpProfile = null;
             try
-            { 
-                if (!CheckOptions(options))
+            {
+                if (!CheckOptions(options, out smtpProfile))
                 {
-                    return -2;
+                    errorCode = -2;
                 }
-                if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
+                if (errorCode == 0 && !string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
                 {
                     LogString("Failed deleting previous temp file.");
-                    return -3;
+                    errorCode = -3;
                 }
-                if (!string.IsNullOrEmpty(options.TempFile))
+                if (errorCode == 0 && !string.IsNullOrEmpty(options.TempFile))
                 {
                     if (!CopyFile(options.SourceFile, options.TempFile))
                     {
                         LogString("Failed copying source backup file to temp path.");
-                        return -4;
+                        errorCode = -4;
                     }
                     // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
                     options.SourceFile = options.TempFile;
                 }
-                if (!PrepareDatabaseFiles(options))
+                if (errorCode == 0 && !PrepareDatabaseFiles(options))
                 {
                     LogString("Failed preparing database files.");
-                    return -5;
+                    errorCode = -5;
                 }
-                if (!RestoreDatabase(options))
+                if (errorCode == 0 && !RestoreDatabase(options))
                 {
                     LogString("Failed restoring the database.");
-                    return -6;
+                    errorCode = -6;
                 }
-                if (!SetDatabasePermissions(options))
+                if (errorCode == 0 && !SetDatabasePermissions(options))
                 {
                     LogString("Failed setting permissions for the database.");
-                    return -7;
+                    errorCode = -7;
                 }
-                if (!RunDBCC(options))
+                if (errorCode == 0 && !RunDBCC(options))
                 {
                     LogString("Failed running DBCC CHECKDB.");
-                    return -8;
+                    errorCode = -8;
                 }
-                if (!string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
+                if (errorCode == 0 && !string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
                 {
                     LogString("Failed deleting temp file.");
-                    return -9;
+                    errorCode = -9;
                 }
-                LogString("Operation Completed.");
+                
             }
             catch (Exception ex)
             {
@@ -242,9 +246,88 @@ namespace DatabaseRestore
             finally
             {
                 EndTime = DateTime.Now;
+                if (smtpProfile != null)
+                {
+                    LogString("Preparing to send email report.");
+                    if (SendEmail(smtpProfile, options, errorCode == 0))
+                    {
+                        LogString("Email sent successfuly.");
+                    }
+                }
                 WriteLogs(options);
             }
-            return 0;
+            return errorCode;
+        }
+
+        public static bool SendEmail(SMTPProfileClass smtpProfile, OptionsClass options, bool successful)
+        {
+            try
+            {
+                string[] recipients = smtpProfile.EmailTo.Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                using (SmtpClient client = new SmtpClient(smtpProfile.SMTPServer, smtpProfile.Port))
+                {
+                    using (MailMessage msg = new MailMessage(smtpProfile.EmailFrom, recipients[0]))
+                    {
+                        using (Stream attachmentStream = new MemoryStream())
+                        { 
+                            for (int i = 1; i < recipients.Length; i++)
+                            {
+                                msg.To.Add(recipients[i]);
+                            }
+                            msg.Subject = ProcessMacros(smtpProfile.EmailSubjectTemplate, options, successful);
+                            msg.Body = ProcessMacros(smtpProfile.EmailBodyTemplte, options, successful);
+                            if (smtpProfile.AttachLog)
+                            {
+                                using (TextWriter writer = new StreamWriter(attachmentStream, Encoding.UTF8, LogOutput.Length, true))
+                                {
+                                    writer.Write(LogOutput.ToString());
+                                    writer.Flush();
+                                }
+                                attachmentStream.Seek(0, SeekOrigin.Begin);
+                                Attachment logAttachment = new Attachment(attachmentStream, "Logfile.txt", "text/plain");
+                                msg.Attachments.Add(logAttachment);
+                            }
+                            if (smtpProfile.RequireAuth)
+                            {
+                                if (string.IsNullOrEmpty(smtpProfile.UserName))
+                                {
+                                    client.UseDefaultCredentials = true;
+                                }
+                                else
+                                {
+                                    client.Credentials = new NetworkCredential(smtpProfile.UserName, smtpProfile.Password);
+                                }
+                            }
+                            client.Send(msg);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogString("An error occurred sending the email.");
+                LogString(ex.Message);
+                return false;
+            }
+            return true;
+        }
+
+        public static string ProcessMacros(string message, OptionsClass options, bool successful)
+        {
+            List<KeyValuePair<string, string>> Macros = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("{$SQLSERVER}", options.SQLServerName),
+                new KeyValuePair<string, string>("{$DATABASENAME}", options.DatabaseName),
+                new KeyValuePair<string, string>("{$STARTDATETIME}", StartTime.ToLongDateString()),
+                new KeyValuePair<string, string>("{$ENDDATETIME}", EndTime.ToLongDateString()),
+                new KeyValuePair<string, string>("{$RESULT}", successful ? "Success" : "Failure"),
+                new KeyValuePair<string, string>("{$LOGOUTPUT}", LogOutput.ToString()),
+            };
+            foreach (var macro in Macros)
+            {
+                message = message.Replace(macro.Key, macro.Value);
+            }
+            return message; 
         }
 
 
@@ -305,8 +388,8 @@ namespace DatabaseRestore
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to write out log file.");
-                    Console.WriteLine(ex.Message);
+                    LogString("Failed to write out log file.");
+                    LogString(ex.Message);
                 }
             }
             if (!string.IsNullOrEmpty(options.LogAppend))
@@ -325,8 +408,8 @@ namespace DatabaseRestore
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to write out append log file.");
-                    Console.WriteLine(ex.Message);
+                    LogString("Failed to write out append log file.");
+                    LogString(ex.Message);
                 }
             }
         }
@@ -874,8 +957,9 @@ namespace DatabaseRestore
             return true;
         }
 
-        public static bool CheckOptions(OptionsClass options)
+        public static bool CheckOptions(OptionsClass options, out SMTPProfileClass smtpProfile)
         {
+            smtpProfile = null;
             if (!string.IsNullOrEmpty(options.SourceFile) && !string.IsNullOrEmpty(options.SourcePath))
             {
                 LogString("--autosource and --source were both specified, but only one is needed.");
@@ -1152,6 +1236,55 @@ namespace DatabaseRestore
             if (options.DbccCheckDB)
             {
                 LogString("After restoring, run DBCC CHECKDB to verify no corruption is present.");
+            }
+            if (!string.IsNullOrEmpty(options.SMTPProfile))
+            {
+                smtpProfile = LoadSMTPProfile(options.SMTPProfile, options.SMTPPassword);
+                if (smtpProfile == null)
+                {
+                    LogString("SMTP Profile could not be loaded.");
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(smtpProfile.SMTPServer))
+                {
+                    LogString("SMTP Profile does not contain a SMTP server address.");
+                    return false;
+                }
+                if (smtpProfile.Port < 1 || smtpProfile.Port > 65535)
+                {
+                    LogString("SMTP Profile specifies an invalid TCP port.");
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(smtpProfile.EmailFrom))
+                {
+                    LogString("SMTP Profile does not specify a sender email address.");
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(smtpProfile.EmailTo))
+                {
+                    LogString("SMTP Profile does not specify a recipient email address.");
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(smtpProfile.EmailBodyTemplte))
+                {
+                    LogString("SMTP Profile does not speicfy an email body.");
+                    return false;
+                }
+                if (string.IsNullOrWhiteSpace(smtpProfile.EmailSubjectTemplate))
+                {
+                    LogString("SMTP Profile does not specify an email subject line.");
+                    return false;
+                }
+                if (smtpProfile.RequireAuth && string.IsNullOrEmpty(smtpProfile.UserName))
+                {
+                    LogString("SMTP will use default credentials to authenticate");
+                }
+                if (smtpProfile.RequireAuth && !string.IsNullOrEmpty(smtpProfile.UserName) && string.IsNullOrEmpty(smtpProfile.Password))
+                {
+                    LogString("SMTP authentication required, but no password is provided.");
+                    return false;
+                }
+                LogString("SMTP Profile loaded successfully.");
             }
             return true;
         }
