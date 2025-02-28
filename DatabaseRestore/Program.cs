@@ -334,7 +334,7 @@ namespace DatabaseRestore
         public static void ShowUsage()
         {
             Console.WriteLine("Usage:");
-            Console.WriteLine("  --loadsettings <path>        : Loads settings from a settings file (created with the GUI).");
+            Console.WriteLine("  --loadsettings <path>           : Loads settings from a settings file (created with the GUI).");
             Console.WriteLine("  --settingspassword <password>   : Specifies a password to decrypt the --loadsettings file, only specify if that file is password protected.");
             Console.WriteLine("  --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.");
             Console.WriteLine("  --source -s <filepath>          : source database backup file.");
