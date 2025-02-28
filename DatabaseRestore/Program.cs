@@ -318,8 +318,8 @@ namespace DatabaseRestore
             {
                 new KeyValuePair<string, string>("{$SQLSERVER}", options.SQLServerName),
                 new KeyValuePair<string, string>("{$DATABASENAME}", options.DatabaseName),
-                new KeyValuePair<string, string>("{$STARTDATETIME}", StartTime.ToLongDateString()),
-                new KeyValuePair<string, string>("{$ENDDATETIME}", EndTime.ToLongDateString()),
+                new KeyValuePair<string, string>("{$STARTDATETIME}", StartTime.ToString()),
+                new KeyValuePair<string, string>("{$ENDDATETIME}", EndTime.ToString()),
                 new KeyValuePair<string, string>("{$RESULT}", successful ? "Success" : "Failure"),
                 new KeyValuePair<string, string>("{$LOGOUTPUT}", LogOutput.ToString()),
             };

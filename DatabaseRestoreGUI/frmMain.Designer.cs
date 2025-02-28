@@ -1278,7 +1278,7 @@
             this.txtSMTPSubject.Name = "txtSMTPSubject";
             this.txtSMTPSubject.Size = new System.Drawing.Size(339, 22);
             this.txtSMTPSubject.TabIndex = 15;
-            this.txtSMTPSubject.Text = "Database Restore {$DATABASENAME} on {$SQLSERVER} ";
+            this.txtSMTPSubject.Text = "Database Restore {$RESULT} for {$DATABASENAME} on {$SQLSERVER} ";
             // 
             // label25
             // 
