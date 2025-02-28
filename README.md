@@ -16,6 +16,10 @@ All steps of the process are outputted to the standard output stream, so you can
 ## Usage
 Starting the tool with no arguments will display the usage instructions. Most parameters have a long --option and a shorter -o option format, so you can write the full version for readability or the short version for compactness. I'll be using the full version in the example for clarity. Options which require parameters are shown as <parameter> but don't require you to actually enter the <> brackets. The argument flags are case insensitive. Actually, they are cast to lowercase when parsed, so if that causes a problem for some character sets, regions, culture settings, etc. then try to prefer the lowercase as that will prevent weirdness when changing case programmatically. 
 
+  --loadsettings <path>           : Loads settings from a settings file (created with the GUI).");
+
+  --settingspassword <password>   : Specifies a password to decrypt the --loadsettings file.
+
   --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.
   
   --source -s <filepath>          : source database backup file.
@@ -49,6 +53,15 @@ Starting the tool with no arguments will display the usage instructions. Most pa
   --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.
 
   --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log
+  
+  --smtppassword <password>       : Password to decrypt the SMTP Profile file.
+
+## Load Settings
+If --loadsettings is specified, any command line arguments provided override the settings in the file.
+
+If the settings file is password protected, use the --settingspassword argument to specify the password to decrypt it. It is still insecure to pass password through command line arguments, so if an attacker has access to the computer, then they can capture the command line argument and decrypt the file themselves. For best security, us integrated authentication for SQL server so that no SQL server password has to be saved or passed through command line anywhere.
+
+
 
 ### Autosource
 Autosource mode specifies which file to choose in the specified directory.
@@ -110,6 +123,9 @@ User "sqluser" will be added to db_datareader role.
 
 Finally, dbcc checkdb will be run on the database to verify that there is no database corruption.
 
+## SMTP Settings
+SMTP settings requires an email template to be passed, so instead of putting that on the command line, use the GUI to create the email settings and save that to a file. Then specify the file with the --smtpprofile option.
+
 ## Known Issues
 I've tested the program only on a test SQL server 2019 Express server so far, using integrated authentication only. I'm sure there's plenty of ways that passing passwords through the command line can expose all sorts of security issues that I haven't investigated yet, and probably special characters will break commandline argument parsing too.
 
@@ -142,20 +158,14 @@ c:\Program Files\Test" --the rest of your arguments become part of the path....
 Which will essentially break parsing of the arguments and likely result in unexpected behavior. Combining paths will definitely break, as the illegal character " will be used as part of the path.
 
 ## Future Plans
-<s>Add logging options to allow the program to output to a log file instead of the command window, either appending to an existing file, generating a new log file each time, or replacing the log file.</s>Logging options have been added, see --logfile and --logappend parameters for more info.
-
 Add the option to automatically email out the log file on success, failure, or both to a specified email address. This is in progress now.
 
 Capture the output of dbcc checkdb and look for failure messages, <s>or at least capture the output and append it to the log and email.</s> DBCC info messages are now captured and put in the output.
 
 Add an option to execute a specified SQL script after restoration is complete, so that it can be used to rebuild indexes, or run reports automatically, run arbitrary SQL instructions, etc.
 
-Add ability to load and save settings so that a job can be saved to a config file and called and modified easily. This is in progress now.
-
-Add some kind of encryption or obfuscation to protect SQL Server and SMTP credentials. This is only going to be good enough to stop casual observers and automated password scrapers, as it does need to be possible to decrypt them to run jobs. Either a password will be required to pass via command line, which only pushes back the problem one step, or the obfuscation is going to be very weak. The best security option is always going to be to use integrated authentication, limit database and filesystem rights to the bare minimum needed, and set up an SMTP relay to whitelist the sending server instead of requiring any credentials for sending mail. 
-
 # Database Restore GUI
-This is a graphics user interface front-end for the command line program. It allows you to enter settings in a graphical interface and save them out to a config file, or to open a previously saved config file to make changes. You can also use the GUI to on-demand run a database restore. 
+This is a graphics user interface front-end for the command line program. It allows you to enter settings in a graphical interface and save them out to a config file, or to open a previously saved config file to make changes. You can also use the GUI to on-demand run a database restore. Use the GUI to create settings files for the command line tool, and SMTP profile settings for emailing out logs.
 
 # MIT License
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
