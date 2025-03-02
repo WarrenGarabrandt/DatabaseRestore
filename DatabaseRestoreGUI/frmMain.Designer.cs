@@ -115,6 +115,8 @@
             this.chkLogEnable = new System.Windows.Forms.CheckBox();
             this.label13 = new System.Windows.Forms.Label();
             this.pnl6SMTP = new System.Windows.Forms.Panel();
+            this.txtSMTPProfilePass = new System.Windows.Forms.TextBox();
+            this.lblSMTPProfilePass = new System.Windows.Forms.Label();
             this.grpSMTPProfile = new System.Windows.Forms.GroupBox();
             this.lblSMTPPassWarn = new System.Windows.Forms.Label();
             this.cmdSMTPLoadProfile = new System.Windows.Forms.Button();
@@ -153,8 +155,7 @@
             this.cmdRunStart = new System.Windows.Forms.Button();
             this.lblRunBuildStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.txtSMTPProfilePass = new System.Windows.Forms.TextBox();
-            this.lblSMTPProfilePass = new System.Windows.Forms.Label();
+            this.chkOptsCloseConnections = new System.Windows.Forms.CheckBox();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -802,6 +803,7 @@
             this.pnl3Opts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl3Opts.Controls.Add(this.chkOptsCloseConnections);
             this.pnl3Opts.Controls.Add(this.cmdOptsMoveFileImport);
             this.pnl3Opts.Controls.Add(this.dgvOptsMoveFile);
             this.pnl3Opts.Controls.Add(this.chkOptsMoveFile);
@@ -822,7 +824,7 @@
             // 
             // cmdOptsMoveFileImport
             // 
-            this.cmdOptsMoveFileImport.Location = new System.Drawing.Point(317, 134);
+            this.cmdOptsMoveFileImport.Location = new System.Drawing.Point(308, 157);
             this.cmdOptsMoveFileImport.Name = "cmdOptsMoveFileImport";
             this.cmdOptsMoveFileImport.Size = new System.Drawing.Size(112, 23);
             this.cmdOptsMoveFileImport.TabIndex = 10;
@@ -841,9 +843,9 @@
             this.colLogicalName,
             this.colOrigPath,
             this.colNewPath});
-            this.dgvOptsMoveFile.Location = new System.Drawing.Point(7, 163);
+            this.dgvOptsMoveFile.Location = new System.Drawing.Point(7, 186);
             this.dgvOptsMoveFile.Name = "dgvOptsMoveFile";
-            this.dgvOptsMoveFile.Size = new System.Drawing.Size(552, 310);
+            this.dgvOptsMoveFile.Size = new System.Drawing.Size(552, 287);
             this.dgvOptsMoveFile.TabIndex = 9;
             this.dgvOptsMoveFile.Visible = false;
             // 
@@ -874,7 +876,7 @@
             // chkOptsMoveFile
             // 
             this.chkOptsMoveFile.AutoSize = true;
-            this.chkOptsMoveFile.Location = new System.Drawing.Point(7, 136);
+            this.chkOptsMoveFile.Location = new System.Drawing.Point(7, 159);
             this.chkOptsMoveFile.Name = "chkOptsMoveFile";
             this.chkOptsMoveFile.Size = new System.Drawing.Size(295, 20);
             this.chkOptsMoveFile.TabIndex = 8;
@@ -885,7 +887,7 @@
             // cmdOptsMoveAllPathHelp
             // 
             this.cmdOptsMoveAllPathHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdOptsMoveAllPathHelp.Location = new System.Drawing.Point(534, 106);
+            this.cmdOptsMoveAllPathHelp.Location = new System.Drawing.Point(527, 130);
             this.cmdOptsMoveAllPathHelp.Name = "cmdOptsMoveAllPathHelp";
             this.cmdOptsMoveAllPathHelp.Size = new System.Drawing.Size(21, 23);
             this.cmdOptsMoveAllPathHelp.TabIndex = 7;
@@ -897,7 +899,7 @@
             // cmdOptsMoveAllBrowse
             // 
             this.cmdOptsMoveAllBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdOptsMoveAllBrowse.Location = new System.Drawing.Point(454, 106);
+            this.cmdOptsMoveAllBrowse.Location = new System.Drawing.Point(446, 130);
             this.cmdOptsMoveAllBrowse.Name = "cmdOptsMoveAllBrowse";
             this.cmdOptsMoveAllBrowse.Size = new System.Drawing.Size(75, 23);
             this.cmdOptsMoveAllBrowse.TabIndex = 6;
@@ -908,7 +910,7 @@
             // 
             // txtOptsMoveallPath
             // 
-            this.txtOptsMoveallPath.Location = new System.Drawing.Point(52, 106);
+            this.txtOptsMoveallPath.Location = new System.Drawing.Point(44, 131);
             this.txtOptsMoveallPath.Name = "txtOptsMoveallPath";
             this.txtOptsMoveallPath.Size = new System.Drawing.Size(396, 22);
             this.txtOptsMoveallPath.TabIndex = 5;
@@ -917,7 +919,7 @@
             // lblOptsMoveallPath
             // 
             this.lblOptsMoveallPath.AutoSize = true;
-            this.lblOptsMoveallPath.Location = new System.Drawing.Point(12, 109);
+            this.lblOptsMoveallPath.Location = new System.Drawing.Point(4, 133);
             this.lblOptsMoveallPath.Name = "lblOptsMoveallPath";
             this.lblOptsMoveallPath.Size = new System.Drawing.Size(34, 16);
             this.lblOptsMoveallPath.TabIndex = 4;
@@ -1170,6 +1172,25 @@
             this.pnl6SMTP.Size = new System.Drawing.Size(562, 476);
             this.pnl6SMTP.TabIndex = 15;
             this.pnl6SMTP.Tag = "SMTPOptions";
+            // 
+            // txtSMTPProfilePass
+            // 
+            this.txtSMTPProfilePass.Location = new System.Drawing.Point(100, 114);
+            this.txtSMTPProfilePass.Name = "txtSMTPProfilePass";
+            this.txtSMTPProfilePass.PasswordChar = '●';
+            this.txtSMTPProfilePass.Size = new System.Drawing.Size(179, 22);
+            this.txtSMTPProfilePass.TabIndex = 14;
+            this.txtSMTPProfilePass.Visible = false;
+            // 
+            // lblSMTPProfilePass
+            // 
+            this.lblSMTPProfilePass.AutoSize = true;
+            this.lblSMTPProfilePass.Location = new System.Drawing.Point(21, 117);
+            this.lblSMTPProfilePass.Name = "lblSMTPProfilePass";
+            this.lblSMTPProfilePass.Size = new System.Drawing.Size(72, 16);
+            this.lblSMTPProfilePass.TabIndex = 13;
+            this.lblSMTPProfilePass.Text = "Password*";
+            this.lblSMTPProfilePass.Visible = false;
             // 
             // grpSMTPProfile
             // 
@@ -1599,24 +1620,17 @@
             this.label17.TabIndex = 0;
             this.label17.Text = "Run Database Restore Now";
             // 
-            // txtSMTPProfilePass
+            // chkOptsCloseConnections
             // 
-            this.txtSMTPProfilePass.Location = new System.Drawing.Point(100, 114);
-            this.txtSMTPProfilePass.Name = "txtSMTPProfilePass";
-            this.txtSMTPProfilePass.PasswordChar = '●';
-            this.txtSMTPProfilePass.Size = new System.Drawing.Size(179, 22);
-            this.txtSMTPProfilePass.TabIndex = 14;
-            this.txtSMTPProfilePass.Visible = false;
-            // 
-            // lblSMTPProfilePass
-            // 
-            this.lblSMTPProfilePass.AutoSize = true;
-            this.lblSMTPProfilePass.Location = new System.Drawing.Point(21, 117);
-            this.lblSMTPProfilePass.Name = "lblSMTPProfilePass";
-            this.lblSMTPProfilePass.Size = new System.Drawing.Size(72, 16);
-            this.lblSMTPProfilePass.TabIndex = 13;
-            this.lblSMTPProfilePass.Text = "Password*";
-            this.lblSMTPProfilePass.Visible = false;
+            this.chkOptsCloseConnections.AutoSize = true;
+            this.chkOptsCloseConnections.Checked = true;
+            this.chkOptsCloseConnections.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkOptsCloseConnections.Location = new System.Drawing.Point(7, 105);
+            this.chkOptsCloseConnections.Name = "chkOptsCloseConnections";
+            this.chkOptsCloseConnections.Size = new System.Drawing.Size(220, 20);
+            this.chkOptsCloseConnections.TabIndex = 11;
+            this.chkOptsCloseConnections.Text = "Force close existing connections";
+            this.chkOptsCloseConnections.UseVisualStyleBackColor = true;
             // 
             // frmMain
             // 
@@ -1632,6 +1646,7 @@
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
+            this.Controls.Add(this.pnl3Opts);
             this.Controls.Add(this.pnl6SMTP);
             this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.pnl2SQL);
@@ -1640,7 +1655,6 @@
             this.Controls.Add(this.pnl1Source);
             this.Controls.Add(this.pnl7CLI);
             this.Controls.Add(this.pnl4Rights);
-            this.Controls.Add(this.pnl3Opts);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(600, 440);
@@ -1809,5 +1823,6 @@
         private System.Windows.Forms.TextBox txtRunOutput;
         private System.Windows.Forms.TextBox txtSMTPProfilePass;
         private System.Windows.Forms.Label lblSMTPProfilePass;
+        private System.Windows.Forms.CheckBox chkOptsCloseConnections;
     }
 }

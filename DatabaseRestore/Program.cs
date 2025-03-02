@@ -113,6 +113,8 @@ namespace DatabaseRestore
             public List<MoveItem> MoveItems { get; set; }
             // --replacedatabase
             public bool ReplaceDatabase { get; set; }
+            // --closeconnections
+            public bool CloseConnections { get; set; }
             // --dbcccheckdb
             public bool DbccCheckDB { get; set; }
             // --logfile
@@ -434,6 +436,7 @@ namespace DatabaseRestore
             Console.WriteLine("  --movefile -m <name> <filepath> : Tells SQL server to move the database file to the specified filepath when restoring.");
             Console.WriteLine("  --moveallfiles <filepath>       : Tells SQL server to move all database files to the specified path when restoring, preserving file names.");
             Console.WriteLine("  --replacedatabase               : Tells SQL server to replace the existing database with this backup.");
+            Console.WriteLine("  --closeconnections -c           : Force close existing connections. Without this options, restore will fail is the database is in use.");
             Console.WriteLine("  --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.");
             Console.WriteLine("  --logfile <filepath>            : Writes log output to the specified file, overwriting the file if it exists.");
             Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
@@ -577,6 +580,10 @@ namespace DatabaseRestore
                     pos += 2;
                 }
                 else if (args[pos].ToLower() == "--replacedatabase")
+                {
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--closeconnections")
                 {
                     pos++;
                 }
@@ -875,6 +882,11 @@ namespace DatabaseRestore
                 {
                     pos++;
                     options.ReplaceDatabase = true;
+                }
+                else if (args[pos].ToLower() == "--closeconnections")
+                {
+                    pos++;
+                    options.CloseConnections = true;
                 }
                 else if (args[pos].ToLower() == "--dbcccheckdb")
                 {
@@ -1198,6 +1210,10 @@ namespace DatabaseRestore
             {
                 LogString(string.Format("Database [{0}] will be restore WITH REPLACE option, overwriting any existing database.", options.DatabaseName));
             }
+            if (options.CloseConnections)
+            {
+                LogString("Existing connections will be forced closed by putting the database into single-user mode for the restore.");
+            }
             if (options.MoveAllFiles)
             {
                 if (options.MoveAllPath.EndsWith("\""))
@@ -1503,21 +1519,66 @@ namespace DatabaseRestore
         {
             string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
             LogString("Preparing to restore SQL Database.");
+            bool result = false;
             using (SqlConnection connection = new SqlConnection(SQLConnectionString))
             {
-                bool WithAdded = false;
+                try
+                {
+                    LogString("Opening connection to SQL server... ", NewLine: false);
+                    connection.Open();
+                    LogString("Successful");
+                }
+                catch (Exception ex)
+                {
+                    LogString("An exception occurred:");
+                    LogString(ex.ToString());
+                    return false;
+                }
                 List<KeyValuePair<string, string>> parms = new List<KeyValuePair<string, string>>();
-                int parcount = 0;
                 StringBuilder querysb = new StringBuilder();
+                if (options.CloseConnections)
+                {
+                    LogString("Putting database into single-user mode to close connections...", NewLine: false);
+                    querysb.AppendFormat(
+                        "IF EXISTS (SELECT name FROM master.dbo.databases WHERE name = @DBNAME)\r\n" +
+                        "BEGIN\r\n" +
+                        "  ALTER DATABASE [{0}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;\r\n" +
+                        "END",
+                        options.DatabaseName);
+                    parms.Add(new KeyValuePair<string, string>("@DBNAME", options.DatabaseName));
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
+                        {
+                            cmd.CommandTimeout = 120;
+                            foreach (var p in parms)
+                            {
+                                cmd.Parameters.AddWithValue(p.Key, p.Value);
+                            }
+                            cmd.ExecuteNonQuery();
+                            LogString("Successful");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogString("An exception occurred setting single-user mode:");
+                        LogString(ex.ToString());
+                        return false;
+                    }
+                    querysb.Clear();
+                    parms.Clear();
+                }
+                bool WithAdded = false;
+                // build query using options provided
                 querysb.Append("RESTORE DATABASE @DBNAME FROM DISK = @BAKPATH");
                 parms.Add(new KeyValuePair<string, string>("@DBNAME", options.DatabaseName));
                 parms.Add(new KeyValuePair<string, string>("@BAKPATH", options.SourceFile));
-
                 if (options.ReplaceDatabase)
                 {
                     querysb.Append(" WITH REPLACE");
                     WithAdded = true;
                 }
+                int parcount = 0;
                 foreach (var mi in options.MoveItems)
                 {
                     if (WithAdded)
@@ -1537,14 +1598,11 @@ namespace DatabaseRestore
                     }
                 }
                 querysb.Append(";");
-                Debug.WriteLine(querysb.ToString());
                 try
                 {
-                    LogString("Opening connection to SQL server... ", NewLine: false);
-                    connection.Open();
-                    LogString("Successful");
                     using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
                     {
+                        cmd.CommandTimeout = 0;
                         foreach (var p in parms)
                         {
                             cmd.Parameters.AddWithValue(p.Key, p.Value);
@@ -1552,16 +1610,51 @@ namespace DatabaseRestore
                         LogString("Restoring database... ", NewLine: false);
                         cmd.ExecuteNonQuery();
                         LogString("Successful");
+                        result = true;
                     }
                 }
                 catch (Exception ex)
                 {
                     LogString("An exception occurred restoring the database");
                     LogString(ex.ToString());
-                    return false;
+                    result = false;
+                }
+                if (options.CloseConnections)
+                {
+                    querysb.Clear();
+                    parms.Clear();
+                    LogString("Putting database into multi-user mode...", NewLine: false);
+                    querysb.AppendFormat(
+                        "IF EXISTS (SELECT name FROM master.dbo.databases WHERE name = @DBNAME)\r\n" +
+                        "BEGIN\r\n" +
+                        "  ALTER DATABASE [{0}] SET MULTI_USER;\r\n" +
+                        "END",
+                        options.DatabaseName);
+                    parms.Add(new KeyValuePair<string, string>("@DBNAME", options.DatabaseName));
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
+                        {
+                            cmd.CommandTimeout = 120;
+                            foreach (var p in parms)
+                            {
+                                cmd.Parameters.AddWithValue(p.Key, p.Value);
+                            }
+                            cmd.ExecuteNonQuery();
+                            LogString("Successful");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogString("An exception occurred setting multi-user mode:");
+                        LogString(ex.ToString());
+                        result = false;
+                    }
+                    querysb.Clear();
+                    parms.Clear();
                 }
             }
-            return true;
+            return result;
         }
 
         /// <summary>

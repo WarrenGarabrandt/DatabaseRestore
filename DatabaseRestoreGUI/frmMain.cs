@@ -681,6 +681,7 @@ namespace DatabaseRestoreGUI
             chkOptsReplace.Checked = opts.ReplaceDatabase;
             chkOptsCheckdb.Checked = opts.DbccCheckDB;
             chkOptsMoveall.Checked = opts.MoveAllFiles;
+            chkOptsCloseConnections.Checked = opts.CloseConnections;
             if (opts.MoveAllFiles)
             {
                 txtOptsMoveallPath.Text = opts.MoveAllPath;
@@ -803,6 +804,7 @@ namespace DatabaseRestoreGUI
             // restore options page
             opts.ReplaceDatabase = chkOptsReplace.Checked;
             opts.DbccCheckDB = chkOptsCheckdb.Checked;
+            opts.CloseConnections = chkOptsCloseConnections.Checked;
             opts.MoveAllFiles = chkOptsMoveall.Checked;
             if (chkOptsMoveall.Checked)
             {
@@ -1012,6 +1014,10 @@ namespace DatabaseRestoreGUI
                 if (chkOptsReplace.Checked)
                 {
                     sb.Append(" --replacedatabase");
+                }
+                if (chkOptsCloseConnections.Checked)
+                {
+                    sb.Append(" --closeconnections");
                 }
                 if (chkOptsCheckdb.Checked)
                 {
