@@ -444,8 +444,8 @@ namespace DatabaseRestore
             Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
             Console.WriteLine("  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log.");
             Console.WriteLine("  --smtppassword <password>       : Password to decrypt the SMTP Profile file.");
-            Console.WriteLine("  --presqlscript <filepath>           : Before starting the SQL restore process, load and run the specified SQL file.");
-            Console.WriteLine("  --postsqlscript <filepath>          : After restore is completed successfully, load and run the specified SQL file.");
+            Console.WriteLine("  --presqlscript <filepath>       : Before starting the SQL restore process, load and run the specified SQL file.");
+            Console.WriteLine("  --postsqlscript <filepath>      : After restore is completed successfully, load and run the specified SQL file.");
             Console.WriteLine();
             Console.WriteLine("If --loadsettings is specified, any command line arguments provided override the settings in the file.");
             Console.WriteLine("If the settings file is password protected, use the --settingspassword argument to specify the password to decrypt it.");
