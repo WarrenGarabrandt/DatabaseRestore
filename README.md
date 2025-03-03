@@ -56,6 +56,10 @@ Starting the tool with no arguments will display the usage instructions. Most pa
   
   --smtppassword <password>       : Password to decrypt the SMTP Profile file.
 
+  --presqlscript <filepath>       : Before starting the SQL restore process, load and run the specified SQL file.
+
+  --postsqlscript <filepath>      : After restore is completed successfully, load and run the specified SQL file.
+
 ## Load Settings
 If --loadsettings is specified, any command line arguments provided override the settings in the file.
 
@@ -125,6 +129,11 @@ Finally, dbcc checkdb will be run on the database to verify that there is no dat
 
 ## SMTP Settings
 SMTP settings requires an email template to be passed, so instead of putting that on the command line, use the GUI to create the email settings and save that to a file. Then specify the file with the --smtpprofile option.
+
+## SQL Script Options
+--presqlscript and --postsqlscript allow running SQL scripts before starting, and after finishing. You can use this to run pretty much any SQL command that the user account has permission to run. The presqlscript connects to SQL server with MASTER as the initial catalog and is run before any file copy operations are started. All processing still be aborted if this script throws and error, so it's useful for checking the condition of things before allowing a restore to begin, or clearing any backup or other batch jobs might be running. The postsqlscript connects to SQL server with the restored database as the initial catalog, and runs after the optional DBCC check and before the optional temp file is deleted. This is useful for cleaning up tables that are not needed, removing user permissions, starting other batch processes, etc.
+
+Queries can be broken up into separate batches by putting the keyword GO on a line by iself. This is matched case sensitive and must match the format \<newline\>GO\<newline\> exactly, where \<newline\> is the carriage return and line feed characters, \\r\\n.
 
 ## Known Issues
 I've tested the program only on a test SQL server 2019 Express server so far, using integrated authentication only. I'm sure there's plenty of ways that passing passwords through the command line can expose all sorts of security issues that I haven't investigated yet, and probably special characters will break commandline argument parsing too.
