@@ -46,8 +46,8 @@ namespace DatabaseRestoreGUI
             dgvRightsUsers.Columns[2].Width = 100;
             dgvRightsUsers.Columns[3].Width = 100;
             dgvRightsUsers.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-            Panels = new[] { pnl0Start, pnl1Source, pnl2SQL, pnl3Opts, pnl4Rights, pnl5Log, pnl6SMTP, pnl7CLI, pnl8Run };
-            Buttons = new[] { btn0Start, btn1Soruce, btn2SQL, btn3Opts, btn4Rights, btn5Log, btn6SMTP, btn7CLI, btn8Run }; 
+            Panels = new[] { pnl0Start, pnl1Source, pnl2SQL, pnl3Opts, pnl4Rights, pnl5Log, pnl6SMTP, pnl7Scripts, pnl8CLI, pnl8Run };
+            Buttons = new[] { btn0Start, btn1Soruce, btn2SQL, btn3Opts, btn4Rights, btn5Log, btn6SMTP, btn7Scripts, btn8CLI, btn9Run }; 
             SetActivePage(Pages.Start);
         }
 
@@ -60,8 +60,9 @@ namespace DatabaseRestoreGUI
             DatabaseRights = 4,
             Logging = 5,
             SMTPOptions = 6,
-            CLIArguments = 7,
-            Run = 8
+            Scripts= 7,
+            CLIArguments = 8,
+            Run = 9
         }
 
         private Panel[] Panels;
@@ -246,8 +247,8 @@ namespace DatabaseRestoreGUI
 
         private void cmdOptsMoveAllPathHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("This must be a path on the SQL server that is storing the database.\r\n" +
-                "Unless this program is being run on the SQL server, the browse button will likely not be useful.", "Help", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("This must be a path on the SQL server that is storing the database.", 
+                "Help", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void chkOptsMoveall_CheckedChanged(object sender, EventArgs e)
@@ -406,7 +407,7 @@ namespace DatabaseRestoreGUI
                 saveFileDialog.Filter = "Text Files (*.txt)|*.TXT";
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    txtLogFile.Text = saveFileDialog.FileName;
+                    txtLogAppendFile.Text = saveFileDialog.FileName;
                 }
             }
         }
@@ -583,6 +584,20 @@ namespace DatabaseRestoreGUI
                     "Missing SMTP Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
+            
+            if (chkSQLPrescriptEnable.Checked && string.IsNullOrWhiteSpace(txtSQLPrepath.Text))
+            {
+                MessageBox.Show("On the SQL Scripts page, the Run preprocess script is checked but required file has not been specified.",
+                    "Missing Script Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (chkSQLPostscriptEnable.Checked && string.IsNullOrWhiteSpace(txtSQLPostpath.Text))
+            {
+                MessageBox.Show("On the SQL Scripts page, the Run postprocess script is checked but required file has not been specified.",
+                    "Missing Script Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
 
             return true;
         }
@@ -754,6 +769,28 @@ namespace DatabaseRestoreGUI
                 txtSMTPProfile.Text = "";
                 txtSMTPProfilePass.Text = "";
             }
+
+            // sql script page
+            if (!string.IsNullOrEmpty(opts.PreSQLScriptPath))
+            {
+                chkSQLPrescriptEnable.Checked = true;
+                txtSQLPrepath.Text = opts.PreSQLScriptPath;
+            }
+            else
+            {
+                chkSQLPrescriptEnable.Checked = false;
+                txtSQLPrepath.Text = "";
+            }
+            if (!string.IsNullOrEmpty(opts.PostSQLScriptPath))
+            {
+                chkSQLPostscriptEnable.Checked = true;
+                txtSQLPostpath.Text = opts.PostSQLScriptPath;
+            }
+            else
+            {
+                chkSQLPostscriptEnable.Checked = false;
+                txtSQLPostpath.Text = "";
+            }
         }
 
         private DatabaseRestore.Program.OptionsClass BuildOptionsFile()
@@ -864,6 +901,16 @@ namespace DatabaseRestoreGUI
                 opts.SMTPProfile = txtSMTPProfile.Text.Trim();
                 opts.SMTPPassword = txtSMTPProfilePass.Text;
             }
+
+            // sql scripts page
+            if (chkSQLPrescriptEnable.Checked)
+            {
+                opts.PreSQLScriptPath = txtSQLPrepath.Text.Trim();
+            }
+            if (chkSQLPostscriptEnable.Checked)
+            {
+                opts.PostSQLScriptPath = txtSQLPostpath.Text.Trim();
+            }
             return opts;
         }
 
@@ -904,7 +951,7 @@ namespace DatabaseRestoreGUI
 
         private void pnl7CLI_VisibleChanged(object sender, EventArgs e)
         {
-            if (pnl7CLI.Visible)
+            if (pnl8CLI.Visible)
             {
                 StringBuilder sb = new StringBuilder();
                 // build options for display
@@ -1133,6 +1180,27 @@ namespace DatabaseRestoreGUI
                         sb.AppendFormat(" --smtppassword {0}", temp);
                     }
                 }
+                // scripts
+                if (chkSQLPrescriptEnable.Checked)
+                {
+                    string temp = EscapeArguments(txtSQLPrepath.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "Preprocess SQL script requires a file to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --presqlscript {0}", temp);
+                }
+                if (chkSQLPostscriptEnable.Checked)
+                {
+                    string temp = EscapeArguments(txtSQLPostpath.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "Postprocess SQL script requires a file to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --postsqlscript {0}", temp);
+                }
 
                 txtCLIArgs.Text = sb.ToString();
             }
@@ -1256,6 +1324,44 @@ namespace DatabaseRestoreGUI
                 }
 
             }
+        }
+
+        private void cmdSQLPreBrowse_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "SQL Files (*.sql)|*.SQL";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtSQLPrepath.Text = openFileDialog.FileName;
+                }
+            }
+        }
+
+        private void cmdSQLPostBrowse_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "SQL Files (*.sql)|*.SQL";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtSQLPostpath.Text = openFileDialog.FileName;
+                }
+            }
+        }
+
+        private void chkSQLPrescriptEnable_CheckedChanged(object sender, EventArgs e)
+        {
+            lblSQLPrePath.Visible = chkSQLPrescriptEnable.Checked;
+            txtSQLPrepath.Visible = chkSQLPrescriptEnable.Checked;
+            cmdSQLPreBrowse.Visible = chkSQLPrescriptEnable.Checked;
+        }
+
+        private void chkSQLPostscriptEnable_CheckedChanged(object sender, EventArgs e)
+        {
+            lblSQLPostPath.Visible = chkSQLPostscriptEnable.Checked;
+            txtSQLPostpath.Visible = chkSQLPostscriptEnable.Checked;
+            cmdSQLPostBrowse.Visible = chkSQLPostscriptEnable.Checked;
         }
     }
 }

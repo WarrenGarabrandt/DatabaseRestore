@@ -129,7 +129,7 @@ Use the buttons to the left to switch between pages and set your options. Then g
 You may also run the database restore process on demand on the Run button.</value>
   </data>
   <data name="lblSourceTempHelp.Text" xml:space="preserve">
-    <value>* Please note: this file path must be accessible to both the user account running this backup restore process and to the SQL Server Service account. A network share of a subfolder inside the normal SQL Server Backup directory is usually a good spot if this program is not running on the SQL server itself. This file will be automatically overwriten and deleted when running.</value>
+    <value>This file path must be accessible to both the user account running this backup restore process and to the SQL Server Service account. A network share of a subfolder inside the normal SQL Server Backup directory is usually a good spot if this program is not running on the SQL server itself. Be sure to add the account running the SQL Server service process to both the folder permissions as well as the share permissions if using a network share (usually that will be LOCALSYSTEM). This file will be automatically overwriten and deleted when running.</value>
   </data>
   <data name="lblSQLCredentialInfo.Text" xml:space="preserve">
     <value>WARNING: Provided SQL Server Credentials will be passed via commnd line arguments in clear text. This is inherently insecure. It is recommended that you add a Windows user account to SQL server and use integrated authentication instead for better security.
@@ -155,5 +155,12 @@ If the Password contains \, ", or a space, or the password ends with a \, you wo
   </metadata>
   <data name="lblRightsHelp.Text" xml:space="preserve">
     <value>Add users by typing into the bottom empry row, and remove users by selecting a row and pressing delete. Users must already exist as Logins in SQL server or the restore will fail. You must specify at least one role for each listed user.</value>
+  </data>
+  <data name="label27.Text" xml:space="preserve">
+    <value>SQL Scripts may be ran before and/or after the restore operation completes.
+If a SQL script throws an error, the restore process will be halted at that point.
+Proprocess script runs with MASTER as the initial catalog and are run before source file copy is started.
+Postprocess script runs with the restored database as the initial catalog and run after the optional DBCC process and before deleting the temp backup file (if one is copied).
+SQL Scripts will be loaded and split into batches by the keyword GO on a line by itself. GO is case sensitive. SQL Server output messages will be written to log files.</value>
   </data>
 </root>

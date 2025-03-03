@@ -60,8 +60,8 @@
             this.btn3Opts = new System.Windows.Forms.CheckBox();
             this.btn5Log = new System.Windows.Forms.CheckBox();
             this.btn6SMTP = new System.Windows.Forms.CheckBox();
-            this.btn7CLI = new System.Windows.Forms.CheckBox();
-            this.btn8Run = new System.Windows.Forms.CheckBox();
+            this.btn8CLI = new System.Windows.Forms.CheckBox();
+            this.btn9Run = new System.Windows.Forms.CheckBox();
             this.pnl2SQL = new System.Windows.Forms.Panel();
             this.chkSQLTrustCert = new System.Windows.Forms.CheckBox();
             this.cmbSQLEncryptionMode = new System.Windows.Forms.ComboBox();
@@ -84,6 +84,7 @@
             this.label10 = new System.Windows.Forms.Label();
             this.btn4Rights = new System.Windows.Forms.CheckBox();
             this.pnl3Opts = new System.Windows.Forms.Panel();
+            this.chkOptsCloseConnections = new System.Windows.Forms.CheckBox();
             this.cmdOptsMoveFileImport = new System.Windows.Forms.Button();
             this.dgvOptsMoveFile = new System.Windows.Forms.DataGridView();
             this.colLogicalName = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -146,7 +147,7 @@
             this.chkSMTPSendEmail = new System.Windows.Forms.CheckBox();
             this.label18 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
-            this.pnl7CLI = new System.Windows.Forms.Panel();
+            this.pnl8CLI = new System.Windows.Forms.Panel();
             this.label21 = new System.Windows.Forms.Label();
             this.txtCLIArgs = new System.Windows.Forms.TextBox();
             this.label16 = new System.Windows.Forms.Label();
@@ -155,7 +156,18 @@
             this.cmdRunStart = new System.Windows.Forms.Button();
             this.lblRunBuildStatus = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
-            this.chkOptsCloseConnections = new System.Windows.Forms.CheckBox();
+            this.btn7Scripts = new System.Windows.Forms.CheckBox();
+            this.pnl7Scripts = new System.Windows.Forms.Panel();
+            this.label27 = new System.Windows.Forms.Label();
+            this.label28 = new System.Windows.Forms.Label();
+            this.chkSQLPrescriptEnable = new System.Windows.Forms.CheckBox();
+            this.txtSQLPrepath = new System.Windows.Forms.TextBox();
+            this.cmdSQLPreBrowse = new System.Windows.Forms.Button();
+            this.cmdSQLPostBrowse = new System.Windows.Forms.Button();
+            this.txtSQLPostpath = new System.Windows.Forms.TextBox();
+            this.chkSQLPostscriptEnable = new System.Windows.Forms.CheckBox();
+            this.lblSQLPrePath = new System.Windows.Forms.Label();
+            this.lblSQLPostPath = new System.Windows.Forms.Label();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -171,8 +183,9 @@
             this.pnl6SMTP.SuspendLayout();
             this.grpSMTPProfile.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudSMTPPort)).BeginInit();
-            this.pnl7CLI.SuspendLayout();
+            this.pnl8CLI.SuspendLayout();
             this.pnl8Run.SuspendLayout();
+            this.pnl7Scripts.SuspendLayout();
             this.SuspendLayout();
             // 
             // pnl0Start
@@ -292,20 +305,26 @@
             // 
             // panel1
             // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.Controls.Add(this.lblSourceTempHelp);
             this.panel1.Controls.Add(this.cmdSourceTempFileBrowse);
             this.panel1.Controls.Add(this.txtSourceTempFilePath);
             this.panel1.Controls.Add(this.chkSourceTempEnable);
             this.panel1.Location = new System.Drawing.Point(7, 152);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(552, 181);
+            this.panel1.Size = new System.Drawing.Size(552, 321);
             this.panel1.TabIndex = 7;
             // 
             // lblSourceTempHelp
             // 
+            this.lblSourceTempHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblSourceTempHelp.Location = new System.Drawing.Point(-3, 54);
             this.lblSourceTempHelp.Name = "lblSourceTempHelp";
-            this.lblSourceTempHelp.Size = new System.Drawing.Size(552, 127);
+            this.lblSourceTempHelp.Size = new System.Drawing.Size(552, 261);
             this.lblSourceTempHelp.TabIndex = 5;
             this.lblSourceTempHelp.Text = resources.GetString("lblSourceTempHelp.Text");
             this.lblSourceTempHelp.Visible = false;
@@ -535,31 +554,31 @@
             this.btn6SMTP.UseVisualStyleBackColor = true;
             this.btn6SMTP.Click += new System.EventHandler(this.btn_Click);
             // 
-            // btn7CLI
+            // btn8CLI
             // 
-            this.btn7CLI.Appearance = System.Windows.Forms.Appearance.Button;
-            this.btn7CLI.Location = new System.Drawing.Point(12, 278);
-            this.btn7CLI.Name = "btn7CLI";
-            this.btn7CLI.Size = new System.Drawing.Size(150, 32);
-            this.btn7CLI.TabIndex = 8;
-            this.btn7CLI.Tag = "CLIArguments";
-            this.btn7CLI.Text = "CLI Arguments";
-            this.btn7CLI.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.btn7CLI.UseVisualStyleBackColor = true;
-            this.btn7CLI.Click += new System.EventHandler(this.btn_Click);
+            this.btn8CLI.Appearance = System.Windows.Forms.Appearance.Button;
+            this.btn8CLI.Location = new System.Drawing.Point(12, 316);
+            this.btn8CLI.Name = "btn8CLI";
+            this.btn8CLI.Size = new System.Drawing.Size(150, 32);
+            this.btn8CLI.TabIndex = 8;
+            this.btn8CLI.Tag = "CLIArguments";
+            this.btn8CLI.Text = "CLI Arguments";
+            this.btn8CLI.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btn8CLI.UseVisualStyleBackColor = true;
+            this.btn8CLI.Click += new System.EventHandler(this.btn_Click);
             // 
-            // btn8Run
+            // btn9Run
             // 
-            this.btn8Run.Appearance = System.Windows.Forms.Appearance.Button;
-            this.btn8Run.Location = new System.Drawing.Point(12, 316);
-            this.btn8Run.Name = "btn8Run";
-            this.btn8Run.Size = new System.Drawing.Size(150, 32);
-            this.btn8Run.TabIndex = 9;
-            this.btn8Run.Tag = "Run";
-            this.btn8Run.Text = "Run";
-            this.btn8Run.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            this.btn8Run.UseVisualStyleBackColor = true;
-            this.btn8Run.Click += new System.EventHandler(this.btn_Click);
+            this.btn9Run.Appearance = System.Windows.Forms.Appearance.Button;
+            this.btn9Run.Location = new System.Drawing.Point(12, 354);
+            this.btn9Run.Name = "btn9Run";
+            this.btn9Run.Size = new System.Drawing.Size(150, 32);
+            this.btn9Run.TabIndex = 9;
+            this.btn9Run.Tag = "Run";
+            this.btn9Run.Text = "Run";
+            this.btn9Run.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btn9Run.UseVisualStyleBackColor = true;
+            this.btn9Run.Click += new System.EventHandler(this.btn_Click);
             // 
             // pnl2SQL
             // 
@@ -634,9 +653,12 @@
             // 
             // lblSQLCredentialInfo
             // 
+            this.lblSQLCredentialInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lblSQLCredentialInfo.Location = new System.Drawing.Point(3, 259);
             this.lblSQLCredentialInfo.Name = "lblSQLCredentialInfo";
-            this.lblSQLCredentialInfo.Size = new System.Drawing.Size(552, 83);
+            this.lblSQLCredentialInfo.Size = new System.Drawing.Size(552, 208);
             this.lblSQLCredentialInfo.TabIndex = 15;
             this.lblSQLCredentialInfo.Text = resources.GetString("lblSQLCredentialInfo.Text");
             this.lblSQLCredentialInfo.Visible = false;
@@ -822,6 +844,18 @@
             this.pnl3Opts.TabIndex = 12;
             this.pnl3Opts.Tag = "RestoreOptions";
             // 
+            // chkOptsCloseConnections
+            // 
+            this.chkOptsCloseConnections.AutoSize = true;
+            this.chkOptsCloseConnections.Checked = true;
+            this.chkOptsCloseConnections.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkOptsCloseConnections.Location = new System.Drawing.Point(7, 80);
+            this.chkOptsCloseConnections.Name = "chkOptsCloseConnections";
+            this.chkOptsCloseConnections.Size = new System.Drawing.Size(220, 20);
+            this.chkOptsCloseConnections.TabIndex = 11;
+            this.chkOptsCloseConnections.Text = "Force close existing connections";
+            this.chkOptsCloseConnections.UseVisualStyleBackColor = true;
+            // 
             // cmdOptsMoveFileImport
             // 
             this.cmdOptsMoveFileImport.Location = new System.Drawing.Point(308, 157);
@@ -887,7 +921,7 @@
             // cmdOptsMoveAllPathHelp
             // 
             this.cmdOptsMoveAllPathHelp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdOptsMoveAllPathHelp.Location = new System.Drawing.Point(527, 130);
+            this.cmdOptsMoveAllPathHelp.Location = new System.Drawing.Point(538, 130);
             this.cmdOptsMoveAllPathHelp.Name = "cmdOptsMoveAllPathHelp";
             this.cmdOptsMoveAllPathHelp.Size = new System.Drawing.Size(21, 23);
             this.cmdOptsMoveAllPathHelp.TabIndex = 7;
@@ -899,7 +933,7 @@
             // cmdOptsMoveAllBrowse
             // 
             this.cmdOptsMoveAllBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdOptsMoveAllBrowse.Location = new System.Drawing.Point(446, 130);
+            this.cmdOptsMoveAllBrowse.Location = new System.Drawing.Point(457, 131);
             this.cmdOptsMoveAllBrowse.Name = "cmdOptsMoveAllBrowse";
             this.cmdOptsMoveAllBrowse.Size = new System.Drawing.Size(75, 23);
             this.cmdOptsMoveAllBrowse.TabIndex = 6;
@@ -910,9 +944,11 @@
             // 
             // txtOptsMoveallPath
             // 
+            this.txtOptsMoveallPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtOptsMoveallPath.Location = new System.Drawing.Point(44, 131);
             this.txtOptsMoveallPath.Name = "txtOptsMoveallPath";
-            this.txtOptsMoveallPath.Size = new System.Drawing.Size(396, 22);
+            this.txtOptsMoveallPath.Size = new System.Drawing.Size(411, 22);
             this.txtOptsMoveallPath.TabIndex = 5;
             this.txtOptsMoveallPath.Visible = false;
             // 
@@ -929,7 +965,7 @@
             // chkOptsMoveall
             // 
             this.chkOptsMoveall.AutoSize = true;
-            this.chkOptsMoveall.Location = new System.Drawing.Point(7, 80);
+            this.chkOptsMoveall.Location = new System.Drawing.Point(7, 105);
             this.chkOptsMoveall.Name = "chkOptsMoveall";
             this.chkOptsMoveall.Size = new System.Drawing.Size(397, 20);
             this.chkOptsMoveall.TabIndex = 3;
@@ -950,6 +986,8 @@
             // chkOptsReplace
             // 
             this.chkOptsReplace.AutoSize = true;
+            this.chkOptsReplace.Checked = true;
+            this.chkOptsReplace.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkOptsReplace.Location = new System.Drawing.Point(7, 31);
             this.chkOptsReplace.Name = "chkOptsReplace";
             this.chkOptsReplace.Size = new System.Drawing.Size(376, 20);
@@ -1074,6 +1112,8 @@
             // 
             // txtLogAppendFile
             // 
+            this.txtLogAppendFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtLogAppendFile.Location = new System.Drawing.Point(63, 107);
             this.txtLogAppendFile.Name = "txtLogAppendFile";
             this.txtLogAppendFile.Size = new System.Drawing.Size(411, 22);
@@ -1115,6 +1155,8 @@
             // 
             // txtLogFile
             // 
+            this.txtLogFile.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtLogFile.Location = new System.Drawing.Point(63, 57);
             this.txtLogFile.Name = "txtLogFile";
             this.txtLogFile.Size = new System.Drawing.Size(411, 22);
@@ -1511,21 +1553,21 @@
             this.label15.TabIndex = 0;
             this.label15.Text = "SMTP Options";
             // 
-            // pnl7CLI
+            // pnl8CLI
             // 
-            this.pnl7CLI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.pnl8CLI.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.pnl7CLI.Controls.Add(this.label21);
-            this.pnl7CLI.Controls.Add(this.txtCLIArgs);
-            this.pnl7CLI.Controls.Add(this.label16);
-            this.pnl7CLI.Location = new System.Drawing.Point(169, 12);
-            this.pnl7CLI.Margin = new System.Windows.Forms.Padding(4);
-            this.pnl7CLI.Name = "pnl7CLI";
-            this.pnl7CLI.Size = new System.Drawing.Size(562, 476);
-            this.pnl7CLI.TabIndex = 16;
-            this.pnl7CLI.Tag = "CLIArguments";
-            this.pnl7CLI.VisibleChanged += new System.EventHandler(this.pnl7CLI_VisibleChanged);
+            this.pnl8CLI.Controls.Add(this.label21);
+            this.pnl8CLI.Controls.Add(this.txtCLIArgs);
+            this.pnl8CLI.Controls.Add(this.label16);
+            this.pnl8CLI.Location = new System.Drawing.Point(169, 12);
+            this.pnl8CLI.Margin = new System.Windows.Forms.Padding(4);
+            this.pnl8CLI.Name = "pnl8CLI";
+            this.pnl8CLI.Size = new System.Drawing.Size(562, 476);
+            this.pnl8CLI.TabIndex = 16;
+            this.pnl8CLI.Tag = "CLIArguments";
+            this.pnl8CLI.VisibleChanged += new System.EventHandler(this.pnl7CLI_VisibleChanged);
             // 
             // label21
             // 
@@ -1546,7 +1588,7 @@
             this.txtCLIArgs.Multiline = true;
             this.txtCLIArgs.Name = "txtCLIArgs";
             this.txtCLIArgs.ReadOnly = true;
-            this.txtCLIArgs.Size = new System.Drawing.Size(548, 120);
+            this.txtCLIArgs.Size = new System.Drawing.Size(548, 399);
             this.txtCLIArgs.TabIndex = 1;
             // 
             // label16
@@ -1620,17 +1662,148 @@
             this.label17.TabIndex = 0;
             this.label17.Text = "Run Database Restore Now";
             // 
-            // chkOptsCloseConnections
+            // btn7Scripts
             // 
-            this.chkOptsCloseConnections.AutoSize = true;
-            this.chkOptsCloseConnections.Checked = true;
-            this.chkOptsCloseConnections.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkOptsCloseConnections.Location = new System.Drawing.Point(7, 105);
-            this.chkOptsCloseConnections.Name = "chkOptsCloseConnections";
-            this.chkOptsCloseConnections.Size = new System.Drawing.Size(220, 20);
-            this.chkOptsCloseConnections.TabIndex = 11;
-            this.chkOptsCloseConnections.Text = "Force close existing connections";
-            this.chkOptsCloseConnections.UseVisualStyleBackColor = true;
+            this.btn7Scripts.Appearance = System.Windows.Forms.Appearance.Button;
+            this.btn7Scripts.Location = new System.Drawing.Point(12, 278);
+            this.btn7Scripts.Name = "btn7Scripts";
+            this.btn7Scripts.Size = new System.Drawing.Size(150, 32);
+            this.btn7Scripts.TabIndex = 18;
+            this.btn7Scripts.Tag = "Scripts";
+            this.btn7Scripts.Text = "SQL Scripts";
+            this.btn7Scripts.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.btn7Scripts.UseVisualStyleBackColor = true;
+            this.btn7Scripts.Click += new System.EventHandler(this.btn_Click);
+            // 
+            // pnl7Scripts
+            // 
+            this.pnl7Scripts.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnl7Scripts.Controls.Add(this.lblSQLPostPath);
+            this.pnl7Scripts.Controls.Add(this.lblSQLPrePath);
+            this.pnl7Scripts.Controls.Add(this.cmdSQLPostBrowse);
+            this.pnl7Scripts.Controls.Add(this.txtSQLPostpath);
+            this.pnl7Scripts.Controls.Add(this.chkSQLPostscriptEnable);
+            this.pnl7Scripts.Controls.Add(this.cmdSQLPreBrowse);
+            this.pnl7Scripts.Controls.Add(this.txtSQLPrepath);
+            this.pnl7Scripts.Controls.Add(this.chkSQLPrescriptEnable);
+            this.pnl7Scripts.Controls.Add(this.label28);
+            this.pnl7Scripts.Controls.Add(this.label27);
+            this.pnl7Scripts.Location = new System.Drawing.Point(169, 12);
+            this.pnl7Scripts.Margin = new System.Windows.Forms.Padding(4);
+            this.pnl7Scripts.Name = "pnl7Scripts";
+            this.pnl7Scripts.Size = new System.Drawing.Size(562, 476);
+            this.pnl7Scripts.TabIndex = 19;
+            this.pnl7Scripts.Tag = "Scripts";
+            this.pnl7Scripts.Visible = false;
+            // 
+            // label27
+            // 
+            this.label27.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label27.Location = new System.Drawing.Point(3, 149);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(552, 318);
+            this.label27.TabIndex = 2;
+            this.label27.Text = resources.GetString("label27.Text");
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(3, 2);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(169, 24);
+            this.label28.TabIndex = 0;
+            this.label28.Text = "SQL Script Options";
+            // 
+            // chkSQLPrescriptEnable
+            // 
+            this.chkSQLPrescriptEnable.AutoSize = true;
+            this.chkSQLPrescriptEnable.Location = new System.Drawing.Point(6, 37);
+            this.chkSQLPrescriptEnable.Name = "chkSQLPrescriptEnable";
+            this.chkSQLPrescriptEnable.Size = new System.Drawing.Size(193, 20);
+            this.chkSQLPrescriptEnable.TabIndex = 3;
+            this.chkSQLPrescriptEnable.Text = "Run preprocess SQL batch .";
+            this.chkSQLPrescriptEnable.UseVisualStyleBackColor = true;
+            this.chkSQLPrescriptEnable.CheckedChanged += new System.EventHandler(this.chkSQLPrescriptEnable_CheckedChanged);
+            // 
+            // txtSQLPrepath
+            // 
+            this.txtSQLPrepath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSQLPrepath.Location = new System.Drawing.Point(87, 59);
+            this.txtSQLPrepath.Name = "txtSQLPrepath";
+            this.txtSQLPrepath.Size = new System.Drawing.Size(387, 22);
+            this.txtSQLPrepath.TabIndex = 4;
+            this.txtSQLPrepath.Visible = false;
+            // 
+            // cmdSQLPreBrowse
+            // 
+            this.cmdSQLPreBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdSQLPreBrowse.Location = new System.Drawing.Point(480, 59);
+            this.cmdSQLPreBrowse.Name = "cmdSQLPreBrowse";
+            this.cmdSQLPreBrowse.Size = new System.Drawing.Size(75, 23);
+            this.cmdSQLPreBrowse.TabIndex = 5;
+            this.cmdSQLPreBrowse.Text = "Browse";
+            this.cmdSQLPreBrowse.UseVisualStyleBackColor = true;
+            this.cmdSQLPreBrowse.Visible = false;
+            this.cmdSQLPreBrowse.Click += new System.EventHandler(this.cmdSQLPreBrowse_Click);
+            // 
+            // cmdSQLPostBrowse
+            // 
+            this.cmdSQLPostBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdSQLPostBrowse.Location = new System.Drawing.Point(480, 112);
+            this.cmdSQLPostBrowse.Name = "cmdSQLPostBrowse";
+            this.cmdSQLPostBrowse.Size = new System.Drawing.Size(75, 23);
+            this.cmdSQLPostBrowse.TabIndex = 8;
+            this.cmdSQLPostBrowse.Text = "Browse";
+            this.cmdSQLPostBrowse.UseVisualStyleBackColor = true;
+            this.cmdSQLPostBrowse.Visible = false;
+            this.cmdSQLPostBrowse.Click += new System.EventHandler(this.cmdSQLPostBrowse_Click);
+            // 
+            // txtSQLPostpath
+            // 
+            this.txtSQLPostpath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSQLPostpath.Location = new System.Drawing.Point(87, 112);
+            this.txtSQLPostpath.Name = "txtSQLPostpath";
+            this.txtSQLPostpath.Size = new System.Drawing.Size(387, 22);
+            this.txtSQLPostpath.TabIndex = 7;
+            this.txtSQLPostpath.Visible = false;
+            // 
+            // chkSQLPostscriptEnable
+            // 
+            this.chkSQLPostscriptEnable.AutoSize = true;
+            this.chkSQLPostscriptEnable.Location = new System.Drawing.Point(6, 90);
+            this.chkSQLPostscriptEnable.Name = "chkSQLPostscriptEnable";
+            this.chkSQLPostscriptEnable.Size = new System.Drawing.Size(193, 20);
+            this.chkSQLPostscriptEnable.TabIndex = 6;
+            this.chkSQLPostscriptEnable.Text = "Run preprocess SQL batch .";
+            this.chkSQLPostscriptEnable.UseVisualStyleBackColor = true;
+            this.chkSQLPostscriptEnable.CheckedChanged += new System.EventHandler(this.chkSQLPostscriptEnable_CheckedChanged);
+            // 
+            // lblSQLPrePath
+            // 
+            this.lblSQLPrePath.AutoSize = true;
+            this.lblSQLPrePath.Location = new System.Drawing.Point(12, 62);
+            this.lblSQLPrePath.Name = "lblSQLPrePath";
+            this.lblSQLPrePath.Size = new System.Drawing.Size(69, 16);
+            this.lblSQLPrePath.TabIndex = 9;
+            this.lblSQLPrePath.Text = "Script File:";
+            this.lblSQLPrePath.Visible = false;
+            // 
+            // lblSQLPostPath
+            // 
+            this.lblSQLPostPath.AutoSize = true;
+            this.lblSQLPostPath.Location = new System.Drawing.Point(12, 115);
+            this.lblSQLPostPath.Name = "lblSQLPostPath";
+            this.lblSQLPostPath.Size = new System.Drawing.Size(69, 16);
+            this.lblSQLPostPath.TabIndex = 10;
+            this.lblSQLPostPath.Text = "Script File:";
+            this.lblSQLPostPath.Visible = false;
             // 
             // frmMain
             // 
@@ -1638,23 +1811,25 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
             this.Controls.Add(this.btn4Rights);
-            this.Controls.Add(this.btn8Run);
-            this.Controls.Add(this.btn7CLI);
+            this.Controls.Add(this.btn9Run);
+            this.Controls.Add(this.btn8CLI);
             this.Controls.Add(this.btn6SMTP);
             this.Controls.Add(this.btn5Log);
             this.Controls.Add(this.btn3Opts);
             this.Controls.Add(this.btn2SQL);
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
-            this.Controls.Add(this.pnl3Opts);
-            this.Controls.Add(this.pnl6SMTP);
+            this.Controls.Add(this.btn7Scripts);
             this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.pnl2SQL);
             this.Controls.Add(this.pnl8Run);
             this.Controls.Add(this.pnl5Log);
+            this.Controls.Add(this.pnl7Scripts);
+            this.Controls.Add(this.pnl8CLI);
             this.Controls.Add(this.pnl1Source);
-            this.Controls.Add(this.pnl7CLI);
             this.Controls.Add(this.pnl4Rights);
+            this.Controls.Add(this.pnl3Opts);
+            this.Controls.Add(this.pnl6SMTP);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(600, 440);
@@ -1687,10 +1862,12 @@
             this.grpSMTPProfile.ResumeLayout(false);
             this.grpSMTPProfile.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudSMTPPort)).EndInit();
-            this.pnl7CLI.ResumeLayout(false);
-            this.pnl7CLI.PerformLayout();
+            this.pnl8CLI.ResumeLayout(false);
+            this.pnl8CLI.PerformLayout();
             this.pnl8Run.ResumeLayout(false);
             this.pnl8Run.PerformLayout();
+            this.pnl7Scripts.ResumeLayout(false);
+            this.pnl7Scripts.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1709,8 +1886,8 @@
         private System.Windows.Forms.CheckBox btn3Opts;
         private System.Windows.Forms.CheckBox btn5Log;
         private System.Windows.Forms.CheckBox btn6SMTP;
-        private System.Windows.Forms.CheckBox btn7CLI;
-        private System.Windows.Forms.CheckBox btn8Run;
+        private System.Windows.Forms.CheckBox btn8CLI;
+        private System.Windows.Forms.CheckBox btn9Run;
         private System.Windows.Forms.ComboBox cmbSourceSelectionMode;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel pnlSourceAutoSelect;
@@ -1754,7 +1931,7 @@
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Panel pnl6SMTP;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Panel pnl7CLI;
+        private System.Windows.Forms.Panel pnl8CLI;
         private System.Windows.Forms.Label label16;
         private System.Windows.Forms.Panel pnl8Run;
         private System.Windows.Forms.Label label17;
@@ -1824,5 +2001,17 @@
         private System.Windows.Forms.TextBox txtSMTPProfilePass;
         private System.Windows.Forms.Label lblSMTPProfilePass;
         private System.Windows.Forms.CheckBox chkOptsCloseConnections;
+        private System.Windows.Forms.CheckBox btn7Scripts;
+        private System.Windows.Forms.Panel pnl7Scripts;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.Button cmdSQLPostBrowse;
+        private System.Windows.Forms.TextBox txtSQLPostpath;
+        private System.Windows.Forms.CheckBox chkSQLPostscriptEnable;
+        private System.Windows.Forms.Button cmdSQLPreBrowse;
+        private System.Windows.Forms.TextBox txtSQLPrepath;
+        private System.Windows.Forms.CheckBox chkSQLPrescriptEnable;
+        private System.Windows.Forms.Label lblSQLPostPath;
+        private System.Windows.Forms.Label lblSQLPrePath;
     }
 }

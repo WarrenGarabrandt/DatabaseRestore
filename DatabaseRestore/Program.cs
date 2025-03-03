@@ -34,6 +34,7 @@ using System.Security.Cryptography;
 using System.Runtime.Remoting.Messaging;
 using System.Net.Mail;
 using System.Net.Configuration;
+using System.Threading;
 
 namespace DatabaseRestore
 {
@@ -125,6 +126,10 @@ namespace DatabaseRestore
             public string SMTPProfile { get; set; }
             // --smtppassword
             public string SMTPPassword { get; set; }
+            // --presqlscript
+            public string PreSQLScriptPath { get; set; }
+            // --postsqlscript
+            public string PostSQLScriptPath { get; set; }
         }
 
         public class SMTPProfileClass
@@ -141,34 +146,6 @@ namespace DatabaseRestore
             public string EmailBodyTemplte { get; set; }
             public bool AttachLog { get; set; }
         }
-
-        /*
-        private static void TestCrypto()
-        {
-            string Loremipsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum";
-            MemoryStream TestStream = new MemoryStream();
-            byte[] testBuffer = Encoding.UTF8.GetBytes(Loremipsum);
-            TestStream.Write(testBuffer, 0, testBuffer.Length);
-            TestStream.Seek(0, SeekOrigin.Begin);
-
-            if (!EncryptAndSaveFile(@"C:\temp\testfile.XSF", "hijkelemenop", TestStream))
-            {
-                Console.WriteLine("Failed to Encrypt.");
-                return;
-            }
-
-            MemoryStream result = LoadAndDecryptFile(@"C:\temp\testfile.XSF", "hijkelemenop");
-            byte[] decryptBuff = result.ToArray();
-            string decryptString = Encoding.UTF8.GetString(decryptBuff);
-            if (decryptString == Loremipsum)
-            {
-                Console.WriteLine("SUCCESS!");
-            }
-            else
-            {
-                Console.WriteLine("Data mismatch.");
-            }
-        }*/
 
         static int Main(string[] args)
         {
@@ -193,23 +170,38 @@ namespace DatabaseRestore
         {
             int errorCode = 0;
             SMTPProfileClass smtpProfile = null;
+            string[] prescript;
+            string[] postscript;
             try
             {
-                if (!CheckOptions(options, out smtpProfile))
+                if (!CheckOptions(options, out smtpProfile, out prescript, out postscript))
                 {
                     errorCode = -2;
+                }
+                if (prescript != null && prescript.Length > 0)
+                {
+                    LogString("Running preproccessing script.");
+                    if (RunSQLScript(options, prescript, masterdb: true))
+                    {
+                        LogString("Preprocessing script finished.");
+                    }
+                    else
+                    {
+                        LogString("Failed running preprocessings script.");
+                        errorCode = -3;
+                    }
                 }
                 if (errorCode == 0 && !string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
                 {
                     LogString("Failed deleting previous temp file.");
-                    errorCode = -3;
+                    errorCode = -4;
                 }
                 if (errorCode == 0 && !string.IsNullOrEmpty(options.TempFile))
                 {
                     if (!CopyFile(options.SourceFile, options.TempFile))
                     {
                         LogString("Failed copying source backup file to temp path.");
-                        errorCode = -4;
+                        errorCode = -5;
                     }
                     // now that we have a copy of the source file at temp, update the source var so that it gets passed to SQL server instead of the specified source file
                     options.SourceFile = options.TempFile;
@@ -217,16 +209,13 @@ namespace DatabaseRestore
                 if (errorCode == 0 && !PrepareDatabaseFiles(options))
                 {
                     LogString("Failed preparing database files.");
-                    errorCode = -5;
+                    errorCode = -6;
                 }
+                // database permissions get set within RestoreDatabase, that way they can be done while the database is in
+                // single user mode, if that option is specified.
                 if (errorCode == 0 && !RestoreDatabase(options))
                 {
                     LogString("Failed restoring the database.");
-                    errorCode = -6;
-                }
-                if (errorCode == 0 && !SetDatabasePermissions(options))
-                {
-                    LogString("Failed setting permissions for the database.");
                     errorCode = -7;
                 }
                 if (errorCode == 0 && !RunDBCC(options))
@@ -234,10 +223,23 @@ namespace DatabaseRestore
                     LogString("Failed running DBCC CHECKDB.");
                     errorCode = -8;
                 }
+                if (errorCode == 0 && postscript != null && postscript.Length > 0)
+                {
+                    LogString("Running Postprocessing script.");
+                    if (RunSQLScript(options, postscript, masterdb: false))
+                    {
+                        LogString("Postprocessing script finished.");
+                    }
+                    else
+                    {
+                        LogString("Failed running postprocessing script.");
+                        errorCode = -9;
+                    }
+                }
                 if (errorCode == 0 && !string.IsNullOrEmpty(options.TempFile) && !CleanTemp(options.TempFile))
                 {
                     LogString("Failed deleting temp file.");
-                    errorCode = -9;
+                    errorCode = -10;
                 }
                 
             }
@@ -442,6 +444,8 @@ namespace DatabaseRestore
             Console.WriteLine("  --logappend <filepath>          : Appends a new log entry to the end of the specified file, or creates one if it doesn't exist.");
             Console.WriteLine("  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log.");
             Console.WriteLine("  --smtppassword <password>       : Password to decrypt the SMTP Profile file.");
+            Console.WriteLine("  --presqlscript <filepath>           : Before starting the SQL restore process, load and run the specified SQL file.");
+            Console.WriteLine("  --postsqlscript <filepath>          : After restore is completed successfully, load and run the specified SQL file.");
             Console.WriteLine();
             Console.WriteLine("If --loadsettings is specified, any command line arguments provided override the settings in the file.");
             Console.WriteLine("If the settings file is password protected, use the --settingspassword argument to specify the password to decrypt it.");
@@ -466,6 +470,12 @@ namespace DatabaseRestore
             Console.WriteLine("In that case, User account for SQL server process must have access to the source file.");
             Console.WriteLine();
             Console.WriteLine("SMTP Profile encapsulates settings and email template for sending an email log. Use the GUI to create one of these.");
+            Console.WriteLine();
+            Console.WriteLine("The Pre- and Post- SQL script options load a specified sql file and run the queries on the destination SQL server.");
+            Console.WriteLine("The presqlscript connects to SQL server with MASTER as the initial catalog.");
+            Console.WriteLine("The postsqlscript connects to SQL server with the restored database as the initial catalog.");
+            Console.WriteLine("If you need to run multiple queries, separate them with the word GO on a line by itself.");
+            Console.WriteLine("This parsing looks for \\r\\nGO\\r\\n as the batch separator, and is case sensitive.");
             return;
         }
 
@@ -525,7 +535,7 @@ namespace DatabaseRestore
                 }
                 else if (args[pos].ToLower() == "--autosource" || args[pos].ToLower() == "-a")
                 {
-                    pos+= 3;
+                    pos += 3;
                 }
                 else if (args[pos].ToLower() == "--source" || args[pos].ToLower() == "-s")
                 {
@@ -593,7 +603,7 @@ namespace DatabaseRestore
                 }
                 else if (args[pos].ToLower() == "--logfile")
                 {
-                    pos+= 2;
+                    pos += 2;
                 }
                 else if (args[pos].ToLower() == "--logappend")
                 {
@@ -604,6 +614,14 @@ namespace DatabaseRestore
                     pos += 2;
                 }
                 else if (args[pos].ToLower() == "--smtppassword")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--presqlscript")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--postsqlscript")
                 {
                     pos += 2;
                 }
@@ -960,6 +978,38 @@ namespace DatabaseRestore
                 {
                     pos += 2;
                 }
+                else if (args[pos].ToLower() == "--presqlscript")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No path specified for --presqlscript <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--presqlscript <filepath> parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.PreSQLScriptPath = args[pos];
+                    pos++;
+                }
+                else if (args[pos].ToLower() == "--postsqlscript")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No path specified for --postsqlscript <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--postsqlscript <filepath> parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.PostSQLScriptPath = args[pos];
+                    pos++;
+                }
                 else
                 {
                     LogString(string.Format("Unrecognized command line option {0}", args[pos]));
@@ -969,9 +1019,11 @@ namespace DatabaseRestore
             return true;
         }
 
-        public static bool CheckOptions(OptionsClass options, out SMTPProfileClass smtpProfile)
+        public static bool CheckOptions(OptionsClass options, out SMTPProfileClass smtpProfile, out string[] prescript, out string[] postscript)
         {
             smtpProfile = null;
+            prescript = null;
+            postscript = null;
             if (!string.IsNullOrEmpty(options.SourceFile) && !string.IsNullOrEmpty(options.SourcePath))
             {
                 LogString("--autosource and --source were both specified, but only one is needed.");
@@ -983,6 +1035,34 @@ namespace DatabaseRestore
                 return false;
             }
             LogString("Preparing processing plan and checking options.");
+            if (!string.IsNullOrEmpty(options.PreSQLScriptPath))
+            {
+                LogString(string.Format("Preprocessing SQL script specified: {0}", options.PreSQLScriptPath));
+                LogString("Loading SQL script...", NewLine: false);
+                prescript = ReadAndSplitBatch(options.PreSQLScriptPath);
+                if (prescript != null && prescript.Length >= 1)
+                {
+                    LogString(string.Format("Success. Read {0} batch{1}.", prescript.Length, prescript.Length > 1 ? "es" : ""));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            if (!string.IsNullOrEmpty(options.PostSQLScriptPath))
+            {
+                LogString(string.Format("Postprocessing SQL script specified: {0}", options.PostSQLScriptPath));
+                LogString("Loading SQL script...", NewLine: false);
+                postscript = ReadAndSplitBatch(options.PostSQLScriptPath);
+                if (postscript != null && postscript.Length >= 1)
+                {
+                    LogString(string.Format("Success. Read {0} batch{1}.", postscript.Length, postscript.Length > 1 ? "es" : ""));
+                }
+                else
+                {
+                    return false;
+                }
+            }
             if (!string.IsNullOrEmpty(options.SourcePath))
             {
                 if (options.AutoSourceMode == AutoSourceMode.None)
@@ -1321,6 +1401,49 @@ namespace DatabaseRestore
             return true;
         }
 
+        public static bool RunSQLScript(OptionsClass options, string[] batches, bool masterdb)
+        {
+            string SQLConnectionString = BuildConnectionString(options, useMasterDB: masterdb);
+            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            {
+                int currentBatchPart = 0;
+                try
+                {
+                    connection.InfoMessage += Connection_InfoMessage;
+                    LogString("Opening connection to SQL server... ", NewLine: false);
+                    connection.Open();
+                    LogString("Successful");
+                    for (int i = 0; i < batches.Length; i++)
+                    {
+                        using (SqlCommand cmd = new SqlCommand(batches[i], connection))
+                        {
+                            cmd.CommandTimeout = 0;
+                            currentBatchPart = i + 1;
+                            int rows = cmd.ExecuteNonQuery();
+                            LogString(String.Format("Batch {0} of {1}, rows affected: {2}", currentBatchPart, batches.Length, rows));
+                            if (InfoMessageSB.Length > 0)
+                            {
+                                LogString("Messages:");
+                                LogString(InfoMessageSB.ToString());
+                                InfoMessageSB.Clear();
+                            }
+                        }
+                    }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    LogString(string.Format("Error occurred{0}:", currentBatchPart > 0 ? string.Format(" processing batch {0}", currentBatchPart) : ""));
+                    LogString(ex.ToString());
+                    return false;
+                }
+                finally
+                {
+                    connection.InfoMessage -= Connection_InfoMessage;
+                }
+            }
+        }
+
         public static bool CopyFile(string sourceFile, string tempFile)
         {
             if (System.IO.File.Exists(sourceFile))
@@ -1540,7 +1663,7 @@ namespace DatabaseRestore
                 {
                     LogString("Putting database into single-user mode to close connections...", NewLine: false);
                     querysb.AppendFormat(
-                        "IF EXISTS (SELECT name FROM master.dbo.databases WHERE name = @DBNAME)\r\n" +
+                        "IF EXISTS (SELECT name FROM sys.databases WHERE name = @DBNAME)\r\n" +
                         "BEGIN\r\n" +
                         "  ALTER DATABASE [{0}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;\r\n" +
                         "END",
@@ -1619,13 +1742,18 @@ namespace DatabaseRestore
                     LogString(ex.ToString());
                     result = false;
                 }
+                if (result && !SetDatabasePermissions(options))
+                {
+                    LogString("Failed setting permissions for the database.");
+                    result = false;
+                }
                 if (options.CloseConnections)
                 {
                     querysb.Clear();
                     parms.Clear();
                     LogString("Putting database into multi-user mode...", NewLine: false);
                     querysb.AppendFormat(
-                        "IF EXISTS (SELECT name FROM master.dbo.databases WHERE name = @DBNAME)\r\n" +
+                        "IF EXISTS (SELECT name FROM sys.databases WHERE name = @DBNAME)\r\n" +
                         "BEGIN\r\n" +
                         "  ALTER DATABASE [{0}] SET MULTI_USER;\r\n" +
                         "END",
@@ -1770,6 +1898,7 @@ namespace DatabaseRestore
         {
             if (options.DbccCheckDB)
             {
+                InfoMessageSB.Clear();
                 string SQLConnectionString = BuildConnectionString(options);
                 using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
@@ -2020,7 +2149,22 @@ namespace DatabaseRestore
                 return Result;
             }
         }
-           
+
+        private static string[] ReadAndSplitBatch(string path)
+        {
+            try
+            {
+                string[] splitcommands = File.ReadAllText(path).Split(new string[] { "\r\nGO\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                return splitcommands;
+            }
+            catch (Exception ex)
+            {
+                LogString("Error loading SQL Script.");
+                LogString(ex.Message);
+                return null;
+            }
+        }
+
 
     }
 }
