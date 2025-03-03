@@ -166,13 +166,6 @@ c:\Program Files\Test" --the rest of your arguments become part of the path....
 
 Which will essentially break parsing of the arguments and likely result in unexpected behavior. Combining paths will definitely break, as the illegal character " will be used as part of the path.
 
-## Future Plans
-Add the option to automatically email out the log file on success, failure, or both to a specified email address. This is in progress now.
-
-Capture the output of dbcc checkdb and look for failure messages, <s>or at least capture the output and append it to the log and email.</s> DBCC info messages are now captured and put in the output.
-
-Add an option to execute a specified SQL script after restoration is complete, so that it can be used to rebuild indexes, or run reports automatically, run arbitrary SQL instructions, etc.
-
 # Database Restore GUI
 This is a graphics user interface front-end for the command line program. It allows you to enter settings in a graphical interface and save them out to a config file, or to open a previously saved config file to make changes. You can also use the GUI to on-demand run a database restore. Use the GUI to create settings files for the command line tool, and SMTP profile settings for emailing out logs.
 
