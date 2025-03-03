@@ -40,7 +40,7 @@ namespace DatabaseRestore
 {
     public class Program
     {
-        public const string BUILDRELEASE = "alpha1";
+        public const string BUILDRELEASE = "alpha2";
         public const int KEYITERATIONS = 1000;
 
         public class UserRightItem
@@ -1911,6 +1911,7 @@ namespace DatabaseRestore
                         LogString("Successful");
                         using (SqlCommand cmd = new SqlCommand(query, connection))
                         {
+                            cmd.CommandTimeout = 0;
                             LogString("Running DBCC CHECKEDB... ", NewLine: false);
                             cmd.ExecuteNonQuery();
                             LogString("Successful. See Info messages below for any DBCC errors reported.");
