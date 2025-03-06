@@ -21,6 +21,8 @@ Starting the tool with no arguments will display the usage instructions. Most pa
   --settingspassword <password>   : Specifies a password to decrypt the --loadsettings file.
 
   --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.
+
+  --autosourceext -x <extension>  : limits autosource file selection to the specified file extension.
   
   --source -s <filepath>          : source database backup file.
   
