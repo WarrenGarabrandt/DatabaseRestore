@@ -40,7 +40,7 @@ namespace DatabaseRestore
 {
     public class Program
     {
-        public const string BUILDRELEASE = "alpha2";
+        public const string BUILDRELEASE = "alpha1";
         public const int KEYITERATIONS = 1000;
 
         public class UserRightItem
@@ -81,6 +81,8 @@ namespace DatabaseRestore
             public AutoSourceMode AutoSourceMode { get; set; }
             // --autosource path
             public string SourcePath { get; set; }
+            // --autosourceext extension
+            public string AutosourceExtension { get; set; }
             // --source
             public string SourceFile { get; set; }
             // -- temp
@@ -424,6 +426,7 @@ namespace DatabaseRestore
             Console.WriteLine("  --loadsettings <path>           : Loads settings from a settings file (created with the GUI).");
             Console.WriteLine("  --settingspassword <password>   : Specifies a password to decrypt the --loadsettings file, only specify if that file is password protected.");
             Console.WriteLine("  --autosource -a <mode> <path>   : select a source file from specified path based on specified mode.");
+            Console.WriteLine("  --autosourceext -x <extension>  : limits autosource file selection to the specified file extension.");
             Console.WriteLine("  --source -s <filepath>          : source database backup file.");
             Console.WriteLine("  --temp -t <filepath>            : temporary directory and file name to copy the source to before restoring.");
             Console.WriteLine("  --serverip -i <ip>              : IP address of the server to connect to.");
@@ -536,6 +539,10 @@ namespace DatabaseRestore
                 else if (args[pos].ToLower() == "--autosource" || args[pos].ToLower() == "-a")
                 {
                     pos += 3;
+                }
+                else if (args[pos].ToLower() == "--autosourceext" || args[pos].ToLower() == "-x")
+                {
+                    pos += 2;
                 }
                 else if (args[pos].ToLower() == "--source" || args[pos].ToLower() == "-s")
                 {
@@ -683,6 +690,22 @@ namespace DatabaseRestore
                             LogString(string.Format("Invalid --autosource mode specified: {0}", amode));
                             return false;
                     }
+                }
+                else if (args[pos].ToLower() == "--autosourceext" || args[pos].ToLower() == "-x")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("Missing autosourceext extension.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--autosourceext extension parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.AutosourceExtension = args[pos];
+                    pos++;
                 }
                 else if (args[pos].ToLower() == "--source" || args[pos].ToLower() == "-s")
                 {
@@ -1078,6 +1101,27 @@ namespace DatabaseRestore
                     return false;
                 }
                 FileInfo[] files = dirInfo.GetFiles();
+                if (!string.IsNullOrEmpty(options.AutosourceExtension))
+                {
+                    LogString(string.Format("Searching for backup source with extension '{0}'...", options.AutosourceExtension), NewLine: false);
+                    List<FileInfo> filtered = new List<FileInfo>();
+                    foreach (FileInfo file in files)
+                    {
+                        // there's an extension member that we're not using because we want to allow searching for
+                        // partial extensions, or even more than just the extension. This lets us match to the entire
+                        // end of the filename
+                        if (file.Name.EndsWith(options.AutosourceExtension, StringComparison.OrdinalIgnoreCase))
+                        {
+                            filtered.Add(file);
+                        }
+                    }
+                    files = filtered.ToArray();
+                }
+                else
+                {
+                    LogString("Searching for backup source...", NewLine: false);
+                }
+                
                 DateTime recentCreate = DateTime.MinValue;
                 DateTime recentModify = DateTime.MinValue;
                 FileInfo lastCreated = null;
@@ -1100,12 +1144,14 @@ namespace DatabaseRestore
                 {
                     if (lastCreated == null)
                     {
+                        LogString("not found.");
                         LogString(string.Format("Couldn't find the last created file in the directory: {0}", options.SourcePath));
                         return false;
                     }
                     else
                     {
                         options.SourceFile = lastCreated.FullName;
+                        LogString("Successful.");
                         LogString(string.Format("Autoselected newest source file: {0}", options.SourceFile));
                     }
                 }
@@ -1113,11 +1159,13 @@ namespace DatabaseRestore
                 {
                     if (lastModified == null)
                     {
+                        LogString("not found.");
                         LogString(string.Format("Couldn't find the last modified file in the directory: {0}", options.SourcePath));
                         return false;
                     }
                     else
                     {
+                        LogString("Successful.");
                         options.SourceFile = lastModified.FullName;
                         LogString(string.Format("Autoselected most recently modified source file: {0}", options.SourceFile));
                     }

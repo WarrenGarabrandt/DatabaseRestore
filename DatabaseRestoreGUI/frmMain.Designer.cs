@@ -158,16 +158,18 @@
             this.label17 = new System.Windows.Forms.Label();
             this.btn7Scripts = new System.Windows.Forms.CheckBox();
             this.pnl7Scripts = new System.Windows.Forms.Panel();
-            this.label27 = new System.Windows.Forms.Label();
-            this.label28 = new System.Windows.Forms.Label();
-            this.chkSQLPrescriptEnable = new System.Windows.Forms.CheckBox();
-            this.txtSQLPrepath = new System.Windows.Forms.TextBox();
-            this.cmdSQLPreBrowse = new System.Windows.Forms.Button();
+            this.lblSQLPostPath = new System.Windows.Forms.Label();
+            this.lblSQLPrePath = new System.Windows.Forms.Label();
             this.cmdSQLPostBrowse = new System.Windows.Forms.Button();
             this.txtSQLPostpath = new System.Windows.Forms.TextBox();
             this.chkSQLPostscriptEnable = new System.Windows.Forms.CheckBox();
-            this.lblSQLPrePath = new System.Windows.Forms.Label();
-            this.lblSQLPostPath = new System.Windows.Forms.Label();
+            this.cmdSQLPreBrowse = new System.Windows.Forms.Button();
+            this.txtSQLPrepath = new System.Windows.Forms.TextBox();
+            this.chkSQLPrescriptEnable = new System.Windows.Forms.CheckBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.label27 = new System.Windows.Forms.Label();
+            this.chkSourceExtension = new System.Windows.Forms.CheckBox();
+            this.txtSourceExtension = new System.Windows.Forms.TextBox();
             this.pnl0Start.SuspendLayout();
             this.pnl1Source.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -312,9 +314,9 @@
             this.panel1.Controls.Add(this.cmdSourceTempFileBrowse);
             this.panel1.Controls.Add(this.txtSourceTempFilePath);
             this.panel1.Controls.Add(this.chkSourceTempEnable);
-            this.panel1.Location = new System.Drawing.Point(7, 152);
+            this.panel1.Location = new System.Drawing.Point(7, 172);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(552, 321);
+            this.panel1.Size = new System.Drawing.Size(552, 301);
             this.panel1.TabIndex = 7;
             // 
             // lblSourceTempHelp
@@ -324,7 +326,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.lblSourceTempHelp.Location = new System.Drawing.Point(-3, 54);
             this.lblSourceTempHelp.Name = "lblSourceTempHelp";
-            this.lblSourceTempHelp.Size = new System.Drawing.Size(552, 261);
+            this.lblSourceTempHelp.Size = new System.Drawing.Size(552, 241);
             this.lblSourceTempHelp.TabIndex = 5;
             this.lblSourceTempHelp.Text = resources.GetString("lblSourceTempHelp.Text");
             this.lblSourceTempHelp.Visible = false;
@@ -398,6 +400,8 @@
             // 
             this.pnlSourceAutoSelect.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.pnlSourceAutoSelect.Controls.Add(this.txtSourceExtension);
+            this.pnlSourceAutoSelect.Controls.Add(this.chkSourceExtension);
             this.pnlSourceAutoSelect.Controls.Add(this.cmbAutoSourceAttribute);
             this.pnlSourceAutoSelect.Controls.Add(this.label6);
             this.pnlSourceAutoSelect.Controls.Add(this.cmdSourceAutoBrowse);
@@ -405,7 +409,7 @@
             this.pnlSourceAutoSelect.Controls.Add(this.txtSourceAutoPath);
             this.pnlSourceAutoSelect.Location = new System.Drawing.Point(7, 65);
             this.pnlSourceAutoSelect.Name = "pnlSourceAutoSelect";
-            this.pnlSourceAutoSelect.Size = new System.Drawing.Size(552, 81);
+            this.pnlSourceAutoSelect.Size = new System.Drawing.Size(552, 104);
             this.pnlSourceAutoSelect.TabIndex = 5;
             this.pnlSourceAutoSelect.Visible = false;
             this.pnlSourceAutoSelect.VisibleChanged += new System.EventHandler(this.pnlSourceAutoSelect_VisibleChanged);
@@ -1698,59 +1702,25 @@
             this.pnl7Scripts.Tag = "Scripts";
             this.pnl7Scripts.Visible = false;
             // 
-            // label27
+            // lblSQLPostPath
             // 
-            this.label27.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.label27.Location = new System.Drawing.Point(3, 149);
-            this.label27.Name = "label27";
-            this.label27.Size = new System.Drawing.Size(552, 318);
-            this.label27.TabIndex = 2;
-            this.label27.Text = resources.GetString("label27.Text");
+            this.lblSQLPostPath.AutoSize = true;
+            this.lblSQLPostPath.Location = new System.Drawing.Point(12, 115);
+            this.lblSQLPostPath.Name = "lblSQLPostPath";
+            this.lblSQLPostPath.Size = new System.Drawing.Size(69, 16);
+            this.lblSQLPostPath.TabIndex = 10;
+            this.lblSQLPostPath.Text = "Script File:";
+            this.lblSQLPostPath.Visible = false;
             // 
-            // label28
+            // lblSQLPrePath
             // 
-            this.label28.AutoSize = true;
-            this.label28.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label28.Location = new System.Drawing.Point(3, 2);
-            this.label28.Name = "label28";
-            this.label28.Size = new System.Drawing.Size(169, 24);
-            this.label28.TabIndex = 0;
-            this.label28.Text = "SQL Script Options";
-            // 
-            // chkSQLPrescriptEnable
-            // 
-            this.chkSQLPrescriptEnable.AutoSize = true;
-            this.chkSQLPrescriptEnable.Location = new System.Drawing.Point(6, 37);
-            this.chkSQLPrescriptEnable.Name = "chkSQLPrescriptEnable";
-            this.chkSQLPrescriptEnable.Size = new System.Drawing.Size(193, 20);
-            this.chkSQLPrescriptEnable.TabIndex = 3;
-            this.chkSQLPrescriptEnable.Text = "Run preprocess SQL batch .";
-            this.chkSQLPrescriptEnable.UseVisualStyleBackColor = true;
-            this.chkSQLPrescriptEnable.CheckedChanged += new System.EventHandler(this.chkSQLPrescriptEnable_CheckedChanged);
-            // 
-            // txtSQLPrepath
-            // 
-            this.txtSQLPrepath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtSQLPrepath.Location = new System.Drawing.Point(87, 59);
-            this.txtSQLPrepath.Name = "txtSQLPrepath";
-            this.txtSQLPrepath.Size = new System.Drawing.Size(387, 22);
-            this.txtSQLPrepath.TabIndex = 4;
-            this.txtSQLPrepath.Visible = false;
-            // 
-            // cmdSQLPreBrowse
-            // 
-            this.cmdSQLPreBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.cmdSQLPreBrowse.Location = new System.Drawing.Point(480, 59);
-            this.cmdSQLPreBrowse.Name = "cmdSQLPreBrowse";
-            this.cmdSQLPreBrowse.Size = new System.Drawing.Size(75, 23);
-            this.cmdSQLPreBrowse.TabIndex = 5;
-            this.cmdSQLPreBrowse.Text = "Browse";
-            this.cmdSQLPreBrowse.UseVisualStyleBackColor = true;
-            this.cmdSQLPreBrowse.Visible = false;
-            this.cmdSQLPreBrowse.Click += new System.EventHandler(this.cmdSQLPreBrowse_Click);
+            this.lblSQLPrePath.AutoSize = true;
+            this.lblSQLPrePath.Location = new System.Drawing.Point(12, 62);
+            this.lblSQLPrePath.Name = "lblSQLPrePath";
+            this.lblSQLPrePath.Size = new System.Drawing.Size(69, 16);
+            this.lblSQLPrePath.TabIndex = 9;
+            this.lblSQLPrePath.Text = "Script File:";
+            this.lblSQLPrePath.Visible = false;
             // 
             // cmdSQLPostBrowse
             // 
@@ -1785,31 +1755,90 @@
             this.chkSQLPostscriptEnable.UseVisualStyleBackColor = true;
             this.chkSQLPostscriptEnable.CheckedChanged += new System.EventHandler(this.chkSQLPostscriptEnable_CheckedChanged);
             // 
-            // lblSQLPrePath
+            // cmdSQLPreBrowse
             // 
-            this.lblSQLPrePath.AutoSize = true;
-            this.lblSQLPrePath.Location = new System.Drawing.Point(12, 62);
-            this.lblSQLPrePath.Name = "lblSQLPrePath";
-            this.lblSQLPrePath.Size = new System.Drawing.Size(69, 16);
-            this.lblSQLPrePath.TabIndex = 9;
-            this.lblSQLPrePath.Text = "Script File:";
-            this.lblSQLPrePath.Visible = false;
+            this.cmdSQLPreBrowse.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.cmdSQLPreBrowse.Location = new System.Drawing.Point(480, 59);
+            this.cmdSQLPreBrowse.Name = "cmdSQLPreBrowse";
+            this.cmdSQLPreBrowse.Size = new System.Drawing.Size(75, 23);
+            this.cmdSQLPreBrowse.TabIndex = 5;
+            this.cmdSQLPreBrowse.Text = "Browse";
+            this.cmdSQLPreBrowse.UseVisualStyleBackColor = true;
+            this.cmdSQLPreBrowse.Visible = false;
+            this.cmdSQLPreBrowse.Click += new System.EventHandler(this.cmdSQLPreBrowse_Click);
             // 
-            // lblSQLPostPath
+            // txtSQLPrepath
             // 
-            this.lblSQLPostPath.AutoSize = true;
-            this.lblSQLPostPath.Location = new System.Drawing.Point(12, 115);
-            this.lblSQLPostPath.Name = "lblSQLPostPath";
-            this.lblSQLPostPath.Size = new System.Drawing.Size(69, 16);
-            this.lblSQLPostPath.TabIndex = 10;
-            this.lblSQLPostPath.Text = "Script File:";
-            this.lblSQLPostPath.Visible = false;
+            this.txtSQLPrepath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSQLPrepath.Location = new System.Drawing.Point(87, 59);
+            this.txtSQLPrepath.Name = "txtSQLPrepath";
+            this.txtSQLPrepath.Size = new System.Drawing.Size(387, 22);
+            this.txtSQLPrepath.TabIndex = 4;
+            this.txtSQLPrepath.Visible = false;
+            // 
+            // chkSQLPrescriptEnable
+            // 
+            this.chkSQLPrescriptEnable.AutoSize = true;
+            this.chkSQLPrescriptEnable.Location = new System.Drawing.Point(6, 37);
+            this.chkSQLPrescriptEnable.Name = "chkSQLPrescriptEnable";
+            this.chkSQLPrescriptEnable.Size = new System.Drawing.Size(193, 20);
+            this.chkSQLPrescriptEnable.TabIndex = 3;
+            this.chkSQLPrescriptEnable.Text = "Run preprocess SQL batch .";
+            this.chkSQLPrescriptEnable.UseVisualStyleBackColor = true;
+            this.chkSQLPrescriptEnable.CheckedChanged += new System.EventHandler(this.chkSQLPrescriptEnable_CheckedChanged);
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label28.Location = new System.Drawing.Point(3, 2);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(169, 24);
+            this.label28.TabIndex = 0;
+            this.label28.Text = "SQL Script Options";
+            // 
+            // label27
+            // 
+            this.label27.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.label27.Location = new System.Drawing.Point(3, 149);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(552, 318);
+            this.label27.TabIndex = 2;
+            this.label27.Text = resources.GetString("label27.Text");
+            // 
+            // chkSourceExtension
+            // 
+            this.chkSourceExtension.AutoSize = true;
+            this.chkSourceExtension.Checked = true;
+            this.chkSourceExtension.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkSourceExtension.Location = new System.Drawing.Point(0, 77);
+            this.chkSourceExtension.Name = "chkSourceExtension";
+            this.chkSourceExtension.Size = new System.Drawing.Size(217, 20);
+            this.chkSourceExtension.TabIndex = 7;
+            this.chkSourceExtension.Text = "Limit search to this file extension:";
+            this.chkSourceExtension.UseVisualStyleBackColor = true;
+            this.chkSourceExtension.CheckedChanged += new System.EventHandler(this.chkSourceExtension_CheckedChanged);
+            // 
+            // txtSourceExtension
+            // 
+            this.txtSourceExtension.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtSourceExtension.Location = new System.Drawing.Point(223, 75);
+            this.txtSourceExtension.Name = "txtSourceExtension";
+            this.txtSourceExtension.Size = new System.Drawing.Size(111, 22);
+            this.txtSourceExtension.TabIndex = 8;
+            this.txtSourceExtension.Text = ".bak";
             // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
+            this.Controls.Add(this.pnl8CLI);
+            this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn9Run);
             this.Controls.Add(this.btn8CLI);
@@ -1820,16 +1849,14 @@
             this.Controls.Add(this.btn1Soruce);
             this.Controls.Add(this.btn0Start);
             this.Controls.Add(this.btn7Scripts);
-            this.Controls.Add(this.pnl0Start);
-            this.Controls.Add(this.pnl2SQL);
-            this.Controls.Add(this.pnl8Run);
-            this.Controls.Add(this.pnl5Log);
-            this.Controls.Add(this.pnl7Scripts);
-            this.Controls.Add(this.pnl8CLI);
             this.Controls.Add(this.pnl1Source);
             this.Controls.Add(this.pnl4Rights);
             this.Controls.Add(this.pnl3Opts);
             this.Controls.Add(this.pnl6SMTP);
+            this.Controls.Add(this.pnl2SQL);
+            this.Controls.Add(this.pnl8Run);
+            this.Controls.Add(this.pnl5Log);
+            this.Controls.Add(this.pnl7Scripts);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(600, 440);
@@ -2013,5 +2040,7 @@
         private System.Windows.Forms.CheckBox chkSQLPrescriptEnable;
         private System.Windows.Forms.Label lblSQLPostPath;
         private System.Windows.Forms.Label lblSQLPrePath;
+        private System.Windows.Forms.CheckBox chkSourceExtension;
+        private System.Windows.Forms.TextBox txtSourceExtension;
     }
 }

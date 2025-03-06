@@ -525,6 +525,11 @@ namespace DatabaseRestoreGUI
                 MessageBox.Show("On the Source page, enter a path where the backup file can be located.", "Missing Source Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
+            if (cmbSourceSelectionMode.SelectedIndex == 0 && chkSourceExtension.Checked && string.IsNullOrWhiteSpace(txtSourceExtension.Text))
+            {
+                MessageBox.Show("On the source page, an extension wasn't entered to filter.", "Missing Source Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
             if (cmbSourceSelectionMode.SelectedIndex == 1 && string.IsNullOrWhiteSpace(txtSourceFile.Text))
             {
                 MessageBox.Show("On the Source page, enter a backup file to restore.", "Missing Source Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -624,12 +629,10 @@ namespace DatabaseRestoreGUI
                         MessageBox.Show("Unable to load the settings file.", "Load Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
+                    // apply settintgs
+                    ApplyOptionsFile(opts);
                 }
             }
-            // apply settintgs
-
-            ApplyOptionsFile(opts);
-
         }
 
         private void ApplyOptionsFile(DatabaseRestore.Program.OptionsClass opts)
@@ -641,6 +644,7 @@ namespace DatabaseRestoreGUI
                 txtSourceFile.Text = opts.SourceFile;
                 txtSourceAutoPath.Text = "";
                 cmbAutoSourceAttribute.SelectedIndex = 0;
+                chkSourceExtension.Checked = false;
             }
             else
             {
@@ -655,6 +659,8 @@ namespace DatabaseRestoreGUI
                 {
                     cmbAutoSourceAttribute.SelectedIndex = 1;
                 }
+                chkSourceExtension.Checked = !string.IsNullOrEmpty(opts.AutosourceExtension);
+                txtSourceExtension.Text = opts.AutosourceExtension;
             }
             chkSourceTempEnable.Checked = !string.IsNullOrWhiteSpace(opts.TempFile);
             txtSourceTempFilePath.Text = opts.TempFile;
@@ -808,6 +814,10 @@ namespace DatabaseRestoreGUI
                 else
                 {
                     opts.AutoSourceMode = DatabaseRestore.Program.AutoSourceMode.lastmodified;
+                }
+                if (chkSourceExtension.Checked)
+                {
+                    opts.AutosourceExtension = txtSourceExtension.Text.Trim();
                 }
             }
             else
@@ -974,6 +984,16 @@ namespace DatabaseRestoreGUI
                         sb.Append("lastmodified ");
                     }
                     sb.Append(temp);
+                    if (chkSourceExtension.Checked)
+                    {
+                        temp = EscapeArguments(txtSourceExtension.Text.Trim());
+                        if (string.IsNullOrEmpty(temp))
+                        {
+                            txtCLIArgs.Text = "Error: Source Extension enabled, but no extension entered.";
+                            return;
+                        }
+                        sb.AppendFormat(" --autosourceext {0}", temp);
+                    }
                 }
                 else
                 {
@@ -1362,6 +1382,11 @@ namespace DatabaseRestoreGUI
             lblSQLPostPath.Visible = chkSQLPostscriptEnable.Checked;
             txtSQLPostpath.Visible = chkSQLPostscriptEnable.Checked;
             cmdSQLPostBrowse.Visible = chkSQLPostscriptEnable.Checked;
+        }
+
+        private void chkSourceExtension_CheckedChanged(object sender, EventArgs e)
+        {
+            txtSourceExtension.Visible = chkSourceExtension.Checked;
         }
     }
 }
