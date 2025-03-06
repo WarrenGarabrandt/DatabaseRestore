@@ -1824,8 +1824,6 @@
             // 
             // txtSourceExtension
             // 
-            this.txtSourceExtension.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtSourceExtension.Location = new System.Drawing.Point(223, 75);
             this.txtSourceExtension.Name = "txtSourceExtension";
             this.txtSourceExtension.Size = new System.Drawing.Size(111, 22);
@@ -1837,8 +1835,6 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(744, 501);
-            this.Controls.Add(this.pnl8CLI);
-            this.Controls.Add(this.pnl0Start);
             this.Controls.Add(this.btn4Rights);
             this.Controls.Add(this.btn9Run);
             this.Controls.Add(this.btn8CLI);
@@ -1857,6 +1853,8 @@
             this.Controls.Add(this.pnl8Run);
             this.Controls.Add(this.pnl5Log);
             this.Controls.Add(this.pnl7Scripts);
+            this.Controls.Add(this.pnl8CLI);
+            this.Controls.Add(this.pnl0Start);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Margin = new System.Windows.Forms.Padding(4);
             this.MinimumSize = new System.Drawing.Size(600, 440);
