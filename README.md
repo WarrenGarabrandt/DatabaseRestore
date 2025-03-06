@@ -45,6 +45,8 @@ Starting the tool with no arguments will display the usage instructions. Most pa
   --moveallfiles <filepath>       : Tells SQL server to move all database files to the specified path when restoring, preserving file names.
   
   --replacedatabase               : Tells SQL server to replace the existing database with this backup.
+
+  --closeconnections -c           : Force close existing connections. Without this options, restore will fail is the database is in use.
   
   --dbcccheckdb                   : Runs DBCC CHECKDB on the restored database to verify there is no corruption.
 
@@ -104,7 +106,7 @@ If no --temp is specified, then will attempt to restore from --source or the aut
 
 The database will fail to restore if it already exists and the --replacedatabase is not specified.
 
-The database will fail to restore if it is in use, has any active connections to it, or the user account provided doesn't have rights to restore.
+The database will fail to restore if it is in use, has any active connections to it, or the user account provided doesn't have rights to restore. The option --closeconnections will put the database into single-user mode, force closing all open connections. After the restore, it will be put back into mulit-user mode. This is recommanded if you are restoring a database that might have open connections.
 
 The database will fail to restore if the database file path on the source server (where the backup as created) does not match that of target server (where the backup will be restored), unless either --movefile argument specifies all database files to be placed in valid locations, or --moveallfiles specifies a path to move everything. If a file is specified for --movefile that doens't actually exist in the backup, it will be ignored. If any files aren't specified by --movefile, then --moveallfiles can also be used to move everything else that --movefile didn't specify. Kind of a "move to of last resort" situation.
 
@@ -138,7 +140,7 @@ Queries can be broken up into separate batches by putting the keyword GO on a li
 ## Known Issues
 I've tested the program only on a test SQL server 2019 Express server so far, using integrated authentication only. I'm sure there's plenty of ways that passing passwords through the command line can expose all sorts of security issues that I haven't investigated yet, and probably special characters will break commandline argument parsing too.
 
-I know that older SQL Server versions don't support "CREATE USER x FOR LOGIN x" syntax, nor do they support "ALTER ROLE x ADD MEMBER y". It should work on all currently Microsoft supported versions of SQL server (2016, 2017, 2019, 2022), but I have only tested 2019 as that is my use case. 
+I know that older SQL Server versions don't support "CREATE USER x FOR LOGIN x" syntax, nor do they support "ALTER ROLE x ADD MEMBER y". It should work on all currently Microsoft supported versions of SQL server (2016, 2017, 2019, 2022), but I have only tested 2019 as that is my use case. You can use the --postsqlscript option to run a custom SQL script after the restore is completed where you can set custom permissions for users and groups.
 
 There are probably differences for AWS/Azure SQL hosted servers that won't work with this at all. You'll have to test and submit a bug to let me know as I don't have access to those to test. 
 
@@ -168,6 +170,13 @@ Which will essentially break parsing of the arguments and likely result in unexp
 
 # Database Restore GUI
 This is a graphics user interface front-end for the command line program. It allows you to enter settings in a graphical interface and save them out to a config file, or to open a previously saved config file to make changes. You can also use the GUI to on-demand run a database restore. Use the GUI to create settings files for the command line tool, and SMTP profile settings for emailing out logs.
+
+## Future Plans
+Add functionality to verify integrity of saved settings and SMTP profiles before attempting to decrypt and deserialize. 
+
+Add signature checking of SQL files (probably with a hash check) to verify that a SQL file hasn't been modified since a job profile was created.
+
+Add some sort of progress bar to the command prompt and GUI for file copy, restore, and DBCC checks (not sure if the that last one is possible).
 
 # MIT License
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
