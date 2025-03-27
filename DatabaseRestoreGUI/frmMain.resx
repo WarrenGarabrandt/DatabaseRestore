@@ -157,10 +157,11 @@ If the Password contains \, ", or a space, or the password ends with a \, you wo
     <value>Add users by typing into the bottom empry row, and remove users by selecting a row and pressing delete. Users must already exist as Logins in SQL server or the restore will fail. You must specify at least one role for each listed user.</value>
   </data>
   <data name="label27.Text" xml:space="preserve">
-    <value>SQL Scripts may be ran before and/or after the restore operation completes.
+    <value>SQL Scripts may be ran before starting the restore, after the restore operation completes while still in single-user mode, and after the restore is fully completed.
 If a SQL script throws an error, the restore process will be halted at that point.
 Proprocess script runs with MASTER as the initial catalog and are run before source file copy is started.
-Postprocess script runs with the restored database as the initial catalog and run after the optional DBCC process and before deleting the temp backup file (if one is copied).
-SQL Scripts will be loaded and split into batches by the keyword GO on a line by itself. GO is case sensitive. SQL Server output messages will be written to log files.</value>
+Single-user script and postprocess script runs with the restored database as the initial catalog and run after the optional DBCC process and before deleting the temp backup file (if one is copied).
+SQL Scripts will be loaded and split into batches by the keyword GO on a line by itself. GO is case sensitive. SQL Server output messages will be written to log files.
+Single-user script is only available if the Force closed connections (single-user mode) is selected on the Restore Options page.</value>
   </data>
 </root>

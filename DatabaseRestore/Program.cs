@@ -130,6 +130,8 @@ namespace DatabaseRestore
             public string SMTPPassword { get; set; }
             // --presqlscript
             public string PreSQLScriptPath { get; set; }
+            // --singleuserscript
+            public string SingleUserScriptPath { get; set; }
             // --postsqlscript
             public string PostSQLScriptPath { get; set; }
         }
@@ -173,10 +175,11 @@ namespace DatabaseRestore
             int errorCode = 0;
             SMTPProfileClass smtpProfile = null;
             string[] prescript;
+            string[] singleuserscript;
             string[] postscript;
             try
             {
-                if (!CheckOptions(options, out smtpProfile, out prescript, out postscript))
+                if (!CheckOptions(options, out smtpProfile, out prescript, out singleuserscript, out postscript))
                 {
                     errorCode = -2;
                 }
@@ -215,7 +218,7 @@ namespace DatabaseRestore
                 }
                 // database permissions get set within RestoreDatabase, that way they can be done while the database is in
                 // single user mode, if that option is specified.
-                if (errorCode == 0 && !RestoreDatabase(options))
+                if (errorCode == 0 && !RestoreDatabase(options, singleuserscript))
                 {
                     LogString("Failed restoring the database.");
                     errorCode = -7;
@@ -448,6 +451,7 @@ namespace DatabaseRestore
             Console.WriteLine("  --smtpprofile <filepath>        : Load a SMTP profile file in order to send an email of the log.");
             Console.WriteLine("  --smtppassword <password>       : Password to decrypt the SMTP Profile file.");
             Console.WriteLine("  --presqlscript <filepath>       : Before starting the SQL restore process, load and run the specified SQL file.");
+            Console.WriteLine("  --singleuserscript <filepath>   : SQL script to run after database restore while still in single user mode.");
             Console.WriteLine("  --postsqlscript <filepath>      : After restore is completed successfully, load and run the specified SQL file.");
             Console.WriteLine();
             Console.WriteLine("If --loadsettings is specified, any command line arguments provided override the settings in the file.");
@@ -476,6 +480,7 @@ namespace DatabaseRestore
             Console.WriteLine();
             Console.WriteLine("The Pre- and Post- SQL script options load a specified sql file and run the queries on the destination SQL server.");
             Console.WriteLine("The presqlscript connects to SQL server with MASTER as the initial catalog.");
+            Console.WriteLine("The single user script --singleuserscript requires --closeconnections which puts the database into single-user mode.");
             Console.WriteLine("The postsqlscript connects to SQL server with the restored database as the initial catalog.");
             Console.WriteLine("If you need to run multiple queries, separate them with the word GO on a line by itself.");
             Console.WriteLine("This parsing looks for \\r\\nGO\\r\\n as the batch separator, and is case sensitive.");
@@ -625,6 +630,10 @@ namespace DatabaseRestore
                     pos += 2;
                 }
                 else if (args[pos].ToLower() == "--presqlscript")
+                {
+                    pos += 2;
+                }
+                else if (args[pos].ToLower() == "--singleuserscript")
                 {
                     pos += 2;
                 }
@@ -1017,6 +1026,22 @@ namespace DatabaseRestore
                     options.PreSQLScriptPath = args[pos];
                     pos++;
                 }
+                else if (args[pos].ToLower() == "--singleuserscript")
+                {
+                    pos++;
+                    if (pos >= args.Length)
+                    {
+                        LogString("No path specified for --singleuserscript <filepath> parameter.");
+                        return false;
+                    }
+                    if (PathContainsIllegalChars(args[pos]))
+                    {
+                        LogString("--singleuserscript <filepath> parameter contains invalid characters.");
+                        return false;
+                    }
+                    options.SingleUserScriptPath = args[pos];
+                    pos++;
+                }
                 else if (args[pos].ToLower() == "--postsqlscript")
                 {
                     pos++;
@@ -1042,10 +1067,11 @@ namespace DatabaseRestore
             return true;
         }
 
-        public static bool CheckOptions(OptionsClass options, out SMTPProfileClass smtpProfile, out string[] prescript, out string[] postscript)
+        public static bool CheckOptions(OptionsClass options, out SMTPProfileClass smtpProfile, out string[] prescript, out string[] singleuserscript, out string[] postscript)
         {
             smtpProfile = null;
             prescript = null;
+            singleuserscript = null;
             postscript = null;
             if (!string.IsNullOrEmpty(options.SourceFile) && !string.IsNullOrEmpty(options.SourcePath))
             {
@@ -1066,6 +1092,25 @@ namespace DatabaseRestore
                 if (prescript != null && prescript.Length >= 1)
                 {
                     LogString(string.Format("Success. Read {0} batch{1}.", prescript.Length, prescript.Length > 1 ? "es" : ""));
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            if (!string.IsNullOrEmpty(options.SingleUserScriptPath))
+            {
+                if (!options.CloseConnections)
+                {
+                    LogString("Single-user script option requires --closeconnections option, which puts the database into single-user mode.");
+                    return false;
+                }
+                LogString(string.Format("Single-user SQL script specified: {0}", options.SingleUserScriptPath));
+                LogString("Loading SQL script...", NewLine: false);
+                singleuserscript = ReadAndSplitBatch(options.SingleUserScriptPath);
+                if (singleuserscript != null && singleuserscript.Length >= 1)
+                {
+                    LogString(string.Format("Success. Read {0} batch{1}.", singleuserscript.Length, singleuserscript.Length > 1 ? "es" : ""));
                 }
                 else
                 {
@@ -1686,7 +1731,8 @@ namespace DatabaseRestore
             }
             return true;
         }
-        public static bool RestoreDatabase(OptionsClass options)
+
+        public static bool RestoreDatabase(OptionsClass options, string[] singleuserscript)
         {
             string SQLConnectionString = BuildConnectionString(options, useMasterDB: true);
             LogString("Preparing to restore SQL Database.");
@@ -1794,6 +1840,20 @@ namespace DatabaseRestore
                 {
                     LogString("Failed setting permissions for the database.");
                     result = false;
+                }
+                // if result so far is success, we are in single-user mode, and a single-user mode script is specified
+                if (result && options.CloseConnections && options.SingleUserScriptPath != null)
+                {
+                    LogString("Running Single-user script.");
+                    if (RunSQLScript(options, singleuserscript, masterdb: false))
+                    {
+                        LogString("Single-user script finished.");
+                    }
+                    else
+                    {
+                        LogString("Failed running Single-user script.");
+                        result = false;
+                    }
                 }
                 if (options.CloseConnections)
                 {

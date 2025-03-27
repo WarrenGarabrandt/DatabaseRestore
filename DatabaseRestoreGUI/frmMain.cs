@@ -596,7 +596,12 @@ namespace DatabaseRestoreGUI
                     "Missing Script Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
-
+            if (chkOptsCloseConnections.Checked && chkSQLSingeUserScriptEnable.Checked && string.IsNullOrWhiteSpace(txtSQLSinglepath.Text))
+            {
+                MessageBox.Show("On the SQL Scripts page, the Run single-user script is checked but required file has not been specified.",
+                    "Missing Script Info", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
             if (chkSQLPostscriptEnable.Checked && string.IsNullOrWhiteSpace(txtSQLPostpath.Text))
             {
                 MessageBox.Show("On the SQL Scripts page, the Run postprocess script is checked but required file has not been specified.",
@@ -787,6 +792,25 @@ namespace DatabaseRestoreGUI
                 chkSQLPrescriptEnable.Checked = false;
                 txtSQLPrepath.Text = "";
             }
+
+            if (chkOptsCloseConnections.Checked)
+            {
+                if (!string.IsNullOrEmpty(opts.SingleUserScriptPath))
+                {
+                    chkSQLSingeUserScriptEnable.Checked = true;
+                    txtSQLSinglepath.Text = opts.SingleUserScriptPath;
+                }
+                else
+                {
+                    chkSQLSingeUserScriptEnable.Checked= false;
+                    txtSQLSinglepath.Text = "";
+                }
+            }
+            else
+            {
+                chkSQLSingeUserScriptEnable.Checked = false;
+                txtSQLSinglepath.Text = "";
+            }
             if (!string.IsNullOrEmpty(opts.PostSQLScriptPath))
             {
                 chkSQLPostscriptEnable.Checked = true;
@@ -916,6 +940,10 @@ namespace DatabaseRestoreGUI
             if (chkSQLPrescriptEnable.Checked)
             {
                 opts.PreSQLScriptPath = txtSQLPrepath.Text.Trim();
+            }
+            if (chkOptsCloseConnections.Checked && chkSQLSingeUserScriptEnable.Checked)
+            {
+                opts.SingleUserScriptPath = txtSQLSinglepath.Text.Trim();
             }
             if (chkSQLPostscriptEnable.Checked)
             {
@@ -1211,6 +1239,16 @@ namespace DatabaseRestoreGUI
                     }
                     sb.AppendFormat(" --presqlscript {0}", temp);
                 }
+                if (chkOptsCloseConnections.Checked && chkSQLSingeUserScriptEnable.Checked)
+                {
+                    string temp = EscapeArguments(txtSQLSinglepath.Text.Trim());
+                    if (string.IsNullOrEmpty(temp))
+                    {
+                        txtCLIArgs.Text = "Single-user SQL script requies a file to be specified.";
+                        return;
+                    }
+                    sb.AppendFormat(" --singleuserscript {0}", temp);
+                }
                 if (chkSQLPostscriptEnable.Checked)
                 {
                     string temp = EscapeArguments(txtSQLPostpath.Text.Trim());
@@ -1358,6 +1396,18 @@ namespace DatabaseRestoreGUI
             }
         }
 
+        private void cmdSQLSingleBrowse_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "SQL Files (*.sql)|*.SQL";
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtSQLSinglepath.Text = openFileDialog.FileName;
+                }
+            }
+        }
+
         private void cmdSQLPostBrowse_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -1377,6 +1427,13 @@ namespace DatabaseRestoreGUI
             cmdSQLPreBrowse.Visible = chkSQLPrescriptEnable.Checked;
         }
 
+        private void chkSQLSingeUserScriptEnable_CheckedChanged(object sender, EventArgs e)
+        {
+            lblSQLSinglePath.Visible = chkSQLSingeUserScriptEnable.Checked;
+            txtSQLSinglepath.Visible = chkSQLSingeUserScriptEnable.Checked;
+            cmdSQLSingleBrowse.Visible = chkSQLSingeUserScriptEnable.Checked;
+        }
+
         private void chkSQLPostscriptEnable_CheckedChanged(object sender, EventArgs e)
         {
             lblSQLPostPath.Visible = chkSQLPostscriptEnable.Checked;
@@ -1387,6 +1444,13 @@ namespace DatabaseRestoreGUI
         private void chkSourceExtension_CheckedChanged(object sender, EventArgs e)
         {
             txtSourceExtension.Visible = chkSourceExtension.Checked;
+        }
+
+        private void chkOptsCloseConnections_CheckedChanged(object sender, EventArgs e)
+        {
+            chkSQLSingeUserScriptEnable.Enabled = chkOptsCloseConnections.Checked;
+            txtSQLSinglepath.Enabled = chkOptsCloseConnections.Checked;
+            cmdSQLSingleBrowse.Enabled = chkOptsCloseConnections.Checked;
         }
     }
 }
