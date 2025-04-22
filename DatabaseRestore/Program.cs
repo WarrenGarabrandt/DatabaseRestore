@@ -40,7 +40,7 @@ namespace DatabaseRestore
 {
     public class Program
     {
-        public const string BUILDRELEASE = "alpha1";
+        public const string BUILDRELEASE = "alpha2";
         public const int KEYITERATIONS = 1000;
 
         public class UserRightItem
@@ -480,7 +480,7 @@ namespace DatabaseRestore
             Console.WriteLine();
             Console.WriteLine("The Pre- and Post- SQL script options load a specified sql file and run the queries on the destination SQL server.");
             Console.WriteLine("The presqlscript connects to SQL server with MASTER as the initial catalog.");
-            Console.WriteLine("The single user script --singleuserscript requires --closeconnections which puts the database into single-user mode.");
+            Console.WriteLine("The single user script --singleuserscript will put the database into single-user mode to run the script.");
             Console.WriteLine("The postsqlscript connects to SQL server with the restored database as the initial catalog.");
             Console.WriteLine("If you need to run multiple queries, separate them with the word GO on a line by itself.");
             Console.WriteLine("This parsing looks for \\r\\nGO\\r\\n as the batch separator, and is case sensitive.");
@@ -1100,11 +1100,6 @@ namespace DatabaseRestore
             }
             if (!string.IsNullOrEmpty(options.SingleUserScriptPath))
             {
-                if (!options.CloseConnections)
-                {
-                    LogString("Single-user script option requires --closeconnections option, which puts the database into single-user mode.");
-                    return false;
-                }
                 LogString(string.Format("Single-user SQL script specified: {0}", options.SingleUserScriptPath));
                 LogString("Loading SQL script...", NewLine: false);
                 singleuserscript = ReadAndSplitBatch(options.SingleUserScriptPath);
@@ -1494,48 +1489,72 @@ namespace DatabaseRestore
             return true;
         }
 
-        public static bool RunSQLScript(OptionsClass options, string[] batches, bool masterdb)
+        public static bool RunSQLScript(OptionsClass options, string[] batches, bool masterdb, SqlConnection existingConnection = null)
         {
-            string SQLConnectionString = BuildConnectionString(options, useMasterDB: masterdb);
-            using (SqlConnection connection = new SqlConnection(SQLConnectionString))
+            if (existingConnection == null)
             {
-                int currentBatchPart = 0;
-                try
+                string SQLConnectionString = BuildConnectionString(options, useMasterDB: masterdb);
+                using (SqlConnection connection = new SqlConnection(SQLConnectionString))
                 {
-                    connection.InfoMessage += Connection_InfoMessage;
-                    LogString("Opening connection to SQL server... ", NewLine: false);
-                    connection.Open();
-                    LogString("Successful");
-                    for (int i = 0; i < batches.Length; i++)
+                    try
                     {
-                        using (SqlCommand cmd = new SqlCommand(batches[i], connection))
-                        {
-                            cmd.CommandTimeout = 0;
-                            currentBatchPart = i + 1;
-                            int rows = cmd.ExecuteNonQuery();
-                            LogString(String.Format("Batch {0} of {1}, rows affected: {2}", currentBatchPart, batches.Length, rows));
-                            if (InfoMessageSB.Length > 0)
-                            {
-                                LogString("Messages:");
-                                LogString(InfoMessageSB.ToString());
-                                InfoMessageSB.Clear();
-                            }
-                        }
+                        LogString("Opening connection to SQL server... ", NewLine: false);
+                        connection.Open();
+                        LogString("Successful");
+                        bool success = RunSQLBatches(connection, batches);
+                        return success;
                     }
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    LogString(string.Format("Error occurred{0}:", currentBatchPart > 0 ? string.Format(" processing batch {0}", currentBatchPart) : ""));
-                    LogString(ex.ToString());
-                    return false;
-                }
-                finally
-                {
-                    connection.InfoMessage -= Connection_InfoMessage;
+                    catch (Exception ex)
+                    {
+                        LogString("Error connecting to SQL server.");
+                        LogString(ex.ToString());
+                        return false;
+                    }
                 }
             }
+            else
+            {
+                bool success = RunSQLBatches(existingConnection, batches);
+                return success;
+            }
         }
+
+        private static bool RunSQLBatches(SqlConnection connection, string[] batches)
+        {
+            int currentBatchPart = 0;
+            try
+            {
+                connection.InfoMessage += Connection_InfoMessage;   
+                for (int i = 0; i < batches.Length; i++)
+                {
+                    using (SqlCommand cmd = new SqlCommand(batches[i], connection))
+                    {
+                        cmd.CommandTimeout = 0;
+                        currentBatchPart = i + 1;
+                        int rows = cmd.ExecuteNonQuery();
+                        LogString(String.Format("Batch {0} of {1}, rows affected: {2}", currentBatchPart, batches.Length, rows));
+                        if (InfoMessageSB.Length > 0)
+                        {
+                            LogString("Messages:");
+                            LogString(InfoMessageSB.ToString());
+                            InfoMessageSB.Clear();
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogString(string.Format("Error occurred{0}:", currentBatchPart > 0 ? string.Format(" processing batch {0}", currentBatchPart) : ""));
+                LogString(ex.ToString());
+                return false;
+            }
+            finally
+            {
+                connection.InfoMessage -= Connection_InfoMessage;
+            }
+        }
+
 
         public static bool CopyFile(string sourceFile, string tempFile)
         {
@@ -1749,6 +1768,7 @@ namespace DatabaseRestore
                 {
                     LogString("An exception occurred:");
                     LogString(ex.ToString());
+                    // we've failed to connect entirely, so bail out now.
                     return false;
                 }
                 List<KeyValuePair<string, string>> parms = new List<KeyValuePair<string, string>>();
@@ -1780,6 +1800,7 @@ namespace DatabaseRestore
                     {
                         LogString("An exception occurred setting single-user mode:");
                         LogString(ex.ToString());
+                        // we've failed to set single-user mode, so bail out now.
                         return false;
                     }
                     querysb.Clear();
@@ -1826,6 +1847,8 @@ namespace DatabaseRestore
                         }
                         LogString("Restoring database... ", NewLine: false);
                         cmd.ExecuteNonQuery();
+                        parms.Clear();
+                        querysb.Clear();
                         LogString("Successful");
                         result = true;
                     }
@@ -1841,11 +1864,41 @@ namespace DatabaseRestore
                     LogString("Failed setting permissions for the database.");
                     result = false;
                 }
-                // if result so far is success, we are in single-user mode, and a single-user mode script is specified
-                if (result && options.CloseConnections && options.SingleUserScriptPath != null)
+                // if result so far is success, run single-user script if there is one.
+                // the database is probably not still in single-user mode since the restore just finished (based on testing)
+                if (result && options.SingleUserScriptPath != null)
                 {
-                    LogString("Running Single-user script.");
-                    if (RunSQLScript(options, singleuserscript, masterdb: false))
+                    LogString("Putting database into single-user mode to run single-user script...", NewLine: false);
+                    querysb.AppendFormat(
+                        "IF EXISTS (SELECT name FROM sys.databases WHERE name = @DBNAME)\r\n" +
+                        "BEGIN\r\n" +
+                        "  ALTER DATABASE [{0}] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;\r\n" +
+                        "END",
+                        options.DatabaseName);
+                    parms.Add(new KeyValuePair<string, string>("@DBNAME", options.DatabaseName));
+                    try
+                    {
+                        using (SqlCommand cmd = new SqlCommand(querysb.ToString(), connection))
+                        {
+                            cmd.CommandTimeout = 120;
+                            foreach (var p in parms)
+                            {
+                                cmd.Parameters.AddWithValue(p.Key, p.Value);
+                            }
+                            cmd.ExecuteNonQuery();
+                            LogString("Successful");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LogString("An exception occurred setting single-user mode:");
+                        LogString(ex.ToString());
+                        result = false;
+                    }
+                    querysb.Clear();
+                    parms.Clear();
+                    // pass our current connection through since the DB is in single-user mode and we need to use this existing connection
+                    if (RunSQLScript(options, singleuserscript, masterdb: false, connection))
                     {
                         LogString("Single-user script finished.");
                     }
@@ -1855,7 +1908,8 @@ namespace DatabaseRestore
                         result = false;
                     }
                 }
-                if (options.CloseConnections)
+                // if either close connection or single user script is specified, we need to put it back into multi-user mode.
+                if (options.CloseConnections || options.SingleUserScriptPath != null)
                 {
                     querysb.Clear();
                     parms.Clear();
