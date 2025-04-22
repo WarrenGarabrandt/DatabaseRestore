@@ -1859,11 +1859,6 @@ namespace DatabaseRestore
                     LogString(ex.ToString());
                     result = false;
                 }
-                if (result && !SetDatabasePermissions(options))
-                {
-                    LogString("Failed setting permissions for the database.");
-                    result = false;
-                }
                 // if result so far is success, run single-user script if there is one.
                 // the database is probably not still in single-user mode since the restore just finished (based on testing)
                 if (result && options.SingleUserScriptPath != null)
@@ -1942,6 +1937,11 @@ namespace DatabaseRestore
                     }
                     querysb.Clear();
                     parms.Clear();
+                }
+                if (result && !SetDatabasePermissions(options))
+                {
+                    LogString("Failed setting permissions for the database.");
+                    result = false;
                 }
             }
             return result;
